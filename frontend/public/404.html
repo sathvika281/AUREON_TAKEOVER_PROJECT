@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Aureon</title>
+    <script type="text/javascript">
+      // GitHub Pages has no server-side SPA fallback — any deep link (e.g.
+      // /AUREON_TAKEOVER_PROJECT/discover/identity) 404s here first. This
+      // re-encodes the path as a query string and redirects to index.html,
+      // which decodes it back via the matching script in index.html.
+      // Standard "spa-github-pages" recipe (rafgraph/spa-github-pages).
+      var pathSegmentsToKeep = 1; // keep "/AUREON_TAKEOVER_PROJECT"
+      var l = window.location;
+      l.replace(
+        l.protocol + "//" + l.hostname + (l.port ? ":" + l.port : "") +
+        l.pathname.split("/").slice(0, 1 + pathSegmentsToKeep).join("/") + "/?/" +
+        l.pathname.slice(1).split("/").slice(pathSegmentsToKeep).join("/").replace(/&/g, "~and~") +
+        (l.search ? "&" + l.search.slice(1).replace(/&/g, "~and~") : "") +
+        l.hash
+      );
+    </script>
+  </head>
+  <body></body>
+</html>
