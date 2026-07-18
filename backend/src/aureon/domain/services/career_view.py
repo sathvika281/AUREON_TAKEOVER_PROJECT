@@ -1,11 +1,15 @@
 from aureon.domain.models.career import Career, CareerStory
+from aureon.domain.models.trend import Trend
 from aureon.shared.schemas import (
+    CareerBranchDTO,
     CareerDetailDTO,
+    CareerFAQDTO,
     CareerRealityDTO,
     CareerStoryDTO,
     CareerSummaryDTO,
     FutureLensDTO,
     SalaryRangeDTO,
+    TrendSummaryDTO,
 )
 
 """Presentation mapping from the Career Knowledge Base -> API DTOs. Kept
@@ -36,6 +40,9 @@ def build_career_detail_dto(
     stories: list[CareerStory],
     *,
     student_trait_tags: set[str] | None = None,
+    related_careers: list[Career] | None = None,
+    recommended_next_exploration: Career | None = None,
+    related_trends: list[Trend] | None = None,
 ) -> CareerDetailDTO:
     story_dtos = [
         CareerStoryDTO(
@@ -97,4 +104,34 @@ def build_career_detail_dto(
             timeline_narrative=career.future_lens.timeline_narrative,
         ),
         stories=story_dtos,
+        description=career.description,
+        why_people_love_it=career.why_people_love_it,
+        branches=[CareerBranchDTO(name=b.name, description=b.description) for b in career.branches],
+        related_careers=[build_career_summary_dto(c) for c in (related_careers or [])],
+        recommended_next_exploration=(
+            build_career_summary_dto(recommended_next_exploration) if recommended_next_exploration else None
+        ),
+        related_trends=[
+            TrendSummaryDTO(id=t.id, title=t.title, category=t.category, summary=t.summary)
+            for t in (related_trends or [])
+        ],
+        day_in_the_life=career.day_in_the_life,
+        weekly_routine=career.weekly_routine,
+        daily_tools=career.daily_tools,
+        career_progression=career.career_progression,
+        related_industries=career.related_industries,
+        research_areas=career.research_areas,
+        companies=career.companies,
+        universities=career.universities,
+        scholarships=career.scholarships,
+        competitions=career.competitions,
+        books=career.books,
+        communities=career.communities,
+        open_source_projects=career.open_source_projects,
+        certifications=career.certifications,
+        projects=career.projects,
+        videos=career.videos,
+        common_misconceptions=career.common_misconceptions,
+        faqs=[CareerFAQDTO(question=f.question, answer=f.answer) for f in career.faqs],
+        adjacent_careers=career.adjacent_careers,
     )

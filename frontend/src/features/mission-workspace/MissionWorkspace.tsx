@@ -5,7 +5,6 @@ import { ArtifactUpdateList } from "../../design-system/components/ArtifactUpdat
 import { DelegationFlow } from "../../design-system/components/DelegationFlow";
 import { EvidenceCard } from "../../design-system/components/EvidenceCard";
 import { MissionTimeline } from "../../design-system/components/MissionTimeline";
-import { Surface } from "../../design-system/components/Surface";
 import { ToolExecutionList } from "../../design-system/components/ToolExecutionList";
 import type { MissionSnapshot } from "../../shared/api/types";
 
@@ -31,37 +30,45 @@ export function MissionWorkspace({
   finalReport: ReactNode;
 }) {
   return (
-    <div className="space-y-8">
-      <Surface tone="raised" padding="lg">
-        <p className="text-[0.65rem] uppercase tracking-widest text-ink-faint">Mission</p>
-        <h2 className="mt-1.5 text-lg font-medium text-ink">Investigation Timeline</h2>
-        <div className="mt-4">
+    <div className="space-y-10">
+      <div>
+        <p className="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-ink-faint">
+          Mission Command
+        </p>
+        <h2 className="mt-2 font-serif text-2xl italic text-ink">Investigation Timeline</h2>
+        <div className="mt-6">
           <MissionTimeline stages={snapshot.stages} />
         </div>
-      </Surface>
+      </div>
 
       <div>
-        <p className="mb-3 px-1 text-xs uppercase tracking-widest text-ink-faint">Agents</p>
+        <p className="mb-3 font-mono text-[0.62rem] uppercase tracking-[0.14em] text-ink-faint">Agents</p>
         <AgentPanel agents={snapshot.agents} />
       </div>
 
       {snapshot.delegations.length > 0 && (
         <div>
-          <p className="mb-3 px-1 text-xs uppercase tracking-widest text-ink-faint">Delegation</p>
+          <p className="mb-3 font-mono text-[0.62rem] uppercase tracking-[0.14em] text-ink-faint">
+            Delegation
+          </p>
           <DelegationFlow delegations={snapshot.delegations} />
         </div>
       )}
 
       {snapshot.tools.length > 0 && (
         <div>
-          <p className="mb-3 px-1 text-xs uppercase tracking-widest text-ink-faint">Tool Execution</p>
+          <p className="mb-3 font-mono text-[0.62rem] uppercase tracking-[0.14em] text-ink-faint">
+            Tool Execution
+          </p>
           <ToolExecutionList tools={snapshot.tools} />
         </div>
       )}
 
       {snapshot.evidence.length > 0 && (
         <div>
-          <p className="mb-3 px-1 text-xs uppercase tracking-widest text-ink-faint">Evidence</p>
+          <p className="mb-3 font-mono text-[0.62rem] uppercase tracking-[0.14em] text-ink-faint">
+            Evidence
+          </p>
           <div className="space-y-3">
             {snapshot.evidence.map((e, i) => (
               <EvidenceCard key={i} evidence={e} />
@@ -72,13 +79,17 @@ export function MissionWorkspace({
 
       {artifactsUpdated.length > 0 && (
         <div>
-          <p className="mb-3 px-1 text-xs uppercase tracking-widest text-ink-faint">Artifacts Updated</p>
+          <p className="mb-3 font-mono text-[0.62rem] uppercase tracking-[0.14em] text-ink-faint">
+            Artifacts Updated
+          </p>
           <ArtifactUpdateList artifacts={artifactsUpdated} />
         </div>
       )}
 
-      <div className="border-t border-border pt-8">
-        <p className="mb-3 px-1 text-xs uppercase tracking-widest text-ink-faint">Final Report</p>
+      <div className="border-t border-border pt-10">
+        <p className="mb-3 font-mono text-[0.62rem] uppercase tracking-[0.14em] text-ink-faint">
+          Final Report
+        </p>
         {finalReport}
       </div>
     </div>

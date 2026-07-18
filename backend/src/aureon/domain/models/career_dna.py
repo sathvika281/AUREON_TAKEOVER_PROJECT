@@ -17,6 +17,12 @@ TRAIT_NAMES = (
     "values",
     "work_preferences",
     "decision_style",
+    #: Discover Batch 2 — added so Talent Discovery Lab's Talent Pattern
+    #: Engine has real CareerDNA trait names to read for these three
+    #: talents (see domain/services/talent_pattern_engine.py::TALENT_NAMES).
+    "persistence",
+    "empathy",
+    "systems_thinking",
 )
 
 

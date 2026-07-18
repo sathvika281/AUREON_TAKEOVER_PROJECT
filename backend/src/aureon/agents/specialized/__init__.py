@@ -12,11 +12,16 @@
 from aureon.agents.specialized.career_intelligence.agent import (  # noqa: F401
     CareerIntelligenceAgent,
 )
+from aureon.agents.specialized.career_orchestrator.agent import (  # noqa: F401
+    CareerOrchestratorAgent,
+)
 from aureon.agents.specialized.decision.agent import DecisionAgent  # noqa: F401
 from aureon.agents.specialized.discovery.agent import DiscoveryAgent  # noqa: F401
 from aureon.agents.specialized.growth.agent import GrowthAgent  # noqa: F401
 from aureon.agents.specialized.institution.agent import InstitutionAgent  # noqa: F401
 from aureon.agents.specialized.mentor.agent import MentorAgent  # noqa: F401
+from aureon.agents.specialized.network.agent import NetworkAgent  # noqa: F401
 from aureon.agents.specialized.opportunity.agent import OpportunityAgent  # noqa: F401
+from aureon.agents.specialized.portfolio.agent import PortfolioAgent  # noqa: F401
 from aureon.agents.specialized.roadmap.agent import RoadmapAgent  # noqa: F401
 from aureon.agents.specialized.skill_gap.agent import SkillGapAgent  # noqa: F401

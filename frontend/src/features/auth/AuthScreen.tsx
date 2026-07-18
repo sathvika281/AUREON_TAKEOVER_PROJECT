@@ -41,7 +41,7 @@ export function AuthScreen() {
         setMode("sign-in");
         return;
       }
-      navigate("/dashboard");
+      navigate("/onboarding");
       return;
     }
 
@@ -75,10 +75,10 @@ export function AuthScreen() {
                   setConfirmationNotice(null);
                 }}
                 className={cn(
-                  "flex-1 rounded-full border px-3 py-1.5 text-xs capitalize transition",
+                  "flex-1 rounded-full border px-3 py-1.5 text-xs capitalize transition-colors",
                   mode === m
-                    ? "border-accent/40 bg-accent/10 text-accent-soft"
-                    : "border-border text-ink-faint hover:text-ink-muted",
+                    ? "border-accent-soft/40 bg-accent/10 text-accent-soft"
+                    : "border-border text-ink-faint hover:border-border-strong hover:text-ink-muted",
                 )}
               >
                 {m === "sign-in" ? "Sign In" : "Sign Up"}
@@ -113,7 +113,7 @@ export function AuthScreen() {
             </div>
 
             {confirmationNotice && <p className="mt-3 text-xs text-accent-soft">{confirmationNotice}</p>}
-            {error && <p className="mt-3 text-xs text-red-400">{error}</p>}
+            {error && <p className="mt-3 text-xs text-danger">{error}</p>}
 
             <div className="mt-4">
               <Button

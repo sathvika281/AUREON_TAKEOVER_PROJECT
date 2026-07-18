@@ -3,17 +3,19 @@ import type { HTMLAttributes } from "react";
 
 import { cn } from "../cn";
 
-const surfaceStyles = cva("rounded-xl border", {
+// A crafted instrument, not a card in a stack of identical cards — a
+// hairline edge, a barely-raised plane, never a heavy drop shadow.
+const surfaceStyles = cva("rounded-2xl border backdrop-blur-[2px] transition-colors duration-300", {
   variants: {
     tone: {
-      neutral: "border-border bg-surface",
-      raised: "border-border bg-surface-raised",
+      neutral: "border-border bg-surface/90",
+      raised: "border-border-strong bg-surface-raised/92",
     },
     padding: {
       none: "",
-      sm: "p-3",
-      md: "p-5",
-      lg: "p-7",
+      sm: "p-4",
+      md: "p-6",
+      lg: "p-8",
     },
   },
   defaultVariants: {

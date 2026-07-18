@@ -22,9 +22,13 @@ function authHeaders(): Record<string, string> {
   return authToken ? { Authorization: `Bearer ${authToken}` } : {};
 }
 
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
+async function request<T>(
+  path: string,
+  init?: RequestInit,
+  extraHeaders?: Record<string, string>,
+): Promise<T> {
   const response = await fetch(`${env.apiBaseUrl}${path}`, {
-    headers: { "Content-Type": "application/json", ...authHeaders() },
+    headers: { "Content-Type": "application/json", ...authHeaders(), ...extraHeaders },
     ...init,
   });
 
@@ -52,9 +56,14 @@ async function requestForm<T>(path: string, formData: FormData): Promise<T> {
 }
 
 export const apiClient = {
-  get: <T>(path: string) => request<T>(path),
-  post: <T>(path: string, body: unknown) =>
-    request<T>(path, { method: "POST", body: JSON.stringify(body) }),
+  get: <T>(path: string, extraHeaders?: Record<string, string>) => request<T>(path, undefined, extraHeaders),
+  post: <T>(path: string, body: unknown, extraHeaders?: Record<string, string>) =>
+    request<T>(path, { method: "POST", body: JSON.stringify(body) }, extraHeaders),
+  // Reviewer-only routes (api/v1/suggestions.py's `router`) are gated by a
+  // static secret header instead of student auth — the one caller that
+  // needs `extraHeaders` without a bearer token attached.
+  patch: <T>(path: string, body: unknown, extraHeaders?: Record<string, string>) =>
+    request<T>(path, { method: "PATCH", body: JSON.stringify(body) }, extraHeaders),
   postForm: <T>(path: string, formData: FormData) => requestForm<T>(path, formData),
   delete: <T>(path: string) => request<T>(path, { method: "DELETE" }),
 };

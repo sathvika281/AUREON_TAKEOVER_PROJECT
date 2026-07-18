@@ -1,3 +1,5 @@
+import { Badge } from "./Badge";
+
 /**
  * Aureon's universal artifact-update view — renders only what the
  * backend's own route/specialist decided changed (each response's
@@ -11,12 +13,9 @@ export function ArtifactUpdateList({ artifacts }: { artifacts: string[] }) {
   return (
     <div className="flex flex-wrap gap-2">
       {artifacts.map((artifact) => (
-        <span
-          key={artifact}
-          className="rounded-full border border-accent/30 bg-accent/10 px-3 py-1.5 text-xs text-accent-soft"
-        >
+        <Badge key={artifact} tone="warm">
           {artifact}
-        </span>
+        </Badge>
       ))}
     </div>
   );

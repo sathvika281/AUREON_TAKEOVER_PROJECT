@@ -17,6 +17,12 @@ class AgentName(StrEnum):
     INSTITUTION = "institution"
     GROWTH = "growth"
     OPPORTUNITY = "opportunity"
+    #: Phase 2 Foundation — real coordination logic (agents/foundation/).
+    CAREER_ORCHESTRATOR = "career_orchestrator"
+    #: Phase 2 Foundation — pure registration placeholders, no capability
+    #: entry, no real workflow yet.
+    NETWORK = "network"
+    PORTFOLIO = "portfolio"
 
 
 class Mode(StrEnum):

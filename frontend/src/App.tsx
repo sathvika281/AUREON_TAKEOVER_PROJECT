@@ -1,38 +1,49 @@
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 
 import { AuthScreen } from "./features/auth/AuthScreen";
+import { OnboardingGate } from "./features/auth/OnboardingGate";
 import { ProtectedRoute } from "./features/auth/ProtectedRoute";
 import { CareerDnaScreen } from "./features/career-dna/CareerDnaScreen";
 import { CareerDetailsScreen } from "./features/career-details/CareerDetailsScreen";
 import { CareerExperienceProvider } from "./features/career-experience/CareerExperienceContext";
 import { CollegeCollaborationScreen } from "./features/career-experience/CollegeCollaborationScreen";
 import { ExpertConnectScreen } from "./features/career-experience/ExpertConnectScreen";
+import { JointSessionTokenScreen } from "./features/career-experience/JointSessionTokenScreen";
+import { JourneyStoriesScreen } from "./features/career-experience/JourneyStoriesScreen";
+import { KnowledgeCirclesScreen } from "./features/career-experience/KnowledgeCirclesScreen";
+import { MentorshipReviewScreen } from "./features/career-experience/MentorshipReviewScreen";
+import { MyMentorsScreen } from "./features/career-experience/MyMentorsScreen";
+import { ParentConnectScreen } from "./features/career-experience/ParentConnectScreen";
+import { SharedSessionScreen } from "./features/career-experience/SharedSessionScreen";
 import { CareerExplorationProvider } from "./features/career-exploration/CareerExplorationContext";
 import { CareerIntelligenceProvider } from "./features/career-intelligence/CareerIntelligenceContext";
-import { CareerIntelligenceScreen } from "./features/career-intelligence/CareerIntelligenceScreen";
-import { CareerSimulatorScreen } from "./features/decision/CareerSimulatorScreen";
 import { DecisionLabScreen } from "./features/decision/DecisionLabScreen";
 import { DecisionProvider } from "./features/decision/DecisionContext";
-import { MentorMatchScreen } from "./features/decision/MentorMatchScreen";
-import { ParallelUniverseScreen } from "./features/decision/ParallelUniverseScreen";
 import { DiscoveryScreen } from "./features/discovery/components/DiscoveryScreen";
 import { DocumentIntelligenceProvider } from "./features/document-intelligence/DocumentIntelligenceContext";
 import { DiscoveryProvider } from "./features/discovery/DiscoveryContext";
-import { FutureLensScreen } from "./features/future-lens/FutureLensScreen";
+import { ExperienceLabScreen } from "./features/experience-lab/ExperienceLabScreen";
+import { ExposureUniverseScreen } from "./features/exposure-universe/ExposureUniverseScreen";
 import { GlobalCareerDiscoveryScreen } from "./features/global-discovery/GlobalCareerDiscoveryScreen";
 import { GitHubIntelligenceProvider } from "./features/github-intelligence/GitHubIntelligenceContext";
+import { GlobalTrendsScreen } from "./features/global-trends/GlobalTrendsScreen";
 import { HiddenPotentialScreen } from "./features/hidden-potential/HiddenPotentialScreen";
 import { HistoryProvider } from "./features/history/HistoryContext";
 import { HistoryScreen } from "./features/history/HistoryScreen";
 import { HomeScreen } from "./features/home/HomeScreen";
+import { LearningStyleDiscoveryScreen } from "./features/learning-style-discovery/LearningStyleDiscoveryScreen";
 import { LockedModule } from "./features/locked/LockedModule";
 import { ALL_MODULES } from "./features/navigation/journeyConfig";
 import { JourneyNav } from "./features/navigation/JourneyNav";
+import { OnboardingScreen } from "./features/onboarding/OnboardingScreen";
+import { OpportunityEqualityScreen } from "./features/opportunity-equality/OpportunityEqualityScreen";
 import { ProfileScreen } from "./features/profile/ProfileScreen";
-import { ProgressProvider } from "./features/progress/ProgressContext";
-import { ProgressScreen } from "./features/progress/ProgressScreen";
 import { ReflectionJournalScreen } from "./features/reflection-journal/ReflectionJournalScreen";
 import { SearchInvestigationProvider } from "./features/search-investigation/SearchInvestigationContext";
+import { HelpAureonGrowModal } from "./features/suggestions/HelpAureonGrowModal";
+import { MySuggestionsScreen } from "./features/suggestions/MySuggestionsScreen";
+import { SuggestionReviewScreen } from "./features/suggestions/SuggestionReviewScreen";
+import { SuggestionsProvider } from "./features/suggestions/SuggestionsContext";
 import { UrlInvestigationProvider } from "./features/url-investigation/UrlInvestigationContext";
 import { AuthProvider } from "./shared/auth/AuthContext";
 import { Layout } from "./shared/components/Layout";
@@ -46,12 +57,12 @@ function AppShell() {
         <CareerExplorationProvider>
           <CareerExperienceProvider>
           <DecisionProvider>
-            <ProgressProvider>
               <UrlInvestigationProvider>
                 <DocumentIntelligenceProvider>
                   <GitHubIntelligenceProvider>
                     <SearchInvestigationProvider>
                       <HistoryProvider>
+                        <SuggestionsProvider>
                         <Layout>
                           <div className="flex h-full">
                             <JourneyNav />
@@ -61,21 +72,33 @@ function AppShell() {
                                 <Route path="/dashboard" element={<HomeScreen />} />
                                 <Route path="/history" element={<HistoryScreen />} />
                                 <Route path="/profile" element={<ProfileScreen />} />
+                                <Route path="/suggestions" element={<MySuggestionsScreen />} />
                                 <Route path="/discover/identity" element={<DiscoveryScreen />} />
                                 <Route path="/discover/career-dna" element={<CareerDnaScreen />} />
                                 <Route path="/discover/reflection-journal" element={<ReflectionJournalScreen />} />
                                 <Route path="/discover/hidden-potential" element={<HiddenPotentialScreen />} />
-                                <Route path="/explore/career-intelligence" element={<CareerIntelligenceScreen />} />
+                                <Route path="/discover/experience-lab" element={<ExperienceLabScreen />} />
+                                {/* Exposure Universe merge — Missing Worlds is no longer a
+                                    separate destination; its detection engine now composes
+                                    into Exposure Universe. Redirect, never a broken URL. */}
+                                <Route path="/discover/missing-worlds" element={<Navigate to="/explore/exposure-universe" replace />} />
+                                <Route path="/discover/life-missions" element={<Navigate to="/discover/experience-lab" replace />} />
+                                <Route path="/discover/learning-style-discovery" element={<LearningStyleDiscoveryScreen />} />
                                 <Route path="/explore/career-reality" element={<GlobalCareerDiscoveryScreen />} />
                                 <Route path="/explore/career-reality/:careerId" element={<CareerDetailsScreen />} />
-                                <Route path="/explore/future-lens" element={<FutureLensScreen />} />
+                                <Route path="/explore/global-trends" element={<GlobalTrendsScreen />} />
+                                <Route path="/explore/exposure-universe" element={<ExposureUniverseScreen />} />
+                                <Route path="/explore/opportunity-equality" element={<OpportunityEqualityScreen />} />
                                 <Route path="/experience/college-collaboration" element={<CollegeCollaborationScreen />} />
                                 <Route path="/experience/expert-connect" element={<ExpertConnectScreen />} />
+                                <Route path="/experience/expert-connect/my-mentors" element={<MyMentorsScreen />} />
+                                <Route path="/experience/expert-connect/parent-connect" element={<ParentConnectScreen />} />
+                                <Route path="/experience/parent-connect" element={<Navigate to="/experience/expert-connect/parent-connect" replace />} />
+                                <Route path="/experience/mentorships" element={<Navigate to="/experience/expert-connect/my-mentors" replace />} />
+                                <Route path="/experience/shared-sessions" element={<SharedSessionScreen />} />
+                                <Route path="/experience/knowledge-circles" element={<KnowledgeCirclesScreen />} />
+                                <Route path="/experience/journey-stories" element={<JourneyStoriesScreen />} />
                                 <Route path="/decide/decision-lab" element={<DecisionLabScreen />} />
-                                <Route path="/decide/parallel-universe" element={<ParallelUniverseScreen />} />
-                                <Route path="/decide/mentor-match" element={<MentorMatchScreen />} />
-                                <Route path="/decide/career-simulator" element={<CareerSimulatorScreen />} />
-                                <Route path="/build/progress-intelligence" element={<ProgressScreen />} />
                                 {lockedModules.map((module) => (
                                   <Route
                                     key={module.id}
@@ -86,13 +109,14 @@ function AppShell() {
                               </Routes>
                             </main>
                           </div>
+                          <HelpAureonGrowModal />
                         </Layout>
+                        </SuggestionsProvider>
                       </HistoryProvider>
                     </SearchInvestigationProvider>
                   </GitHubIntelligenceProvider>
                 </DocumentIntelligenceProvider>
               </UrlInvestigationProvider>
-            </ProgressProvider>
           </DecisionProvider>
           </CareerExperienceProvider>
         </CareerExplorationProvider>
@@ -107,11 +131,35 @@ export function App() {
       <AuthProvider>
         <Routes>
           <Route path="/login" element={<AuthScreen />} />
+          {/* Connect Batch 1 — a parent/guardian's only way into a Joint
+              Session is this opaque token, so it must stay entirely
+              outside ProtectedRoute/OnboardingGate — no login required. */}
+          <Route path="/joint-session/:token" element={<JointSessionTokenScreen />} />
+          {/* Connect Batch 2 — same reasoning as Joint Sessions above: an
+              expert has no login anywhere in this system, so their only
+              way into a mentorship review is this opaque token. */}
+          <Route path="/mentorship-review/:token" element={<MentorshipReviewScreen />} />
+          {/* Suggest to Aureon — there is no admin/staff role anywhere in
+              this system, so the reviewer screen is gated by a secret
+              entered on the screen itself rather than login, same
+              reasoning as the token-gated routes above. Deliberately
+              never linked from any nav. */}
+          <Route path="/suggestions/review" element={<SuggestionReviewScreen />} />
+          <Route
+            path="/onboarding"
+            element={
+              <ProtectedRoute>
+                <OnboardingScreen />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/*"
             element={
               <ProtectedRoute>
-                <AppShell />
+                <OnboardingGate>
+                  <AppShell />
+                </OnboardingGate>
               </ProtectedRoute>
             }
           />

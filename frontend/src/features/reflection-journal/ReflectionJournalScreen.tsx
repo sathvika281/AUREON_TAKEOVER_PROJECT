@@ -4,6 +4,8 @@ import { BookOpen, Lightbulb, MessageCircleQuestion, NotebookPen, Sprout } from 
 import { EmptyStatePanel } from "../../design-system/components/EmptyStatePanel";
 import { ProcessSteps } from "../../design-system/components/ProcessSteps";
 import { Surface } from "../../design-system/components/Surface";
+import { UniverseSummaryCard } from "../discovery/components/UniverseSummaryCard";
+import { UniverseWorkspaceTabs } from "../discovery/components/UniverseWorkspaceTabs";
 import { useDiscoveryContext } from "../discovery/DiscoveryContext";
 import { BeliefRevisionEntry } from "../discovery/notebook/BeliefRevisionEntry";
 import { ObservationEntry } from "../discovery/notebook/ObservationEntry";
@@ -38,7 +40,8 @@ const WHY_IT_MATTERS_STEPS = [
  * server-persisted, not a session transcript.
  */
 export function ReflectionJournalScreen() {
-  const { notebookEntries, reflectionJournal, reflectionPrompt } = useDiscoveryContext();
+  const { notebookEntries, reflectionJournal, reflectionPrompt, hypotheses, careerDna, confidenceScore, understandingStage } =
+    useDiscoveryContext();
 
   const notebookItems: FeedItem[] = notebookEntries.map((entry) => ({
     kind: "notebook",
@@ -66,7 +69,17 @@ export function ReflectionJournalScreen() {
 
   return (
     <div className="mx-auto max-w-2xl px-6 py-10">
-      <h1 className="text-2xl font-light text-ink">Reflection Journal</h1>
+      <div className="mb-8 space-y-4">
+        <UniverseSummaryCard
+          hypotheses={hypotheses}
+          careerDna={careerDna}
+          confidenceScore={confidenceScore}
+          understandingStage={understandingStage}
+        />
+        <UniverseWorkspaceTabs />
+      </div>
+
+      <h1 className="text-2xl font-light text-ink">Journey Journal</h1>
       <p className="mt-2 text-sm text-ink-muted">
         Your evolving thoughts and everything Aureon has noticed — a running record, not a session log.
       </p>
@@ -79,7 +92,7 @@ export function ReflectionJournalScreen() {
       {/* Current reflection prompt, if one is waiting */}
       {reflectionPrompt && (
         <div className="mt-6">
-          <p className="mb-3 px-1 text-xs uppercase tracking-widest text-ink-faint">Waiting for Your Reflection</p>
+          <p className="mb-3 px-1 font-mono text-[0.6rem] uppercase tracking-[0.14em] text-ink-faint">Waiting for Your Reflection</p>
           <Surface tone="raised" padding="md">
             <div className="flex items-start gap-3">
               <MessageCircleQuestion size={16} className="mt-0.5 shrink-0 text-accent-soft" />
@@ -87,7 +100,7 @@ export function ReflectionJournalScreen() {
             </div>
             <Link
               to="/discover/identity"
-              className="mt-3 inline-block text-xs text-accent-soft transition hover:text-accent"
+              className="mt-3 inline-block text-xs text-accent-soft transition-colors hover:text-accent"
             >
               Answer this in Identity Discovery →
             </Link>
@@ -97,7 +110,7 @@ export function ReflectionJournalScreen() {
 
       {/* Timeline */}
       <div className="mt-8">
-        <p className="mb-3 px-1 text-xs uppercase tracking-widest text-ink-faint">Your Journal</p>
+        <p className="mb-3 px-1 font-mono text-[0.6rem] uppercase tracking-[0.14em] text-ink-faint">Your Journal</p>
         {feed.length === 0 ? (
           <EmptyStatePanel
             icon={BookOpen}
@@ -106,7 +119,7 @@ export function ReflectionJournalScreen() {
             action={
               <Link
                 to="/discover/identity"
-                className="rounded-xl bg-accent px-4 py-2.5 text-sm font-medium text-ink transition hover:bg-accent-soft"
+                className="rounded-lg bg-accent px-4 py-2.5 text-sm font-medium tracking-wide text-ink transition-colors hover:bg-accent-soft"
               >
                 Start a conversation
               </Link>

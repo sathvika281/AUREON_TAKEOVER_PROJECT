@@ -7,7 +7,7 @@ import { Surface } from "../../design-system/components/Surface";
 import type { GitHubInvestigationResult, HistoryItem, MissionSnapshot } from "../../shared/api/types";
 import { findingsReport } from "../document-intelligence/DocumentIntelligenceScreen";
 import { CollegeMatchCard } from "../decision/CollegeMatchCard";
-import { simulationReport } from "../decision/CareerSimulatorScreen";
+import { simulationReport } from "../decision/DecisionLabScreen";
 import { MentorMatchCard } from "../decision/MentorMatchCard";
 import { useDecisionContext } from "../decision/DecisionContext";
 import { engineeringReport } from "../github-intelligence/GitHubIntelligenceScreen";
@@ -20,8 +20,8 @@ const MISSION_TYPE_LABELS: Record<string, string> = {
   career_simulation: "Career Simulation",
   github_investigation: "GitHub Investigation",
   document_investigation: "Document Analysis",
-  mentor_match: "Mentor Match",
-  institution_match: "Institution Match",
+  mentor_match: "Guiding Stars",
+  institution_match: "Nearby Worlds",
 };
 
 const EMPTY_MISSION: MissionSnapshot = { stages: [], agents: [], delegations: [], tools: [], evidence: [], narration: [] };
@@ -32,9 +32,19 @@ function formatTimestamp(iso: string): string {
   });
 }
 
+/** Real elapsed time between two consecutive missions, mapped to real
+ * visual spacing on the trail — dense where a lot happened close
+ * together, sparse where a long stretch passed with nothing. Never a
+ * fabricated density signal, only actual timestamp deltas. */
+function gapForDelta(deltaMs: number): number {
+  if (deltaMs <= 0) return 10;
+  const hours = deltaMs / 3_600_000;
+  return Math.min(44, 10 + Math.log2(1 + hours) * 7);
+}
+
 export function HistoryScreen() {
   const { items, githubInvestigations, documentInvestigations, searchInvestigations, isLoading } = useHistoryContext();
-  const { comparisons, scenarios, simulations, mentorMatches, collegeMatches } = useDecisionContext();
+  const { comparisons, simulations, mentorMatches, collegeMatches } = useDecisionContext();
   const [selected, setSelected] = useState<HistoryItem | null>(null);
 
   function renderReport(item: HistoryItem) {
@@ -83,9 +93,9 @@ export function HistoryScreen() {
         return (
           <Surface tone="raised" padding="md">
             <p className="text-sm leading-relaxed text-ink">{inv.overall_summary}</p>
-            <div className="mt-3 space-y-2">
+            <div className="mt-3 space-y-3 border-l border-border pl-3">
               {inv.findings.map((f, i) => (
-                <div key={i} className="rounded-lg bg-white/[0.03] px-3 py-2">
+                <div key={i}>
                   <div className="flex items-center justify-between">
                     <p className="text-xs font-medium text-ink">{f.claim}</p>
                     <Badge tone="cool">{f.status}</Badge>
@@ -103,33 +113,15 @@ export function HistoryScreen() {
         return (
           <Surface tone="raised" padding="md">
             <p className="text-sm text-ink">{c.summary_reason}</p>
-            <div className="mt-3 space-y-2">
+            <div className="mt-3 space-y-3 border-l border-border pl-3">
               {c.dimensions.map((d, i) => (
-                <div key={i} className="rounded-lg bg-white/[0.03] px-3 py-2">
+                <div key={i}>
                   <p className="text-xs font-medium text-ink">{d.dimension.replace(/_/g, " ")}</p>
                   <p className="mt-1 text-xs text-ink-muted">{d.why_it_matters_to_you}</p>
                 </div>
               ))}
             </div>
           </Surface>
-        );
-      }
-      case "parallel_universe": {
-        const scenario = scenarios.find((s) => s.id === item.artifact_id);
-        if (!scenario) return null;
-        return (
-          <div className="grid gap-4 sm:grid-cols-2">
-            {scenario.branches.map((b) => (
-              <Surface key={b.career_id} tone="raised" padding="md">
-                <p className="text-sm font-medium text-ink">{b.career_name}</p>
-                <div className="mt-2 space-y-1.5 text-xs text-ink-muted">
-                  <p>{b.daily_work}</p>
-                  <p>{b.lifestyle}</p>
-                  <p>{b.growth}</p>
-                </div>
-              </Surface>
-            ))}
-          </div>
         );
       }
       default:
@@ -139,7 +131,8 @@ export function HistoryScreen() {
 
   return (
     <div className="mx-auto max-w-3xl px-6 py-10">
-      <h1 className="text-2xl font-light text-ink">Investigation History</h1>
+      <p className="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-accent-soft">The Wake</p>
+      <h1 className="mt-2 text-2xl font-light text-ink">Journey Timeline</h1>
       <p className="mt-2 text-sm text-ink-muted">
         Every real investigation, comparison, simulation, and match Aureon has run for you —
         select one to reopen its stored report, never regenerated.
@@ -155,32 +148,48 @@ export function HistoryScreen() {
         </div>
       )}
 
-      <div className="mt-8 grid gap-6 sm:grid-cols-[280px_1fr]">
-        <div className="space-y-2">
-          {items.map((item) => (
-            <button
-              key={`${item.mission_type}:${item.id}`}
-              onClick={() => setSelected(item)}
-              className={`w-full rounded-xl border px-3 py-2.5 text-left transition ${
-                selected?.id === item.id ? "border-accent/40 bg-accent/10" : "border-border hover:bg-white/[0.03]"
-              }`}
-            >
-              <p className="truncate text-sm text-ink">{item.mission_name}</p>
-              <div className="mt-1 flex items-center gap-2 text-[0.68rem] text-ink-faint">
-                <span>{MISSION_TYPE_LABELS[item.mission_type] ?? item.mission_type}</span>
-                <span>·</span>
-                <span>{formatTimestamp(item.timestamp)}</span>
-              </div>
-            </button>
-          ))}
+      <div className="mt-8 grid gap-8 sm:grid-cols-[280px_1fr]">
+        <div className="border-l border-border pl-5">
+          {items.map((item, i) => {
+            const prev = items[i - 1];
+            const marginTop =
+              i === 0
+                ? 0
+                : gapForDelta(
+                    Math.abs(new Date(prev.timestamp).getTime() - new Date(item.timestamp).getTime()),
+                  );
+            const isSelected = selected?.id === item.id;
+            return (
+              <button
+                key={`${item.mission_type}:${item.id}`}
+                onClick={() => setSelected(item)}
+                style={{ marginTop }}
+                className="relative block w-full text-left"
+              >
+                <span
+                  className={`absolute -left-[23px] top-1.5 h-1.5 w-1.5 rounded-full border transition-colors ${
+                    isSelected ? "border-accent-soft bg-accent-soft" : "border-border-strong bg-canvas"
+                  }`}
+                />
+                <p className={`truncate text-sm transition-colors ${isSelected ? "text-ink" : "text-ink-muted"}`}>
+                  {item.mission_name}
+                </p>
+                <div className="mt-1 flex items-center gap-2 font-mono text-[0.62rem] tracking-wide text-ink-faint">
+                  <span>{MISSION_TYPE_LABELS[item.mission_type] ?? item.mission_type}</span>
+                  <span>·</span>
+                  <span>{formatTimestamp(item.timestamp)}</span>
+                </div>
+              </button>
+            );
+          })}
         </div>
 
         <div>
           {!selected ? (
-            <Surface tone="neutral" padding="md" className="flex items-start gap-3">
+            <div className="flex items-start gap-3 border-l border-border-strong pl-4">
               <GitCompareArrows size={16} className="mt-0.5 shrink-0 text-accent-soft" />
               <p className="text-sm text-ink-muted">Select an item on the left to reopen its stored report.</p>
-            </Surface>
+            </div>
           ) : (
             <>
               <div className="mb-3 flex items-center gap-2">

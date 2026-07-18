@@ -1,20 +1,23 @@
-import { NotebookPen, Scale, Star, X } from "lucide-react";
+import { NotebookPen, Route, Scale, Star, X } from "lucide-react";
 
 import { EmptyStatePanel } from "../../design-system/components/EmptyStatePanel";
 import { Surface } from "../../design-system/components/Surface";
+import type { DecisionMemoryActionType } from "../../shared/api/types";
 import { relativeTime } from "../discovery/notebook/relativeTime";
 import { useDecisionContext } from "./DecisionContext";
 
-const ACTION_ICON = {
+const ACTION_ICON: Record<DecisionMemoryActionType, typeof Scale> = {
   compared: Scale,
   shortlisted: Star,
   removed: X,
+  simulated: Route,
 };
 
-const ACTION_LABEL: Record<string, string> = {
+const ACTION_LABEL: Record<DecisionMemoryActionType, string> = {
   compared: "Compared",
   shortlisted: "Shortlisted",
   removed: "Removed",
+  simulated: "Simulated",
 };
 
 /**

@@ -59,11 +59,17 @@ class CareerRepository:
         return Career.model_validate(data) if data else None
 
     async def list_stories_for_career(self, career_id: str) -> list[CareerStory]:
+        """"Human Stories" on the career detail page — professional/workplace
+        narratives only. Excludes composite_student_discovery/student_discovery
+        rows (the standalone Journey Stories screen's content) so the two
+        purposes never blur even when they share a career_id."""
+
         def _fetch() -> list[dict]:
             result = (
                 self._client.table("career_stories")
                 .select("*")
                 .eq("career_id", career_id)
+                .in_("story_type", ["composite", "publicly_documented"])
                 .execute()
             )
             return result.data or []

@@ -48,7 +48,7 @@ export function LockedModule({ module }: { module: ModuleEntry }) {
 
           <div className="mt-5 flex items-center justify-between border-t border-border pt-4">
             <div>
-              <p className="text-[0.65rem] uppercase tracking-widest text-ink-faint">Your Discovery Progress</p>
+              <p className="font-mono text-[0.6rem] uppercase tracking-[0.14em] text-ink-faint">Your Discovery Progress</p>
               <p className="mt-1 text-sm text-ink-muted">{understandingStage}</p>
             </div>
             <div className="h-1 w-32 overflow-hidden rounded-full bg-white/5">

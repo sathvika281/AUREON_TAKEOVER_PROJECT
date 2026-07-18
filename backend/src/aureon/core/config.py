@@ -29,6 +29,12 @@ class Settings(BaseSettings):
 
     cors_origins: list[str] = ["http://localhost:5173"]
 
+    # Gates the reviewer-facing suggestion endpoints (api/v1/suggestions.py).
+    # There is no admin/staff role anywhere in this system to hook into
+    # instead — unset means the reviewer endpoints are unreachable, not
+    # silently open.
+    suggestion_reviewer_secret: str | None = None
+
     log_level: str = "INFO"
     log_format: Literal["json", "console"] = "console"
 

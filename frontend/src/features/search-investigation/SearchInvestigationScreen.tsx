@@ -1,14 +1,32 @@
 import { useState } from "react";
-import { CheckCircle2, AlertTriangle, Search, ShieldAlert, Sparkles } from "lucide-react";
+import { CheckCircle2, Search, ShieldAlert, Sparkles } from "lucide-react";
 
 import { Badge } from "../../design-system/components/Badge";
 import { Button } from "../../design-system/components/Button";
+import { cn } from "../../design-system/cn";
 import { EmptyStatePanel } from "../../design-system/components/EmptyStatePanel";
+import { Field } from "../../design-system/components/Field";
+import { Input } from "../../design-system/components/Input";
 import { ProcessSteps } from "../../design-system/components/ProcessSteps";
-import { Surface } from "../../design-system/components/Surface";
 import type { Finding, SearchInvestigationResult } from "../../shared/api/types";
 import { MissionWorkspace } from "../mission-workspace/MissionWorkspace";
 import { useSearchInvestigationContext } from "./SearchInvestigationContext";
+
+/** A signal-strength reading, not a checkmark badge — how strongly a
+ * source came through, echoing the observatory's instrument vocabulary. */
+function SignalBars({ reached }: { reached: boolean }) {
+  return (
+    <span className="flex items-end gap-0.5" aria-hidden="true">
+      {[3, 5, 7].map((h, i) => (
+        <span
+          key={i}
+          className={cn("w-[3px] rounded-full", reached ? "bg-accent-soft" : "bg-ink-faint/25")}
+          style={{ height: h }}
+        />
+      ))}
+    </span>
+  );
+}
 
 const HOW_IT_WORKS_STEPS = [
   {
@@ -49,65 +67,68 @@ const STATUS_TONE: Record<Finding["status"], "warm" | "cool" | "neutral"> = {
 
 function investigationReport(result: SearchInvestigationResult) {
   return (
-    <div className="space-y-4">
+    <div className="space-y-8">
       {result.source_availability && (
-        <Surface tone="raised" padding="md">
-          <p className="text-[0.65rem] uppercase tracking-widest text-ink-faint">
-            Sources Investigated ({result.source_availability.sources_retrieved}/{result.source_availability.total_sources} retrieved)
+        <div>
+          <p className="font-mono text-[0.6rem] uppercase tracking-[0.14em] text-ink-faint">
+            Signal — {result.source_availability.sources_retrieved}/
+            {result.source_availability.total_sources} sources reached
           </p>
-          <div className="mt-2 flex flex-wrap gap-3 text-sm">
+          <div className="mt-3 flex flex-wrap gap-x-6 gap-y-2">
             {result.source_availability.sources.map((s) => (
-              <span key={s.name} className="flex items-center gap-1.5 text-ink-muted">
-                {s.reached ? (
-                  <CheckCircle2 className="h-3.5 w-3.5 text-accent-soft" />
-                ) : (
-                  <AlertTriangle className="h-3.5 w-3.5 text-ink-faint" />
-                )}
-                {s.name}
-                {s.note && <span className="text-ink-faint">({s.note})</span>}
-              </span>
+              <div key={s.name} className="flex items-center gap-2 text-sm text-ink-muted">
+                <SignalBars reached={s.reached} />
+                <span>{s.name}</span>
+                {s.note && <span className="text-xs text-ink-faint">({s.note})</span>}
+              </div>
             ))}
           </div>
-        </Surface>
+        </div>
       )}
 
       {result.overall_summary && (
-        <Surface tone="neutral" padding="md">
-          <p className="text-sm leading-relaxed text-ink">{result.overall_summary}</p>
-        </Surface>
+        <p className="font-serif text-lg italic leading-relaxed text-ink">{result.overall_summary}</p>
       )}
 
       {result.findings.length > 0 && (
-        <div className="space-y-3">
+        <Field divided>
           {result.findings.map((finding, i) => (
-            <Surface key={i} tone="neutral" padding="md">
+            <div key={i} className="py-4 first:pt-0 last:pb-0">
               <div className="flex items-start justify-between gap-3">
                 <p className="text-sm font-medium text-ink">{finding.claim}</p>
                 <Badge tone={STATUS_TONE[finding.status]}>{STATUS_LABEL[finding.status]}</Badge>
               </div>
               <p className="mt-2 text-sm leading-relaxed text-ink-muted">{finding.explanation}</p>
-            </Surface>
+            </div>
           ))}
-        </div>
+        </Field>
       )}
 
       {(result.agreements.length > 0 || result.disagreements.length > 0) && (
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid gap-8 sm:grid-cols-2">
           {result.agreements.length > 0 && (
-            <Surface tone="neutral" padding="md">
-              <p className="text-[0.65rem] uppercase tracking-widest text-ink-faint">Where Sources Agree</p>
-              <ul className="mt-2 space-y-1 text-sm text-ink-muted">
-                {result.agreements.map((a, i) => <li key={i}>{a}</li>)}
+            <div>
+              <p className="font-mono text-[0.6rem] uppercase tracking-[0.14em] text-ink-faint">
+                Where Sources Agree
+              </p>
+              <ul className="mt-3 space-y-2.5 text-sm text-ink-muted">
+                {result.agreements.map((a, i) => (
+                  <li key={i} className="border-l border-accent/30 pl-3">{a}</li>
+                ))}
               </ul>
-            </Surface>
+            </div>
           )}
           {result.disagreements.length > 0 && (
-            <Surface tone="neutral" padding="md">
-              <p className="text-[0.65rem] uppercase tracking-widest text-ink-faint">Where Sources Disagree</p>
-              <ul className="mt-2 space-y-1 text-sm text-ink-muted">
-                {result.disagreements.map((d, i) => <li key={i}>{d}</li>)}
+            <div>
+              <p className="font-mono text-[0.6rem] uppercase tracking-[0.14em] text-ink-faint">
+                Where Sources Disagree
+              </p>
+              <ul className="mt-3 space-y-2.5 text-sm text-ink-muted">
+                {result.disagreements.map((d, i) => (
+                  <li key={i} className="border-l border-border-strong pl-3">{d}</li>
+                ))}
               </ul>
-            </Surface>
+            </div>
           )}
         </div>
       )}
@@ -121,7 +142,10 @@ export function SearchInvestigationScreen() {
 
   return (
     <div className="mx-auto max-w-2xl px-6 py-10">
-      <h1 className="text-2xl font-light text-ink">Search Intelligence</h1>
+      <p className="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-accent-soft">
+        The Deep Space Telescope
+      </p>
+      <h1 className="mt-2 text-2xl font-light text-ink">Search Intelligence</h1>
       <p className="mt-2 text-sm text-ink-muted">
         Ask a real career question and Aureon investigates it across multiple trusted
         sources — acting like a research analyst, not a chatbot.
@@ -132,18 +156,17 @@ export function SearchInvestigationScreen() {
       </div>
 
       <div className="mt-6 flex gap-2">
-        <input
+        <Input
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
           placeholder="Should I pursue AI Research?"
-          className="w-full rounded-xl border border-border bg-surface px-4 py-2.5 text-sm text-ink placeholder:text-ink-faint focus:border-accent/40 focus:outline-none"
         />
         <Button onClick={() => investigate(question)} disabled={isInvestigating || !question.trim()}>
           {isInvestigating ? "Investigating…" : "Investigate"}
         </Button>
       </div>
 
-      {error && <p className="mt-3 text-xs text-red-400">{error}</p>}
+      {error && <p className="mt-3 text-xs text-danger">{error}</p>}
 
       {!result && !isInvestigating && (
         <div className="mt-6">

@@ -50,13 +50,13 @@ export const HypothesisCard = forwardRef<
         />
 
         {conflict && (
-          <p className="mt-3 rounded-lg bg-white/[0.03] px-3 py-2 text-xs italic leading-relaxed text-ink-muted">
+          <p className="mt-3 border-l border-border-strong pl-3 text-xs italic leading-relaxed text-ink-muted">
             {conflict}
           </p>
         )}
 
         <div className="mt-3 flex items-center justify-between border-t border-border pt-3">
-          <span className="text-xs text-accent-soft">
+          <span className="font-mono text-xs text-accent-soft">
             {STATUS_LABEL[hypothesis.status] ?? hypothesis.status}
           </span>
           <span className="text-right text-xs text-ink-faint">

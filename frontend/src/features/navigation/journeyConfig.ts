@@ -1,29 +1,21 @@
 import {
-  BarChart3,
-  Briefcase,
+  BookOpen,
+  Brain,
   Building2,
-  Dna,
-  GitBranch,
+  Compass,
+  Eye,
+  FlaskConical,
   Globe,
-  Layers,
-  Map,
-  NotebookPen,
-  Orbit,
-  Puzzle,
-  RefreshCw,
-  Rocket,
-  Route,
+  Handshake,
+  LineChart,
   Scale,
-  ScanSearch,
-  ShieldAlert,
-  ShieldCheck,
   Sprout,
-  TrendingUp,
+  Telescope,
   Users,
   type LucideIcon,
 } from "lucide-react";
 
-export type StageId = "discover" | "explore" | "experience" | "decide" | "build";
+export type StageId = "discover" | "explore" | "connect" | "decide";
 
 export interface ModuleExplainerStep {
   icon: LucideIcon;
@@ -54,108 +46,196 @@ export interface StageConfig {
 }
 
 /**
- * Single source of truth for both the persistent Journey Navigation and
- * route registration. Only the Discover Yourself modules have a real
- * backend behind them today (the Discovery Agent) — every other stage's
- * agents (Career Intelligence, Decision, Skill Gap, Roadmap, Mentor,
- * Institution) are still honest no-op stubs, so those modules render the
- * shared LockedModule with stage-appropriate copy rather than fabricated
- * content.
+ * Aureon V2 Phase 1 — a decisive consolidation of what had grown into 5
+ * stage groups / ~17 modules. Each visible module answers exactly one
+ * real user question (Your Universe: who am I? Career Explorer: what
+ * careers fit me? College Explorer: where should I study? Expert
+ * Connect: who can guide me? Decision Lab: which path should I choose?).
+ * Career DNA / Reflection Journal / Hidden Potential are no longer
+ * listed here — they're real tabs inside the Your Universe workspace
+ * now (see features/discovery/components/UniverseWorkspaceTabs.tsx),
+ * still real routes, just not separate sidebar entries. Global Trends
+ * and Entrance Hub have no real backend yet — honest locked stubs,
+ * deferred to a future phase, never fabricated content.
+ *
+ * Discover Navigation Refactor — Experience Lab (formerly "Career
+ * Experiments") and Hidden Potential (now also home to what was
+ * Talent Discovery) are each their own destination here, same as
+ * Career Explorer/Expert Connect, not tabs inside Your Universe.
+ *
+ * Discover Batch 4 shipped Missing Worlds and Life Missions as real,
+ * unlocked modules. Discover Batch 5 shipped Learning Style Discovery
+ * the same way. Only Reality Check remains a
+ * locked stub (see LockedModule.tsx), same pattern every prior module
+ * used before it shipped.
+ *
+ * Exposure Universe merge — Missing Worlds is no longer a separate
+ * Discover destination; its detection engine (missing_worlds_engine.py)
+ * lives on unchanged, composed into the Explore stage's Exposure
+ * Universe module instead. Never delete this history — Life Missions
+ * was genuinely part of the same Discover Batch 4 as Missing Worlds,
+ * which is why they were originally mentioned together.
+ *
+ * Experience Lab / Life Missions merge — Life Missions is no longer a
+ * separate Discover destination either; its resonance engine
+ * (life_mission_engine.py) lives on unchanged, composed into Experience
+ * Lab as "Your Emerging Missions" instead, alongside real, curated
+ * Mission Experiences a student can actually try. /discover/life-missions
+ * now redirects to /discover/experience-lab (see App.tsx).
+ *
+ * Connect restructuring — Mentorship and Parent Connect are no longer
+ * separate Connect destinations; both fold into Expert Connect as real
+ * routed tabs (ExpertConnectTabs.tsx — /experience/expert-connect/
+ * my-mentors and /parent-connect), since requesting a mentor is a
+ * natural continuation of discovering an expert, and Parent Connect
+ * serves the same human-guidance journey from a parent's side.
+ * /experience/mentorships and the old /experience/parent-connect both
+ * redirect (see App.tsx). Journey Stories keeps its internal id/path/
+ * backend names but is now titled "Student Stories" everywhere
+ * user-facing, since expert professional journeys live inside Expert
+ * Connect now — the old name read as ambiguous between the two.
  */
 export const STAGES: StageConfig[] = [
   {
     id: "discover",
-    title: "Discover Yourself",
+    title: "Discover",
     modules: [
       {
         id: "identity",
         path: "/discover/identity",
-        title: "Identity Discovery",
+        // User-facing copy only — internal id/path/component/context all
+        // stay "Identity Discovery" per the Grand Finale redesign's
+        // constraint that architecture names don't change.
+        title: "Your Universe",
         icon: Sprout,
         stage: "discover",
         locked: false,
       },
       {
-        id: "career-dna",
-        path: "/discover/career-dna",
-        title: "Career DNA",
-        icon: Dna,
+        id: "experience-lab",
+        path: "/discover/experience-lab",
+        title: "Experience Lab",
+        icon: FlaskConical,
         stage: "discover",
         locked: false,
       },
       {
-        id: "reflection-journal",
-        path: "/discover/reflection-journal",
-        title: "Reflection Journal",
-        icon: NotebookPen,
+        id: "learning-style-discovery",
+        path: "/discover/learning-style-discovery",
+        title: "Learning Style Discovery",
+        icon: Brain,
         stage: "discover",
         locked: false,
       },
       {
-        id: "hidden-potential",
-        path: "/discover/hidden-potential",
-        title: "Hidden Potential",
-        icon: Puzzle,
+        id: "reality-check",
+        path: "/discover/reality-check",
+        title: "Reality Check",
+        icon: Eye,
         stage: "discover",
-        locked: false,
+        locked: true,
+        lockedCopy: "An honest mirror, not a critique — grounded entirely in your own real evidence.",
+        lockedDescription: "A candid look at how your self-image compares to what Aureon has actually observed about you.",
+        lockedSteps: [
+          {
+            icon: Eye,
+            title: "Compares belief against evidence",
+            description: "Looks at what you've said about yourself against what your Career DNA and Evidence Graph actually show.",
+          },
+          {
+            icon: Sprout,
+            title: "Never a score, always explained",
+            description: "Any gap it surfaces comes with the real evidence behind it — never a number, never framed as a failure.",
+          },
+        ],
       },
     ],
   },
   {
     id: "explore",
-    title: "Explore Careers",
+    title: "Explore",
     modules: [
       {
-        id: "career-intelligence",
-        path: "/explore/career-intelligence",
-        title: "Career Intelligence",
+        id: "career-reality",
+        path: "/explore/career-reality",
+        title: "Career Explorer",
         icon: Globe,
         stage: "explore",
         locked: false,
       },
       {
-        id: "career-reality",
-        path: "/explore/career-reality",
-        title: "Career Reality",
-        icon: BarChart3,
+        id: "college-collaboration",
+        path: "/experience/college-collaboration",
+        title: "College Explorer",
+        icon: Building2,
         stage: "explore",
         locked: false,
       },
       {
-        id: "future-lens",
-        path: "/explore/future-lens",
-        title: "Future Lens",
-        icon: Rocket,
+        id: "global-trends",
+        path: "/explore/global-trends",
+        title: "Global Trends",
+        icon: LineChart,
+        stage: "explore",
+        locked: false,
+      },
+      {
+        // Exposure Universe merge — this destination now composes both
+        // the former Missing Worlds engine (detection: "what haven't I
+        // meaningfully explored?") and Exposure Universe's own unfamiliar-
+        // possibility selection (discovery + action) into one screen.
+        // "Missing Worlds" is no longer a separate navigation entry; its
+        // intelligence lives on unchanged in missing_worlds_engine.py.
+        id: "exposure-universe",
+        path: "/explore/exposure-universe",
+        title: "Exposure Universe",
+        icon: Telescope,
+        stage: "explore",
+        locked: false,
+      },
+      {
+        id: "opportunity-equality",
+        path: "/explore/opportunity-equality",
+        title: "Opportunity Equality",
+        icon: Handshake,
         stage: "explore",
         locked: false,
       },
     ],
   },
   {
-    id: "experience",
-    title: "Career Exploration Ecosystem",
+    id: "connect",
+    title: "Connect",
     modules: [
-      {
-        id: "college-collaboration",
-        path: "/experience/college-collaboration",
-        title: "College Collaboration",
-        icon: Building2,
-        stage: "experience",
-        locked: false,
-      },
       {
         id: "expert-connect",
         path: "/experience/expert-connect",
         title: "Expert Connect",
         icon: Users,
-        stage: "experience",
+        stage: "connect",
+        locked: false,
+      },
+      {
+        id: "knowledge-circles",
+        path: "/experience/knowledge-circles",
+        title: "Knowledge Circles",
+        icon: Compass,
+        stage: "connect",
+        locked: false,
+      },
+      {
+        id: "journey-stories",
+        path: "/experience/journey-stories",
+        title: "Student Stories",
+        icon: BookOpen,
+        stage: "connect",
         locked: false,
       },
     ],
   },
   {
     id: "decide",
-    title: "Decide Confidently",
+    title: "Decide",
     modules: [
       {
         id: "decision-lab",
@@ -163,128 +243,6 @@ export const STAGES: StageConfig[] = [
         title: "Decision Lab",
         icon: Scale,
         stage: "decide",
-        locked: false,
-      },
-      {
-        id: "parallel-universe",
-        path: "/decide/parallel-universe",
-        title: "Parallel Universe",
-        icon: Orbit,
-        stage: "decide",
-        locked: false,
-      },
-      {
-        id: "mentor-match",
-        path: "/decide/mentor-match",
-        title: "Mentor Match",
-        icon: Users,
-        stage: "decide",
-        locked: false,
-      },
-      {
-        id: "career-simulator",
-        path: "/decide/career-simulator",
-        title: "Career Simulator",
-        icon: Route,
-        stage: "decide",
-        locked: false,
-      },
-    ],
-  },
-  {
-    id: "build",
-    title: "Build Your Journey",
-    modules: [
-      {
-        id: "skill-gap",
-        path: "/build/skill-gap",
-        title: "Skill Gap Intelligence",
-        icon: TrendingUp,
-        stage: "build",
-        locked: true,
-        lockedCopy: "This stage unlocks once Discovery reaches sufficient confidence.",
-        lockedDescription:
-          "Compares what your target careers actually require against what your evidence already shows you can do.",
-        lockedSteps: [
-          {
-            icon: ScanSearch,
-            title: "Reads required skills",
-            description: "Pulled from the real skill profiles of your shortlisted and candidate careers — not a generic job description.",
-          },
-          {
-            icon: Layers,
-            title: "Reads your evidenced skills",
-            description: "From your Career DNA and Discovery Notebook — never a self-assessment form you fill in yourself.",
-          },
-          {
-            icon: Puzzle,
-            title: "Names the gap honestly",
-            description: "A missing skill is labeled 'not yet evidenced,' never scored, ranked, or guessed at.",
-          },
-        ],
-      },
-      {
-        id: "roadmap",
-        path: "/build/roadmap",
-        title: "Personalized Roadmap",
-        icon: Map,
-        stage: "build",
-        locked: true,
-        lockedCopy: "This stage unlocks once Discovery reaches sufficient confidence.",
-        lockedDescription:
-          "Turns your skill gaps and career direction into a sequence of concrete, adaptive milestones.",
-        lockedSteps: [
-          {
-            icon: Map,
-            title: "Milestones, not a checklist",
-            description: "Each step is derived from an actual gap or goal in your profile — not a stock plan for your target career.",
-          },
-          {
-            icon: RefreshCw,
-            title: "Adaptive",
-            description: "As new evidence arrives, the roadmap replans instead of ignoring what's changed about you.",
-          },
-          {
-            icon: ShieldCheck,
-            title: "Evidence-driven",
-            description: "No milestone is added unless there's a real reason for it in your Career DNA or Skill Gap results.",
-          },
-        ],
-      },
-      {
-        id: "opportunity-graph",
-        path: "/build/opportunity-graph",
-        title: "Opportunity Graph",
-        icon: Briefcase,
-        stage: "build",
-        locked: true,
-        lockedCopy: "This stage unlocks once Discovery reaches sufficient confidence.",
-        lockedDescription:
-          "Connects real internships, scholarships, competitions, research programs, and jobs to your Career DNA.",
-        lockedSteps: [
-          {
-            icon: Briefcase,
-            title: "Five categories",
-            description: "Internships, scholarships, competitions, research, and jobs — organized around what's actually relevant to you.",
-          },
-          {
-            icon: GitBranch,
-            title: "Connected to Career DNA",
-            description: "Every opportunity will be reasoned against your evidence, the same way career candidates are today.",
-          },
-          {
-            icon: ShieldAlert,
-            title: "Never fabricated listings",
-            description: "This view stays empty rather than inventing a plausible-sounding internship or scholarship that doesn't exist.",
-          },
-        ],
-      },
-      {
-        id: "progress-intelligence",
-        path: "/build/progress-intelligence",
-        title: "Progress Intelligence",
-        icon: TrendingUp,
-        stage: "build",
         locked: false,
       },
     ],

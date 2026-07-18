@@ -68,6 +68,14 @@ AGENT_CAPABILITIES: dict[str, frozenset[Capability]] = {
         Capability.PLANNING,
         Capability.INVESTIGATION,
     }),
+    #: Phase 2 Foundation — real coordination logic, so it genuinely owns
+    #: these. Network/Portfolio deliberately have NO entry here — pure
+    #: registration placeholders; owns_capability() already treats an
+    #: absent key as "owns nothing," the most honest placeholder state.
+    AgentName.CAREER_ORCHESTRATOR.value: frozenset({
+        Capability.DELEGATION,
+        Capability.KNOWLEDGE_FUSION,
+    }),
 }
 
 

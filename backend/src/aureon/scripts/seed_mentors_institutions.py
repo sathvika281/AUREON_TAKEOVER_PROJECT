@@ -18,6 +18,7 @@ Human Stories. Idempotent: upserts by id, safe to re-run.
 import asyncio
 
 from aureon.domain.models.career_event import CareerEvent
+from aureon.domain.models.entrance_exam import EntranceExam
 from aureon.domain.models.institution import (
     AcademicProgram,
     FacultyHighlight,
@@ -242,6 +243,9 @@ INSTITUTIONS: list[dict] = [
         "placements": "Strong placement into both research PhD programs and technology industry roles.",
         "learning_environment": "Fast-paced, project-heavy, with high expectations for independent initiative.",
         "trait_tags": ["analytical_thinking", "curiosity"],
+        "campus_life_and_culture": "A tight-knit, project-driven community where late-night lab sessions and student-run hackathons are as much a part of campus life as classes themselves.",
+        "fees_summary": "Tuition is on the higher end for private research universities; substantial need-based and merit aid is typically available.",
+        "scholarships_summary": "Offers its own need-based and merit scholarships; students are also encouraged to pursue external scholarships and research fellowships alongside these.",
         "labs": [
             {"name": "Adaptive Materials Lab", "focus_area": "battery and materials research", "description": "Studies next-generation energy storage materials."},
             {"name": "Autonomous Systems Lab", "focus_area": "robotics", "description": "Builds robotic manipulation and control systems."},
@@ -430,6 +434,9 @@ INSTITUTIONS: list[dict] = [
         "learning_environment": "Cohort-based, project-driven, with continuous real-world building rather than exam-only assessment.",
         "trait_tags": ["analytical_thinking", "motivation", "curiosity"],
         "is_partner": True,
+        "campus_life_and_culture": "A high-energy, builder-first culture — students spend more time shipping real projects with peers than sitting in lectures.",
+        "fees_summary": "Program fees are structured around outcome-linked plans in addition to standard upfront tuition; specifics vary by track.",
+        "scholarships_summary": "Merit-based fee waivers are available for standout project portfolios submitted during admissions.",
         "labs": [
             {"name": "Applied AI Lab", "focus_area": "applied machine learning", "description": "Student teams build real applied-AI projects with industry mentor guidance."},
         ],
@@ -510,6 +517,49 @@ _INSTITUTION_CHILD_KEYS = (
     "student_ambassadors", "student_projects", "internship_opportunities",
 )
 
+#: Explore Batch 1 — Entrance Hub merged into College Explorer. Real
+#: exams accepted by multiple institutions (see approved plan's
+#: Decisions Log on why this is a denormalized, institution-independent
+#: entity rather than an institution-owned child table).
+ENTRANCE_EXAMS: list[dict] = [
+    {
+        "id": "exam_global_engineering_aptitude",
+        "name": "Global Engineering Aptitude Test",
+        "description": "A widely used entrance exam assessing mathematics, physics, and problem-solving for engineering and applied-science programs.",
+        "eligibility": ["Completed or completing secondary/high school education", "Strong foundation in mathematics and physics"],
+        "preparation_guidance": "Focused practice on mathematics and physics problem sets, plus timed mock exams closer to the test date.",
+        "typical_timeline": "Registration typically opens 4-6 months before the exam; scores are usually valid for one admissions cycle.",
+        "accepted_institution_ids": ["inst_aurora_institute", "inst_nordholm_technical_university", "inst_niat"],
+    },
+    {
+        "id": "exam_international_liberal_arts_assessment",
+        "name": "International Liberal Arts Assessment",
+        "description": "An entrance assessment for broad liberal-arts and interdisciplinary undergraduate programs, covering critical reading, writing, and reasoning.",
+        "eligibility": ["Completed or completing secondary/high school education"],
+        "preparation_guidance": "Reading widely across disciplines and practicing structured argumentative writing under time constraints.",
+        "typical_timeline": "Offered multiple times a year; most institutions accept scores from the past two years.",
+        "accepted_institution_ids": ["inst_meridian_university", "inst_andes_global_university"],
+    },
+    {
+        "id": "exam_design_portfolio_review",
+        "name": "Design & Creative Portfolio Review",
+        "description": "A portfolio-based entrance process (not a written exam) used by design and creative-arts programs to assess real creative work.",
+        "eligibility": ["A body of original creative work in the relevant discipline"],
+        "preparation_guidance": "Building a focused, honest portfolio of real completed work rather than a large volume of unfinished pieces.",
+        "typical_timeline": "Portfolio submission windows typically open 3-4 months before the admissions decision date.",
+        "accepted_institution_ids": ["inst_cape_town_design_school", "inst_pacific_rim_media_arts"],
+    },
+    {
+        "id": "exam_research_aptitude_interview",
+        "name": "Research Aptitude Interview",
+        "description": "A structured interview-based assessment used by research-intensive programs to evaluate scientific reasoning and genuine research interest.",
+        "eligibility": ["Completing or holding a relevant undergraduate degree", "Some prior research exposure recommended but not required"],
+        "preparation_guidance": "Preparing to discuss real prior projects/coursework in depth, and reading recent work from the specific research groups of interest.",
+        "typical_timeline": "Interviews are typically scheduled 2-3 months after an initial application review.",
+        "accepted_institution_ids": ["inst_kyoto_innovation_university", "inst_iias_bengaluru"],
+    },
+]
+
 
 async def seed() -> None:
     client = get_supabase_client()
@@ -549,10 +599,12 @@ async def seed() -> None:
             internship_opportunities.append(InternshipOpportunity(id=f"{inst_id}_internship_{i}", institution_id=inst_id, **internship))
 
     events = [CareerEvent.model_validate(e) for e in CAREER_EVENTS]
+    entrance_exams = [EntranceExam.model_validate(x) for x in ENTRANCE_EXAMS]
 
     def _upsert() -> None:
         client.table("mentors").upsert([m.model_dump(mode="json") for m in mentors]).execute()
         client.table("institutions").upsert([i.model_dump(mode="json") for i in institutions]).execute()
+        client.table("entrance_exams").upsert([x.model_dump(mode="json") for x in entrance_exams]).execute()
         client.table("research_labs").upsert([lb.model_dump(mode="json") for lb in labs]).execute()
         client.table("student_organizations").upsert([o.model_dump(mode="json") for o in orgs]).execute()
         client.table("academic_programs").upsert([p.model_dump(mode="json") for p in programs]).execute()
@@ -569,7 +621,8 @@ async def seed() -> None:
         f"{len(labs)} research labs, {len(orgs)} student organizations, {len(programs)} academic programs, "
         f"{len(innovation_centers)} innovation centers, {len(faculty_highlights)} faculty highlights, "
         f"{len(student_ambassadors)} student ambassadors, {len(student_projects)} student projects, "
-        f"{len(internship_opportunities)} internship opportunities, {len(events)} experience events."
+        f"{len(internship_opportunities)} internship opportunities, {len(events)} experience events, "
+        f"{len(entrance_exams)} entrance exams."
     )
 
 

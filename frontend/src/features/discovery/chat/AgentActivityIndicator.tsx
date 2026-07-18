@@ -27,7 +27,7 @@ export function AgentActivityIndicator() {
   }, []);
 
   return (
-    <div className="flex h-4 items-center justify-center overflow-hidden text-xs text-ink-faint">
+    <div className="flex h-4 items-center justify-center overflow-hidden font-mono text-xs text-[#6E6A5E]">
       <AnimatePresence mode="wait">
         <motion.span
           key={index}

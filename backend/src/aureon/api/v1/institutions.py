@@ -1,14 +1,19 @@
 from fastapi import APIRouter, Depends, HTTPException
 
-from aureon.api.deps import get_career_event_repository, get_institution_repository
+from aureon.api.deps import get_career_event_repository, get_entrance_exam_repository, get_institution_repository
+from aureon.domain.services.institution_profile import compute_institution_profile
 from aureon.services.supabase.repositories.career_event_repository import CareerEventRepository
+from aureon.services.supabase.repositories.entrance_exam_repository import EntranceExamRepository
 from aureon.services.supabase.repositories.institution_repository import InstitutionRepository
 from aureon.shared.schemas import (
     AcademicProgramDTO,
     CareerEventDTO,
+    EntranceExamDTO,
     FacultyHighlightDTO,
     InnovationCenterDTO,
     InstitutionDetailDTO,
+    InstitutionProfileDTO,
+    InstitutionReviewDTO,
     InstitutionSummaryDTO,
     InternshipOpportunityDTO,
     ResearchLabDTO,
@@ -45,6 +50,7 @@ async def get_institution_detail(
     institution_id: str,
     institutions: InstitutionRepository = Depends(get_institution_repository),
     events: CareerEventRepository = Depends(get_career_event_repository),
+    entrance_exams: EntranceExamRepository = Depends(get_entrance_exam_repository),
 ) -> InstitutionDetailDTO:
     institution = await institutions.get_institution(institution_id)
     if institution is None:
@@ -59,6 +65,10 @@ async def get_institution_detail(
     projects = await institutions.list_student_projects(institution_id)
     internships = await institutions.list_internship_opportunities(institution_id)
     upcoming_events = await events.list_career_events(institution_id=institution_id)
+    exams = await entrance_exams.list_for_institution(institution_id)
+    profile = compute_institution_profile(
+        institution, research_labs=labs, innovation_centers=innovation_centers, student_organizations=orgs,
+    )
 
     return InstitutionDetailDTO(
         id=institution.id,
@@ -118,4 +128,25 @@ async def get_institution_detail(
             )
             for e in upcoming_events
         ],
+        campus_life_and_culture=institution.campus_life_and_culture,
+        fees_summary=institution.fees_summary,
+        scholarships_summary=institution.scholarships_summary,
+        entrance_exams=[
+            EntranceExamDTO(
+                id=x.id, name=x.name, description=x.description, eligibility=x.eligibility,
+                preparation_guidance=x.preparation_guidance, typical_timeline=x.typical_timeline,
+            )
+            for x in exams
+        ],
+        hostels=institution.hostels,
+        exchange_programs=institution.exchange_programs,
+        campus_facilities=institution.campus_facilities,
+        student_reviews=[
+            InstitutionReviewDTO(role_label=r.role_label, quote=r.quote, sentiment=r.sentiment)
+            for r in institution.student_reviews
+        ],
+        profile=InstitutionProfileDTO(
+            research=profile.research, entrepreneurship=profile.entrepreneurship,
+            campus_life=profile.campus_life, international_exposure=profile.international_exposure,
+        ),
     )

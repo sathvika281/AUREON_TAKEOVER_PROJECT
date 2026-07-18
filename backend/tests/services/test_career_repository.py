@@ -14,13 +14,19 @@ _FUTURE = FutureLens(
 
 
 class _FakeQuery:
-    def __init__(self, rows):
+    def __init__(self, rows, calls=None):
         self._rows = rows
+        self.calls = calls if calls is not None else []
 
     def select(self, *_a, **_k):
         return self
 
     def eq(self, *_a, **_k):
+        self.calls.append(("eq", _a, _k))
+        return self
+
+    def in_(self, *_a, **_k):
+        self.calls.append(("in_", _a, _k))
         return self
 
     def ilike(self, *_a, **_k):
@@ -44,22 +50,26 @@ class _FakeQuery:
 class _FakeTable:
     def __init__(self, rows):
         self._rows = rows
+        self.calls: list = []
 
     def select(self, *_a, **_k):
-        return _FakeQuery(self._rows)
+        return _FakeQuery(self._rows, calls=self.calls)
 
 
 class _FakeClient:
     def __init__(self, careers_rows=None, stories_rows=None):
         self._careers_rows = careers_rows or []
         self._stories_rows = stories_rows or []
+        self.tables: dict = {}
 
     def table(self, name):
         if name == "careers":
-            return _FakeTable(self._careers_rows)
-        if name == "career_stories":
-            return _FakeTable(self._stories_rows)
-        raise AssertionError(f"unexpected table {name}")
+            self.tables[name] = _FakeTable(self._careers_rows)
+        elif name == "career_stories":
+            self.tables[name] = _FakeTable(self._stories_rows)
+        else:
+            raise AssertionError(f"unexpected table {name}")
+        return self.tables[name]
 
 
 def _career_row(**overrides) -> dict:
@@ -111,3 +121,24 @@ async def test_list_stories_for_career_returns_parsed_models():
 
     assert len(stories) == 1
     assert stories[0].person_label == "Doctor, 5 years"
+
+
+async def test_list_stories_for_career_scopes_to_professional_story_types():
+    """Expert Connect / Journey Stories purpose split — "Human Stories"
+    must never silently pick up composite_student_discovery rows."""
+    story_row = {
+        "id": "story_1", "career_id": "physician_general", "person_label": "Doctor, 5 years",
+        "background": "x", "journey": "x", "challenges": "x", "turning_points": "x",
+        "advice": "x", "lessons_learned": "x", "trait_tags": [],
+    }
+    client = _FakeClient(stories_rows=[story_row])
+    repo = CareerRepository(client=client)
+
+    await repo.list_stories_for_career("physician_general")
+
+    calls = client.tables["career_stories"].calls
+    in_calls = [c for c in calls if c[0] == "in_"]
+    assert len(in_calls) == 1
+    _, args, _kwargs = in_calls[0]
+    assert args[0] == "story_type"
+    assert set(args[1]) == {"composite", "publicly_documented"}

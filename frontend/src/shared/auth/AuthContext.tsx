@@ -13,6 +13,7 @@ interface AuthContextValue {
   signUp: (email: string, password: string, name: string) => Promise<{ error: string | null; needsConfirmation: boolean }>;
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
+  completeOnboarding: (data: Record<string, unknown>) => Promise<{ error: string | null }>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -69,6 +70,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await supabase.auth.signOut();
   }
 
+  /** Real, persisted Supabase user_metadata — the same mechanism signUp's
+   * `name` field already uses. Serves both the initial onboarding wizard
+   * (a full payload) and every later Curiosity Check-in answer (a
+   * partial payload merged into the same fields) — never a separate
+   * store, and nothing written here is ever treated as a permanent,
+   * unchangeable label. */
+  async function completeOnboarding(data: Record<string, unknown>) {
+    const { error } = await supabase.auth.updateUser({ data });
+    return { error: error?.message ?? null };
+  }
+
   const value: AuthContextValue = {
     user: session?.user ?? null,
     session,
@@ -76,6 +88,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     signUp,
     signIn,
     signOut,
+    completeOnboarding,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

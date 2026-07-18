@@ -4,6 +4,8 @@ import { Code2, GitBranch, ShieldAlert, Sparkles } from "lucide-react";
 import { Badge } from "../../design-system/components/Badge";
 import { Button } from "../../design-system/components/Button";
 import { EmptyStatePanel } from "../../design-system/components/EmptyStatePanel";
+import { Field } from "../../design-system/components/Field";
+import { Input } from "../../design-system/components/Input";
 import { ProcessSteps } from "../../design-system/components/ProcessSteps";
 import { Surface } from "../../design-system/components/Surface";
 import type { GitHubInvestigationResult } from "../../shared/api/types";
@@ -76,7 +78,7 @@ export function engineeringReport(result: GitHubInvestigationResult) {
 
       {result.skills.length > 0 && (
         <Surface tone="neutral" padding="md">
-          <p className="text-[0.65rem] uppercase tracking-widest text-ink-faint">Skills Demonstrated</p>
+          <p className="font-mono text-[0.6rem] uppercase tracking-[0.14em] text-ink-faint">Skills Demonstrated</p>
           <div className="mt-2 flex flex-wrap gap-2">
             {result.skills.map((s, i) => (
               <Badge key={i} tone="warm">{s.category}: {s.skill}</Badge>
@@ -85,18 +87,18 @@ export function engineeringReport(result: GitHubInvestigationResult) {
         </Surface>
       )}
 
-      <div className="grid gap-3 sm:grid-cols-2">
+      <Field divided>
         {ANALYSIS_LABELS.map(({ key, label }) => {
           const value = result[key];
           if (!value || typeof value !== "string") return null;
           return (
-            <Surface key={key} tone="neutral" padding="md">
-              <p className="text-[0.65rem] uppercase tracking-widest text-ink-faint">{label}</p>
+            <div key={key} className="py-3 first:pt-0 last:pb-0">
+              <p className="font-mono text-[0.6rem] uppercase tracking-[0.1em] text-ink-faint">{label}</p>
               <p className="mt-1.5 text-sm leading-relaxed text-ink-muted">{value}</p>
-            </Surface>
+            </div>
           );
         })}
-      </div>
+      </Field>
     </div>
   );
 }
@@ -118,18 +120,17 @@ export function GitHubIntelligenceScreen() {
       </div>
 
       <div className="mt-6 flex gap-2">
-        <input
+        <Input
           value={url}
           onChange={(e) => setUrl(e.target.value)}
           placeholder="https://github.com/owner/repo"
-          className="w-full rounded-xl border border-border bg-surface px-4 py-2.5 text-sm text-ink placeholder:text-ink-faint focus:border-accent/40 focus:outline-none"
         />
         <Button onClick={() => investigate(url)} disabled={isInvestigating || !url.trim()}>
           {isInvestigating ? "Investigating…" : "Investigate"}
         </Button>
       </div>
 
-      {error && <p className="mt-3 text-xs text-red-400">{error}</p>}
+      {error && <p className="mt-3 text-xs text-danger">{error}</p>}
 
       {!result && !isInvestigating && (
         <div className="mt-6">

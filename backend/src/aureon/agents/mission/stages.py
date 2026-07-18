@@ -61,4 +61,13 @@ AGENT_EXECUTION_STAGES: dict[str, list[str]] = {
         "Identifying Patterns",
         "Preparing Progress Report",
     ],
+    #: Phase 2 Foundation — real steps BuildOrchestrator/CareerOrchestratorAgent
+    #: actually perform. Deliberately no entries for Network/Portfolio —
+    #: they perform no real steps yet (pure registration placeholders).
+    AgentName.CAREER_ORCHESTRATOR.value: [
+        "Resolving Intent",
+        "Selecting Agents",
+        "Executing Mission",
+        "Merging Outputs",
+    ],
 }

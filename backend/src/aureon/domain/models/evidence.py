@@ -20,11 +20,12 @@ class EvidenceRecord(BaseModel):
     text: str
     #: "url" added in V6 (URL Intelligence); "document" added in V8
     #: (Document Intelligence); "github" added in V9 (GitHub Intelligence);
-    #: "search" added in V10 (Multi-Source Search Intelligence) — real
-    #: evidence extracted from an investigated webpage, uploaded document,
-    #: GitHub repository, or cross-verified search investigation,
-    #: additive alongside the existing sources.
-    source: Literal["conversation", "reflection", "url", "document", "github", "search"]
+    #: "search" added in V10 (Multi-Source Search Intelligence); "experiment"
+    #: added in Discover Batch 2 (Career Experiments) — real evidence
+    #: extracted from an investigated webpage, uploaded document, GitHub
+    #: repository, cross-verified search investigation, or a completed
+    #: Career Experiment, additive alongside the existing sources.
+    source: Literal["conversation", "reflection", "url", "document", "github", "search", "experiment"]
     related_trait: str | None = None
     related_hypothesis: str | None = None
     related_career: str | None = None

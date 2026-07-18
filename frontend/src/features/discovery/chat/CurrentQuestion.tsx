@@ -13,10 +13,12 @@ export function CurrentQuestion({ text }: { text: string }) {
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.7, ease: EASE_CALM }}
-      className="px-4 text-center"
+      className="px-4"
     >
-      <p className="text-[0.65rem] uppercase tracking-widest text-ink-faint">Notice what comes to mind</p>
-      <p className="mt-2 text-lg font-light leading-relaxed text-ink">{text}</p>
+      <p className="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-[#6E6A5E]">
+        Notice what comes to mind
+      </p>
+      <p className="mt-2 font-serif text-lg leading-relaxed text-[#F2EDE0]">{text}</p>
     </motion.div>
   );
 }

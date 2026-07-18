@@ -28,7 +28,9 @@ export function EvidenceCard({ evidence }: { evidence: MissionEvidence }) {
         </div>
         <div className="flex shrink-0 items-center gap-2">
           {evidence.confidence !== null && (
-            <span className="text-xs text-accent-soft">{Math.round(evidence.confidence * 100)}%</span>
+            <span className="font-mono text-xs tracking-wide text-accent-soft">
+              {Math.round(evidence.confidence * 100)}%
+            </span>
           )}
           {expanded ? <ChevronUp size={14} className="text-ink-faint" /> : <ChevronDown size={14} className="text-ink-faint" />}
         </div>
@@ -47,13 +49,15 @@ export function EvidenceCard({ evidence }: { evidence: MissionEvidence }) {
               {metadataEntries
                 .filter(([key]) => key !== "category")
                 .map(([key, value]) => (
-                  <span key={key} className="rounded-full border border-border px-2 py-0.5 text-[0.68rem] text-ink-faint">
+                  <span key={key} className="rounded-full border border-border px-2 py-0.5 font-mono text-[0.65rem] text-ink-faint">
                     {key}: {String(Array.isArray(value) ? value.join(", ") : value)}
                   </span>
                 ))}
             </div>
           )}
-          <p className="text-[0.68rem] text-ink-faint">{new Date(evidence.timestamp).toLocaleString()}</p>
+          <p className="font-mono text-[0.65rem] tracking-wide text-ink-faint">
+            {new Date(evidence.timestamp).toLocaleString()}
+          </p>
         </div>
       )}
     </Surface>

@@ -64,4 +64,4 @@ Aureon/
 │               agents/ (multi-agent system) → services/ (LLM, Supabase)
 ├── frontend/   React / Vite / TypeScript / Tailwind
 └── docs/       Architecture documentation
-```
+

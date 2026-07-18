@@ -1,7 +1,6 @@
 import { motion } from "framer-motion";
 import { BookOpen, Compass, Hammer, MessageCircle, Search, Sparkles } from "lucide-react";
 
-import { Surface } from "../../../design-system/components/Surface";
 import { EASE_CALM } from "../../../design-system/motion";
 import type { SuggestedActivity } from "../../../shared/api/types";
 
@@ -32,18 +31,17 @@ export function MissionCard({ activity }: { activity: SuggestedActivity }) {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, ease: EASE_CALM }}
+      className="flex items-start gap-4 rounded-2xl border border-[#2A2650]/60 bg-[#0C0A22]/80 p-4 text-left shadow-[0_12px_36px_rgba(0,0,0,0.4)] backdrop-blur-md"
     >
-      <Surface tone="raised" padding="md" className="flex items-start gap-4">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent/10 text-accent">
-          <Icon size={18} />
-        </div>
-        <div>
-          <p className="text-[0.68rem] uppercase tracking-widest text-accent/80">{label}</p>
-          <h4 className="mt-0.5 text-sm font-medium text-ink">{activity.title}</h4>
-          <p className="mt-1 text-xs leading-relaxed text-ink-muted">{activity.description}</p>
-          <p className="mt-2 text-[0.68rem] italic text-ink-faint">Why this mission: {activity.reason}</p>
-        </div>
-      </Surface>
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#D9B87A]/10 text-[#D9B87A]">
+        <Icon size={18} />
+      </div>
+      <div>
+        <p className="font-mono text-[0.62rem] uppercase tracking-[0.14em] text-[#D9B87A]/80">{label}</p>
+        <h4 className="mt-0.5 font-serif text-base text-[#F2EDE0]">{activity.title}</h4>
+        <p className="mt-1 text-xs leading-relaxed text-[#9C978A]">{activity.description}</p>
+        <p className="mt-2 text-[0.68rem] italic text-[#6E6A5E]">Why this mission: {activity.reason}</p>
+      </div>
     </motion.div>
   );
 }

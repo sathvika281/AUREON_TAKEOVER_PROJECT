@@ -14,6 +14,20 @@ from aureon.domain.models.career_comparison import (
 from aureon.domain.models.career_dna import CareerDNA, TraitSignal
 from aureon.domain.models.career_exploration import CareerExplorationEvent
 from aureon.domain.models.career_hypothesis import CareerHypothesis
+from aureon.domain.models.career_memory import (
+    CareerMemory,
+    Connection,
+    ConnectionsMemory,
+    EvidenceArtifact,
+    EvidenceMemory,
+    GrowthMemory,
+    GrowthMission,
+    GrowthSkill,
+    IdentityMemory,
+    InterviewPracticeRecord,
+    OpportunitiesMemory,
+    OpportunityEntry,
+)
 from aureon.domain.models.decision_memory import DecisionMemoryEntry
 from aureon.domain.models.evidence import EvidenceRecord
 from aureon.domain.models.mentor_handoff import MentorHandoff
@@ -57,6 +71,20 @@ _ALLOWED_MSGPACK_MODULES = [
     MentorMatch,
     CollegeMatch,
     DecisionMemoryEntry,
+    # Phase 2 Foundation — Career Memory (Milestone B), nested inside
+    # StudentProfile.foundation_memory.
+    CareerMemory,
+    IdentityMemory,
+    EvidenceArtifact,
+    EvidenceMemory,
+    OpportunityEntry,
+    OpportunitiesMemory,
+    Connection,
+    ConnectionsMemory,
+    GrowthSkill,
+    GrowthMission,
+    InterviewPracticeRecord,
+    GrowthMemory,
 ]
 
 

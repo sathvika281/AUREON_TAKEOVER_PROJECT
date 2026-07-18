@@ -3,7 +3,7 @@ from aureon.agents.registry import AgentRegistry
 from aureon.shared.types import AgentName
 
 
-def test_all_eight_agents_self_register():
+def test_all_agents_self_register():
     registered = set(AgentRegistry.names())
     expected = {name.value for name in AgentName}
     assert expected.issubset(registered)

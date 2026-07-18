@@ -5,6 +5,7 @@ import { apiClient } from "../../shared/api/client";
 import type {
   CareerComparison,
   CareerComparisonsResponse,
+  CareerDecisionCard,
   CareerSimulation,
   CareerSimulationsResponse,
   CollegeMatch,
@@ -12,17 +13,16 @@ import type {
   DecisionMemoryEntry,
   DecisionMemoryResponse,
   DecisionTimelineResponse,
+  DecisionWorkspaceResponse,
   MentorMatch,
   MentorMatchesResponse,
   MissionSnapshot,
-  ParallelUniverseResponse,
-  ParallelUniverseScenario,
+  StageProgress,
 } from "../../shared/api/types";
 import { getCurrentStudentId } from "../../shared/config/studentId";
 
 interface DecisionContextValue {
   comparisons: CareerComparison[];
-  scenarios: ParallelUniverseScenario[];
   mentorMatches: MentorMatch[];
   collegeMatches: CollegeMatch[];
   decisionMemory: DecisionMemoryEntry[];
@@ -40,12 +40,18 @@ interface DecisionContextValue {
   lastSimulationArtifactsUpdated: string[];
   recommendedColleges: string[];
   recommendedExperts: string[];
+  /** Decide Batch 1 — the Decision Workspace: one composed card per
+   * active career candidate, plus workspace-level aggregates. */
+  workspace: CareerDecisionCard[];
+  workspaceGaps: string[];
+  overallReadinessPercent: number;
+  stageProgress: StageProgress;
   runComparison: (careerIds: string[]) => Promise<void>;
-  runParallelUniverse: (careerIds: string[]) => Promise<void>;
   analyzeMentors: () => Promise<void>;
   analyzeColleges: () => Promise<void>;
   runSimulation: (careerIds: string[]) => Promise<void>;
   refreshTimelineAndMemory: () => Promise<void>;
+  refreshWorkspace: () => Promise<void>;
 }
 
 const DecisionContext = createContext<DecisionContextValue | null>(null);
@@ -58,7 +64,6 @@ export function DecisionProvider({ children }: { children: ReactNode }) {
   const studentId = useRef(getCurrentStudentId()).current;
 
   const [comparisons, setComparisons] = useState<CareerComparison[]>([]);
-  const [scenarios, setScenarios] = useState<ParallelUniverseScenario[]>([]);
   const [mentorMatches, setMentorMatches] = useState<MentorMatch[]>([]);
   const [collegeMatches, setCollegeMatches] = useState<CollegeMatch[]>([]);
   const [decisionMemory, setDecisionMemory] = useState<DecisionMemoryEntry[]>([]);
@@ -76,6 +81,22 @@ export function DecisionProvider({ children }: { children: ReactNode }) {
   const [lastSimulationArtifactsUpdated, setLastSimulationArtifactsUpdated] = useState<string[]>([]);
   const [recommendedColleges, setRecommendedColleges] = useState<string[]>([]);
   const [recommendedExperts, setRecommendedExperts] = useState<string[]>([]);
+  const [workspace, setWorkspace] = useState<CareerDecisionCard[]>([]);
+  const [workspaceGaps, setWorkspaceGaps] = useState<string[]>([]);
+  const [overallReadinessPercent, setOverallReadinessPercent] = useState(0);
+  const [stageProgress, setStageProgress] = useState<StageProgress>({ discover: false, explore: false, connect: false });
+
+  const refreshWorkspace = useCallback(async () => {
+    try {
+      const response = await apiClient.get<DecisionWorkspaceResponse>(`/v1/students/${studentId}/decision-workspace`);
+      setWorkspace(response.cards);
+      setWorkspaceGaps(response.workspace_gaps);
+      setOverallReadinessPercent(response.overall_readiness_percent);
+      setStageProgress(response.stage_progress);
+    } catch {
+      // No candidates yet for a brand-new student — not an error.
+    }
+  }, [studentId]);
 
   const refreshTimelineAndMemory = useCallback(async () => {
     try {
@@ -101,10 +122,6 @@ export function DecisionProvider({ children }: { children: ReactNode }) {
       })
       .catch(() => {});
     apiClient
-      .get<ParallelUniverseResponse>(`/v1/students/${studentId}/parallel-universe`)
-      .then((r) => setScenarios(r.scenarios))
-      .catch(() => {});
-    apiClient
       .get<MentorMatchesResponse>(`/v1/students/${studentId}/mentor-matches`)
       .then((r) => setMentorMatches(r.matches))
       .catch(() => {});
@@ -117,7 +134,8 @@ export function DecisionProvider({ children }: { children: ReactNode }) {
       .then((r) => setSimulations(r.simulations))
       .catch(() => {});
     void refreshTimelineAndMemory();
-  }, [studentId, refreshTimelineAndMemory]);
+    void refreshWorkspace();
+  }, [studentId, refreshTimelineAndMemory, refreshWorkspace]);
 
   const runComparison = useCallback(
     async (careerIds: string[]) => {
@@ -132,32 +150,14 @@ export function DecisionProvider({ children }: { children: ReactNode }) {
         setRecommendedColleges(response.recommended_colleges);
         setRecommendedExperts(response.recommended_experts);
         await refreshTimelineAndMemory();
+        await refreshWorkspace();
       } catch {
         setError("Aureon couldn't compare these careers just now — please try again.");
       } finally {
         setIsBusy(false);
       }
     },
-    [studentId, refreshTimelineAndMemory],
-  );
-
-  const runParallelUniverse = useCallback(
-    async (careerIds: string[]) => {
-      setIsBusy(true);
-      setError(null);
-      try {
-        const response = await apiClient.post<ParallelUniverseResponse>(
-          `/v1/students/${studentId}/parallel-universe`,
-          { career_ids: careerIds },
-        );
-        setScenarios(response.scenarios);
-      } catch {
-        setError("Aureon couldn't simulate these futures just now — please try again.");
-      } finally {
-        setIsBusy(false);
-      }
-    },
-    [studentId],
+    [studentId, refreshTimelineAndMemory, refreshWorkspace],
   );
 
   const analyzeMentors = useCallback(async () => {
@@ -210,18 +210,18 @@ export function DecisionProvider({ children }: { children: ReactNode }) {
         setLastSimulationMission(response.mission);
         setLastSimulationArtifactsUpdated(response.artifacts_updated);
         await refreshTimelineAndMemory();
+        await refreshWorkspace();
       } catch {
         setError("Aureon couldn't simulate these career paths just now — please try again.");
       } finally {
         setIsBusy(false);
       }
     },
-    [studentId, refreshTimelineAndMemory],
+    [studentId, refreshTimelineAndMemory, refreshWorkspace],
   );
 
   const value: DecisionContextValue = {
     comparisons,
-    scenarios,
     mentorMatches,
     collegeMatches,
     decisionMemory,
@@ -239,12 +239,16 @@ export function DecisionProvider({ children }: { children: ReactNode }) {
     lastSimulationArtifactsUpdated,
     recommendedColleges,
     recommendedExperts,
+    workspace,
+    workspaceGaps,
+    overallReadinessPercent,
+    stageProgress,
     runComparison,
-    runParallelUniverse,
     analyzeMentors,
     analyzeColleges,
     runSimulation,
     refreshTimelineAndMemory,
+    refreshWorkspace,
   };
 
   return <DecisionContext.Provider value={value}>{children}</DecisionContext.Provider>;

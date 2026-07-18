@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 
+import { Field } from "../../design-system/components/Field";
 import { Surface } from "../../design-system/components/Surface";
 import { useAuthContext } from "../../shared/auth/AuthContext";
 import { useCareerExplorationContext } from "../career-exploration/CareerExplorationContext";
@@ -21,10 +22,10 @@ function timeOfDayGreeting(): string {
 }
 
 const QUICK_ACTIONS = [
-  { label: "Career Intelligence", to: "/explore/career-intelligence" },
-  { label: "Career Simulator", to: "/decide/career-simulator" },
-  { label: "Investigation History", to: "/history" },
-  { label: "Progress Summary", to: "/build/progress-intelligence" },
+  { label: "Career Explorer", to: "/explore/career-reality" },
+  { label: "Decision Lab", to: "/decide/decision-lab" },
+  { label: "College Explorer", to: "/experience/college-collaboration" },
+  { label: "Journey", to: "/history" },
 ];
 
 export function HomeScreen() {
@@ -62,15 +63,15 @@ export function HomeScreen() {
     <div className="mx-auto max-w-3xl px-6 py-10">
       <p className="text-sm text-ink-faint">{timeOfDayGreeting()}, {displayName}.</p>
       <h1 className="mt-1 text-2xl font-light text-ink">
-        What would you like Aureon to investigate today?
+        What would you like to help Aureon understand today?
       </h1>
       <p className="mt-2 text-xs text-ink-faint">
         Career DNA: {traitCount}/{TOTAL_CAREER_DNA_TRAITS} traits recorded
       </p>
 
       <Link to="/discover/identity" className="mt-8 block">
-        <Surface tone="raised" padding="lg" className="transition hover:border-accent/40">
-          <p className="text-xs uppercase tracking-widest text-accent-soft">{understandingStage}</p>
+        <Surface tone="raised" padding="lg" className="transition-colors hover:border-accent-soft/40">
+          <p className="font-mono text-[0.6rem] uppercase tracking-[0.14em] text-accent-soft">{understandingStage}</p>
           <h2 className="mt-2 text-xl font-medium text-ink">Continue Current Mission</h2>
           <p className="mt-2 text-sm leading-relaxed text-ink-muted">{understandingNarrative}</p>
           <p className="mt-3 border-t border-border pt-3 text-xs leading-relaxed text-ink-faint">
@@ -81,21 +82,21 @@ export function HomeScreen() {
 
       {mostRecentMission && (
         <Link to="/history" className="mt-4 block">
-          <Surface tone="neutral" padding="sm" className="transition hover:border-accent/40">
-            <p className="text-[0.65rem] uppercase tracking-widest text-ink-faint">Most Recent Mission</p>
+          <Surface tone="neutral" padding="sm" className="transition-colors hover:border-accent-soft/40">
+            <p className="font-mono text-[0.6rem] uppercase tracking-[0.14em] text-ink-faint">Most Recent Mission</p>
             <p className="mt-1 text-sm text-ink-muted">{mostRecentMission.mission_name}</p>
           </Surface>
         </Link>
       )}
 
       <div className="mt-6">
-        <p className="mb-2 px-1 text-xs uppercase tracking-widest text-ink-faint">Quick Actions</p>
+        <p className="mb-2 px-1 font-mono text-[0.6rem] uppercase tracking-[0.14em] text-ink-faint">Quick Actions</p>
         <div className="flex flex-wrap gap-2">
           {QUICK_ACTIONS.map((action) => (
             <Link
               key={action.to}
               to={action.to}
-              className="rounded-full border border-border bg-surface px-3.5 py-1.5 text-xs text-ink-muted transition hover:border-accent/40 hover:text-ink"
+              className="rounded-full border border-border px-3.5 py-1.5 text-xs text-ink-muted transition-colors hover:border-accent-soft/40 hover:text-ink"
             >
               {action.label}
             </Link>
@@ -105,64 +106,64 @@ export function HomeScreen() {
 
       {topHypothesis && (
         <div className="mt-6">
-          <p className="mb-2 px-1 text-xs uppercase tracking-widest text-ink-faint">Current Hypothesis</p>
+          <p className="mb-2 px-1 font-mono text-[0.6rem] uppercase tracking-[0.14em] text-ink-faint">Current Hypothesis</p>
           <HypothesisCard hypothesis={topHypothesis} />
         </div>
       )}
 
       <div className="mt-10 border-t border-border pt-6">
-        <p className="mb-3 text-xs uppercase tracking-widest text-ink-faint">Recent Investigations</p>
+        <p className="mb-3 font-mono text-[0.6rem] uppercase tracking-[0.14em] text-ink-faint">Recent Investigations</p>
         {!hasRecentActivity ? (
           <p className="text-sm text-ink-faint">Nothing yet — this builds as you explore.</p>
         ) : (
-          <div className="space-y-2">
+          <Field divided>
             {latestEntry && (
-              <Surface tone="neutral" padding="sm">
+              <div className="py-3 first:pt-0">
                 <p className="text-sm text-ink-muted">{latestEntry.text}</p>
-                <p className="mt-1 text-[0.68rem] text-ink-faint">
+                <p className="mt-1 font-mono text-[0.62rem] text-ink-faint">
                   {relativeTime(new Date(latestEntry.created_at).getTime())}
                 </p>
-              </Surface>
+              </div>
             )}
             {latestDecision && (
-              <Surface tone="neutral" padding="sm">
+              <div className="py-3">
                 <p className="text-sm text-ink-muted">{latestDecision.reason}</p>
-                <p className="mt-1 text-[0.68rem] text-ink-faint">
+                <p className="mt-1 font-mono text-[0.62rem] text-ink-faint">
                   {relativeTime(new Date(latestDecision.created_at).getTime())}
                 </p>
-              </Surface>
+              </div>
             )}
             {latestReflection && (
-              <Surface tone="neutral" padding="sm">
+              <div className="py-3">
                 <p className="text-sm text-ink-muted">{latestReflection.response}</p>
-                <p className="mt-1 text-[0.68rem] text-ink-faint">Reflection</p>
-              </Surface>
+                <p className="mt-1 font-mono text-[0.62rem] text-ink-faint">Reflection</p>
+              </div>
             )}
             {recentlyExplored.length > 0 && (
-              <div className="flex flex-wrap gap-2 pt-1">
+              <div className="flex flex-wrap gap-2 py-3 last:pb-0">
                 {recentlyExplored.map((entry) => (
                   <Link
                     key={entry.careerId}
                     to={`/explore/career-reality/${entry.careerId}`}
-                    className="rounded-full border border-border px-3 py-1.5 text-xs text-ink-muted transition hover:border-accent/30 hover:text-ink"
+                    className="rounded-full border border-border px-3 py-1.5 text-xs text-ink-muted transition-colors hover:border-accent-soft/30 hover:text-ink"
                   >
                     {entry.careerName}
                   </Link>
                 ))}
               </div>
             )}
-          </div>
+          </Field>
         )}
       </div>
 
       <div className="mt-10 border-t border-border pt-6">
-        <p className="mb-3 text-xs uppercase tracking-widest text-ink-faint">Ahead in your journey</p>
+        <p className="mb-3 font-mono text-[0.6rem] uppercase tracking-[0.14em] text-ink-faint">Ahead in your journey</p>
         <div className="flex flex-wrap gap-2">
           {lockedModules.map((module) => (
             <Link
               key={module.id}
               to={module.path}
-              className="rounded-full border border-border px-3 py-1.5 text-xs text-ink-faint transition hover:text-ink-muted"
+              className="rounded-full border border-border px-3 py-1.5 text-xs text-ink-faint transition-colors hover:border-border-strong hover:text-ink-muted"
             >
               {module.title}
             </Link>

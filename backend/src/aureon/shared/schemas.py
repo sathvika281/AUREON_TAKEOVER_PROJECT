@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import BaseModel
 
@@ -159,6 +159,27 @@ class CareerSummaryDTO(BaseModel):
     trait_tags: list[str]
 
 
+class CareerBranchDTO(BaseModel):
+    name: str
+    description: str
+
+
+class CareerFAQDTO(BaseModel):
+    question: str
+    answer: str
+
+
+class TrendSummaryDTO(BaseModel):
+    """A lightweight cross-reference into Global Trends — see the full
+    TrendDTO further down. Kept separate/minimal here so CareerDetailDTO
+    doesn't need the full Trend shape just to link to one."""
+
+    id: str
+    title: str
+    category: str
+    summary: str
+
+
 class CareerStoryDTO(BaseModel):
     id: str
     career_id: str
@@ -183,6 +204,39 @@ class CareerDetailDTO(BaseModel):
     reality: CareerRealityDTO
     future_lens: FutureLensDTO
     stories: list[CareerStoryDTO]
+    #: Explore Batch 1 additions.
+    description: str = ""
+    why_people_love_it: str = ""
+    branches: list[CareerBranchDTO] = []
+    #: Never a recommendation — "you might also find this interesting."
+    related_careers: list[CareerSummaryDTO] = []
+    #: The single top related career not yet in the student's real
+    #: exploration history; honestly None once nothing related is left
+    #: unseen, or when there's no student context at all.
+    recommended_next_exploration: CareerSummaryDTO | None = None
+    related_trends: list[TrendSummaryDTO] = []
+    #: Explore Polish Batch additions — all additive/defaulted.
+    day_in_the_life: str = ""
+    weekly_routine: str = ""
+    daily_tools: list[str] = []
+    career_progression: list[str] = []
+    related_industries: list[str] = []
+    research_areas: list[str] = []
+    companies: list[str] = []
+    universities: list[str] = []
+    scholarships: list[str] = []
+    competitions: list[str] = []
+    books: list[str] = []
+    communities: list[str] = []
+    open_source_projects: list[str] = []
+    certifications: list[str] = []
+    projects: list[str] = []
+    videos: list[str] = []
+    common_misconceptions: list[str] = []
+    faqs: list[CareerFAQDTO] = []
+    #: Cross-field realistic transitions — deliberately separate from
+    #: `related_careers` above (same-field/tag-overlap computation).
+    adjacent_careers: list[str] = []
 
 
 class CareerCandidateDTO(BaseModel):
@@ -265,6 +319,377 @@ class MentorDetailDTO(MentorSummaryDTO):
     upcoming_career_talks: list[CareerEventDTO]
 
 
+class LinkRefDTO(BaseModel):
+    label: str
+    url: str
+
+
+class CareerJourneyMilestoneDTO(BaseModel):
+    stage: str
+    label: str
+    description: str
+    year_label: str
+
+
+class ExpertSummaryDTO(BaseModel):
+    """Connect Batch 1 — Expert Connect's list-view shape. Same
+    underlying `Mentor` row as `MentorSummaryDTO`, but Expert-named and
+    surfacing the richer profile fields this batch adds."""
+
+    id: str
+    name: str
+    profession: str
+    specialization: str
+    country: str
+    city: str
+    years_experience: int
+    industries: list[str]
+    organization: str
+    trait_tags: list[str]
+    who_should_talk_to_me: list[str]
+    photo_url: str | None = None
+    updated_at: datetime
+
+
+class ExpertDetailDTO(BaseModel):
+    id: str
+    name: str
+    role_type: str
+    profession: str
+    specialization: str
+    field: str
+    bio: str
+    country: str
+    city: str
+    industries: list[str]
+    education: list[str]
+    organization: str
+    current_role: str
+    years_experience: int
+    languages: list[str]
+    photo_url: str | None = None
+    who_should_talk_to_me: list[str]
+    trait_tags: list[str]
+    learning_style_fit: str
+    linked_careers: list[CareerSummaryDTO]
+    #: Career Journey.
+    career_journey: list[CareerJourneyMilestoneDTO]
+    #: Reality.
+    day_in_the_life: str
+    weekly_routine: str
+    biggest_challenges: list[str]
+    favourite_part: str
+    biggest_misconceptions: list[str]
+    what_surprised_them: str
+    biggest_mistake: str
+    one_regret: str
+    salary_reality: str
+    work_life_balance: str
+    advice_for_beginners: str
+    advice_for_parents: str
+    faqs: list[CareerFAQDTO]
+    #: Knowledge.
+    projects: list[str]
+    research: list[str]
+    certifications: list[str]
+    conferences: list[str]
+    organizations: list[str]
+    volunteer_work: list[str]
+    portfolio_links: list[LinkRefDTO]
+    social_links: list[LinkRefDTO]
+    daily_skills: list[str]
+    daily_tools: list[str]
+    recommended_books: list[str]
+    recommended_communities: list[str]
+    suggested_books: list[str]
+    suggested_companies: list[str]
+    suggested_certifications: list[str]
+    #: Reused Mentor detail logic — same honest, never-fabricated
+    #: deterministic slots + real seeded career talks as `/mentors/{id}`.
+    available_slots: list[datetime]
+    upcoming_career_talks: list[CareerEventDTO]
+    updated_at: datetime
+    #: Connect Batch 2 — Mentorship. Both fields already existed on
+    #: `Mentor` since Connect Batch 1 (forward-looking, unused until
+    #: now); surfaced here for the first time, not newly added.
+    accepts_mentorship: bool = False
+    max_students: int = 0
+    current_mentee_count: int = 0
+
+
+class ExpertSearchResponse(BaseModel):
+    experts: list[ExpertSummaryDTO]
+    total: int
+    limit: int
+    offset: int
+
+
+class ExpertFiltersResponse(BaseModel):
+    specializations: list[str]
+    industries: list[str]
+    countries: list[str]
+
+
+class ParentExpertAdviceDTO(BaseModel):
+    expert_id: str
+    expert_name: str
+    expert_profession: str
+    advice_for_parents: str
+    faqs: list[CareerFAQDTO]
+
+
+class ParentCareerViewDTO(BaseModel):
+    career_id: str
+    career_name: str
+    one_liner: str
+    required_education: str
+    salary_ranges: list[SalaryRangeDTO]
+    demand_2030: str
+    demand_2035: str
+    demand_2040: str
+    common_misconceptions: list[str]
+    earning_reality: str
+    career_stability: str
+    work_life_balance: str
+    growth_opportunities: str
+    educational_pathways: list[str]
+    alternative_routes: list[str]
+    global_demand: str
+    risks: list[str]
+    opportunities: list[str]
+    expert_advice: list[ParentExpertAdviceDTO]
+
+
+class ParentQuestionDTO(BaseModel):
+    id: str
+    category: str
+    career_id: str | None
+    question: str
+    expert_response: str
+    responding_expert_id: str | None
+    is_seeded: bool
+    created_at: datetime
+
+
+class ParentQuestionsResponse(BaseModel):
+    questions: list[ParentQuestionDTO]
+
+
+class SharedSessionNoteDTO(BaseModel):
+    id: str
+    session_id: str
+    author_role: str
+    note: str
+    created_at: datetime
+
+
+class SharedSessionDTO(BaseModel):
+    id: str
+    student_id: str
+    mentor_id: str
+    career_id: str | None
+    access_token: str
+    participant_label: str
+    topic: str
+    status: str
+    scheduled_slot: datetime | None
+    created_at: datetime
+    updated_at: datetime
+
+
+class SharedSessionWithNotesDTO(SharedSessionDTO):
+    notes: list[SharedSessionNoteDTO]
+
+
+class CreateSharedSessionRequest(BaseModel):
+    mentor_id: str
+    career_id: str | None = None
+    topic: str
+
+
+class SharedSessionsResponse(BaseModel):
+    sessions: list[SharedSessionDTO]
+
+
+class JoinSharedSessionRequest(BaseModel):
+    participant_label: str
+
+
+class AddSharedSessionNoteRequest(BaseModel):
+    author_role: str
+    note: str
+
+
+class LinkedExpertRefDTO(BaseModel):
+    id: str
+    name: str
+    profession: str
+
+
+class JourneyStoryDTO(BaseModel):
+    """Connect Batch 2 — a Journey Story is a ``CareerStory`` read
+    through a richer, honesty-labeled lens (see ``career.py``'s
+    ``story_type``/``source_reference``). Deliberately not the same
+    shape as ``CareerStoryDTO`` (Career detail's nested summary) — this
+    is the full standalone view."""
+
+    id: str
+    career_id: str
+    career_name: str
+    person_label: str
+    background: str
+    journey: str
+    challenges: str
+    turning_points: str
+    advice: str
+    lessons_learned: str
+    trait_tags: list[str]
+    timeline: list[CareerJourneyMilestoneDTO]
+    career_switch: bool
+    gap_year: bool
+    uncertainty_period: str
+    current_outcome: str
+    industry: str
+    story_type: str
+    source_reference: str
+    discovery_themes: list[str] = []
+    linked_expert: LinkedExpertRefDTO | None = None
+    linked_life_mission_name: str | None = None
+
+
+class JourneyStorySearchResponse(BaseModel):
+    stories: list[JourneyStoryDTO]
+    total: int
+    limit: int
+    offset: int
+
+
+class JourneyStoryFiltersResponse(BaseModel):
+    industries: list[str]
+    careers: list[CareerSummaryDTO]
+    discovery_themes: list[str] = []
+
+
+class ReflectOnJourneyStoryRequest(BaseModel):
+    prompt: str
+    response: str
+
+
+class ReflectOnJourneyStoryResponse(BaseModel):
+    recorded: bool = True
+
+
+class RelevantJourneyStoriesResponse(BaseModel):
+    """"Stories You May Relate To" — deliberately not the same shape as
+    ``JourneyStorySearchResponse`` (no total/limit/offset pagination —
+    this is always a small, personalized, unpaginated list)."""
+
+    stories: list[JourneyStoryDTO]
+
+
+class KnowledgeCircleSummaryDTO(BaseModel):
+    id: str
+    name: str
+    overview: str
+
+
+class KnowledgeCircleViewDTO(BaseModel):
+    """Connect Batch 2 — composed at read time from the linked
+    ``CareerWorld``, ``TopicResourceDomain``(s), matching careers,
+    trends, and life missions. Every list here is a merge of real
+    already-seeded content, never re-authored."""
+
+    id: str
+    name: str
+    overview: str
+    what_this_field_is_about: str
+    beginner_roadmap: list[str]
+    beginner_projects: list[str]
+    advanced_projects: list[str]
+    laboratories: list[str]
+    startups: list[str]
+    ngos: list[str]
+    scholarships: list[str]
+    books: list[str]
+    documentaries: list[str]
+    podcasts: list[str]
+    youtube_channels: list[str]
+    journals_and_newsletters: list[str]
+    conferences: list[str]
+    competitions: list[str]
+    hackathons: list[str]
+    workshops: list[str]
+    communities: list[str]
+    open_source_projects: list[str]
+    research_organizations: list[str]
+    museums: list[str]
+    companies: list[str]
+    universities: list[str]
+    internships: list[str]
+    certifications: list[str]
+    research_papers: list[str]
+    government_initiatives: list[str]
+    volunteering_opportunities: list[str]
+
+
+class CircleResourceProgressDTO(BaseModel):
+    id: str
+    circle_id: str
+    resource_type: str
+    resource_label: str
+    status: str
+    updated_at: datetime
+
+
+class CircleProgressResponse(BaseModel):
+    progress: list[CircleResourceProgressDTO]
+
+
+class ToggleCircleResourceRequest(BaseModel):
+    resource_type: str
+    resource_label: str
+
+
+class MentorshipProgressNoteDTO(BaseModel):
+    id: str
+    author_role: str
+    note: str
+    created_at: datetime
+
+
+class MentorshipDTO(BaseModel):
+    id: str
+    student_id: str
+    expert_id: str
+    review_token: str
+    status: str
+    goals: str
+    progress_notes: list[MentorshipProgressNoteDTO]
+    created_at: datetime
+    updated_at: datetime
+    #: Connect restructuring — resolved server-side from the real Mentor
+    #: record so "My Mentors" can show expert identity without the
+    #: frontend needing a second lookup. Empty strings when the expert
+    #: record wasn't available to resolve (never fabricated).
+    expert_name: str = ""
+    expert_role: str = ""
+    expert_domain: str = ""
+
+
+class RequestMentorshipRequest(BaseModel):
+    expert_id: str
+    goals: str = ""
+
+
+class MentorshipsResponse(BaseModel):
+    mentorships: list[MentorshipDTO]
+
+
+class AddMentorshipNoteRequest(BaseModel):
+    author_role: str
+    note: str
+
+
 class ResearchLabDTO(BaseModel):
     id: str
     name: str
@@ -324,6 +749,15 @@ class InternshipOpportunityDTO(BaseModel):
     description: str
 
 
+class EntranceExamDTO(BaseModel):
+    id: str
+    name: str
+    description: str
+    eligibility: list[str]
+    preparation_guidance: str
+    typical_timeline: str
+
+
 class InstitutionSummaryDTO(BaseModel):
     id: str
     name: str
@@ -331,6 +765,22 @@ class InstitutionSummaryDTO(BaseModel):
     city: str
     trait_tags: list[str]
     is_partner: bool
+
+
+class InstitutionReviewDTO(BaseModel):
+    role_label: str
+    quote: str
+    sentiment: str
+
+
+class InstitutionProfileDTO(BaseModel):
+    """Not a ranking — a real, deterministic count-to-tier summary. See
+    domain/services/institution_profile.py."""
+
+    research: int
+    entrepreneurship: int
+    campus_life: int
+    international_exposure: int
 
 
 class InstitutionDetailDTO(BaseModel):
@@ -356,6 +806,17 @@ class InstitutionDetailDTO(BaseModel):
     student_projects: list[StudentProjectDTO]
     internship_opportunities: list[InternshipOpportunityDTO]
     upcoming_events: list[CareerEventDTO]
+    #: Explore Batch 1 — merged Entrance Hub content, no separate route.
+    campus_life_and_culture: str = ""
+    fees_summary: str = ""
+    scholarships_summary: str = ""
+    entrance_exams: list[EntranceExamDTO] = []
+    #: Explore Polish Batch additions.
+    hostels: list[str] = []
+    exchange_programs: list[str] = []
+    campus_facilities: list[str] = []
+    student_reviews: list[InstitutionReviewDTO] = []
+    profile: InstitutionProfileDTO | None = None
 
 
 class AgentStatusDTO(BaseModel):
@@ -898,3 +1359,703 @@ class EventRegistrationsResponse(BaseModel):
 
 class HealthResponse(BaseModel):
     status: str = "ok"
+
+
+# ---------------------------------------------------------------------------
+# Discover Batch 1 backend migration — adaptive onboarding, World Signals,
+# Uncertainty Signals, Orbit Status, Progressive Discovery.
+# ---------------------------------------------------------------------------
+
+
+class OnboardingRequest(BaseModel):
+    """Request DTO for POST /v1/students/{student_id}/onboarding."""
+
+    name: str | None = None
+    age: int | None = None
+    stage: Literal["School", "College", "Professional"] | None = None
+    location_state: str | None = None
+    location_city: str | None = None
+    preferred_language: str | None = None
+    current_situation: Literal["no_idea", "few_careers", "dream_career", "switch_careers"] | None = None
+    worlds: list[str] = []
+    worlds_unsure: bool = False
+
+
+class WorldSignalDTO(BaseModel):
+    world: str
+    confidence: float
+    evidence: list[str]
+    status: str
+    first_observed: datetime
+    last_reinforced: datetime
+
+
+class OrbitStatusDTO(BaseModel):
+    """Never a comparison against other students; never names a
+    career/college. ``confidence`` is the same real, already-capped
+    ``StudentProfile.confidence_score`` — not a new metric."""
+
+    current_orbit: str
+    focus: list[str]
+    avoid: list[str]
+    explanation: str
+    message: str
+    confidence: float
+
+
+class PendingCheckInDTO(BaseModel):
+    world: str
+    prompt: str
+    options: list[str]
+
+
+class ExperimentSummaryDTO(BaseModel):
+    """Discover Batch 2 — a lightweight cross-reference into Career
+    Experiments, used by ProgressiveDiscoveryStateResponse's
+    ``suggested_experiment``. See the full ExperimentDTO further down."""
+
+    id: str
+    title: str
+    related_world: str
+    estimated_minutes: int
+
+
+class ProgressiveDiscoveryStateResponse(BaseModel):
+    """Response DTO for the onboarding submit route, the
+    progressive-discovery GET, and the Curiosity Check-in answer route —
+    the same shape from all three so the frontend never needs a second
+    round trip to know what to show next."""
+
+    onboarding_completed: bool
+    orbit_status: OrbitStatusDTO
+    pending_curiosity_checkin: PendingCheckInDTO | None
+    world_signals: list[WorldSignalDTO]
+    #: Discover Batch 2 — the single next real, uncompleted experiment to
+    #: try, honestly None once nothing's left or when the route omits the
+    #: catalog (see domain/services/progressive_discovery.py).
+    suggested_experiment: ExperimentSummaryDTO | None = None
+
+
+class CuriosityCheckInAnswerRequest(BaseModel):
+    """Request DTO for POST /v1/students/{student_id}/curiosity-checkins/answer."""
+
+    world: str
+    chosen_options: list[str]
+
+
+# ---------------------------------------------------------------------------
+# Explore Batch 1 — Global Trends.
+# ---------------------------------------------------------------------------
+
+
+class TrendDTO(BaseModel):
+    id: str
+    title: str
+    category: str
+    summary: str
+    description: str
+    affected_industries: list[str]
+    affected_skills: list[str]
+    regions: list[str]
+    time_horizon: str
+    source_note: str
+    #: Explore Polish Batch additions.
+    key_milestones: list[str] = []
+    countries_leading: list[str] = []
+    affected_careers: list[str] = []
+    research_papers: list[str] = []
+    companies: list[str] = []
+    startups: list[str] = []
+    government_initiatives: list[str] = []
+    risks: list[str] = []
+    opportunities: list[str] = []
+
+
+class TrendsResponse(BaseModel):
+    trends: list[TrendDTO]
+
+
+class FutureSkillDTO(BaseModel):
+    skill: str
+    mentioned_in_trend_count: int
+    related_trend_ids: list[str]
+
+
+class FutureSkillsResponse(BaseModel):
+    skills: list[FutureSkillDTO]
+
+
+# ---------------------------------------------------------------------------
+# Explore Batch 1 — Exposure Universe.
+# ---------------------------------------------------------------------------
+
+
+#: ExposureSuggestionDTO/ExposureUniverseResponse moved to the end of this
+#: file (Exposure Universe merge batch) — they now reference CareerWorldDTO
+#: and other DTOs defined later in the file; see the note there.
+
+
+class ExposureInteractionRequest(BaseModel):
+    career_id: str
+    interaction: Literal["opened", "dismissed"]
+
+
+class ExposureInteractionResponse(BaseModel):
+    recorded: bool = True
+
+
+# ---------------------------------------------------------------------------
+# Explore Batch 1 — Opportunity Equality.
+# ---------------------------------------------------------------------------
+
+
+class OpportunitySummaryDTO(BaseModel):
+    id: str
+    title: str
+    category: str
+    organization: str
+    description: str
+    location: str
+    is_remote: bool
+    application_deadline: datetime | None
+    official_link: str
+
+
+class OpportunityEqualityRecommendationDTO(BaseModel):
+    opportunity: OpportunitySummaryDTO
+    readiness_label: str
+    likelihood_of_self_discovery: str
+    why_shown: str
+    contributing_factors: list[str]
+
+
+class OpportunityEqualityResponse(BaseModel):
+    recommendations: list[OpportunityEqualityRecommendationDTO]
+
+
+class OpportunityEqualityInteractionRequest(BaseModel):
+    opportunity_id: str
+    interaction: Literal["viewed", "saved"]
+
+
+class OpportunityEqualityInteractionResponse(BaseModel):
+    recorded: bool = True
+
+
+# ---------------------------------------------------------------------------
+# Discover Batch 2 — Career Experiments.
+# ---------------------------------------------------------------------------
+
+
+class ExperimentDTO(BaseModel):
+    id: str
+    title: str
+    category: str
+    description: str
+    instructions: str
+    estimated_minutes: int
+    age_appropriate_note: str
+    related_world: str
+    target_traits: list[str]
+    related_life_mission_ids: list[str] = []
+    reflection_prompt: str
+    source_note: str
+
+
+class ExperimentsResponse(BaseModel):
+    experiments: list[ExperimentDTO]
+    #: Lets the frontend show completion status without a second round trip.
+    completed_experiment_ids: list[str]
+
+
+class ExperimentEvidenceRequest(BaseModel):
+    """Structured self-report, not a score — see
+    domain/models/experiment.py::ExperimentEvidence."""
+
+    enjoyment: bool = False
+    curiosity: bool = False
+    frustration: bool = False
+    persistence: bool = False
+    confidence: bool = False
+    reflection: str = ""
+
+
+class ExperimentEvidenceDTO(BaseModel):
+    enjoyment: bool
+    curiosity: bool
+    frustration: bool
+    persistence: bool
+    confidence: bool
+    reflection: str
+
+
+class ExperimentCompletionDTO(BaseModel):
+    id: str
+    experiment_id: str
+    experiment_title: str
+    related_world: str
+    completed_at: datetime
+    evidence: ExperimentEvidenceDTO
+
+
+# ---------------------------------------------------------------------------
+# Discover Batch 2 — Talent Discovery Lab.
+# ---------------------------------------------------------------------------
+
+
+class TalentEvidenceItemDTO(BaseModel):
+    source: str
+    description: str
+    observed_at: datetime
+
+
+class TalentPatternDTO(BaseModel):
+    talent: str
+    tier: str
+    explanation: str
+    evidence: list[TalentEvidenceItemDTO]
+
+
+class TalentsResponse(BaseModel):
+    patterns: list[TalentPatternDTO]
+
+
+# ---------------------------------------------------------------------------
+# Discover Navigation Refactor — Hidden Potential becomes the single
+# canonical backend source for strengths/potential/evidence. Composes
+# (never duplicates) HiddenPotentialPatternDTO/TalentPatternDTO/
+# ExperimentSummaryDTO above. GET /talents stays live as a deprecated
+# compatibility endpoint; this is the new canonical response.
+# ---------------------------------------------------------------------------
+
+
+class StrengthsGroupDTO(BaseModel):
+    """A pure regrouping of analyze_talents' own tier field — no new
+    scoring. still_discovering/emerging/growing are the real backend
+    values; these are just this response's field names."""
+
+    emerging: list[TalentPatternDTO]
+    growing: list[TalentPatternDTO]
+    consistently_observed: list[TalentPatternDTO]
+
+
+class EvidenceTimelineItemDTO(BaseModel):
+    source: str
+    description: str
+    observed_at: datetime
+    talent: str
+
+
+class DiscoveryStatisticsDTO(BaseModel):
+    traits_tracked: int
+    traits_with_strong_evidence: int
+    hidden_patterns_found: int
+    strengths_found: int
+    experiments_completed: int
+
+
+class HiddenPotentialResponse(BaseModel):
+    hidden_patterns: list[HiddenPotentialPatternDTO]
+    strengths: StrengthsGroupDTO
+    suggested_experience: ExperimentSummaryDTO | None
+    evidence_timeline: list[EvidenceTimelineItemDTO]
+    discovery_statistics: DiscoveryStatisticsDTO
+
+
+# ---------------------------------------------------------------------------
+# Discover Batch 4 — Missing Worlds.
+# ---------------------------------------------------------------------------
+
+
+class CareerWorldDTO(BaseModel):
+    id: str
+    name: str
+    description: str
+    why_it_matters: str
+    global_importance: str
+    future_growth: str
+    famous_careers: list[str]
+    beginner_roadmap: list[str]
+    required_skills: list[str]
+    misconceptions: list[str]
+    related_industries: list[str]
+    videos: list[str]
+    books: list[str]
+    communities: list[str]
+    beginner_projects: list[str]
+    internships: list[str]
+    colleges: list[str]
+    companies: list[str]
+    source_note: str
+
+
+class WorldExplorationDTO(BaseModel):
+    world: CareerWorldDTO
+    exploration_level: str
+    match_count: int
+
+
+class MissingWorldsResponse(BaseModel):
+    worlds: list[WorldExplorationDTO]
+    recommended_next: list[str]
+
+
+# ---------------------------------------------------------------------------
+# Discover Batch 4 — Life Missions.
+# ---------------------------------------------------------------------------
+
+
+class LifeMissionDTO(BaseModel):
+    id: str
+    name: str
+    description: str
+    famous_people: list[str]
+    organizations: list[str]
+    companies: list[str]
+    nonprofits: list[str]
+    books: list[str]
+    documentaries: list[str]
+    podcasts: list[str]
+    communities: list[str]
+    real_world_examples: list[str]
+    suggested_careers: list[str]
+    projects: list[str]
+    volunteering_opportunities: list[str]
+    research_areas: list[str]
+    startup_ideas: list[str]
+    source_note: str
+
+
+class MissionEvidenceItemDTO(BaseModel):
+    source: str
+    description: str
+    observed_at: datetime
+
+
+class MissionResonanceDTO(BaseModel):
+    mission: LifeMissionDTO
+    tier: str
+    trend: str
+    explanation: str
+    evidence: list[MissionEvidenceItemDTO]
+
+
+class LifeMissionsResponse(BaseModel):
+    resonances: list[MissionResonanceDTO]
+    other_missions: list[LifeMissionDTO]
+
+
+# ---------------------------------------------------------------------------
+# Experience Lab / Life Missions merge — Experience Lab becomes the single
+# surviving Discover destination, with Life Mission resonance surfaced as
+# "Your Emerging Missions" inside it rather than as its own nav item. This
+# is a composition of the two DTO blocks above (ExperimentDTO/
+# ExperimentCompletionDTO and LifeMissionDTO/MissionResonanceDTO) — neither
+# domain's DTOs are duplicated or replaced.
+# ---------------------------------------------------------------------------
+
+
+class EmergingMissionDTO(BaseModel):
+    mission: LifeMissionDTO
+    tier: str
+    trend: str
+    explanation: str
+    evidence: list[MissionEvidenceItemDTO]
+    suggested_experience: ExperimentDTO | None
+
+
+class ExperienceLabViewResponse(BaseModel):
+    recommended: list[ExperimentDTO]
+    mission_experiences: list[ExperimentDTO]
+    career_experiences: list[ExperimentDTO]
+    completed: list[ExperimentCompletionDTO]
+    completed_experiment_ids: list[str]
+    emerging_missions: list[EmergingMissionDTO]
+
+
+# ---------------------------------------------------------------------------
+# Discover Batch 5 — Learning Style Discovery.
+# ---------------------------------------------------------------------------
+
+
+class LearningStyleDTO(BaseModel):
+    id: str
+    name: str
+    description: str
+    strengths: list[str]
+    excels_in: list[str]
+    common_struggles: list[str]
+    study_strategies: list[str]
+    note_taking_techniques: list[str]
+    memory_strategies: list[str]
+    active_learning_methods: list[str]
+    project_ideas: list[str]
+    practice_routines: list[str]
+    collaboration_techniques: list[str]
+    learning_environments: list[str]
+    productivity_systems: list[str]
+    recommended_books: list[str]
+    research_backed_resources: list[str]
+    online_courses: list[str]
+    communities: list[str]
+    ways_to_strengthen: list[str]
+    source_note: str
+
+
+class LearningStyleEvidenceItemDTO(BaseModel):
+    source: str
+    description: str
+    observed_at: datetime
+
+
+class LearningStylePatternDTO(BaseModel):
+    style: LearningStyleDTO
+    tier: str
+    explanation: str
+    evidence: list[LearningStyleEvidenceItemDTO]
+    recommended_experiments: list[ExperimentDTO]
+
+
+class LearningStylesResponse(BaseModel):
+    patterns: list[LearningStylePatternDTO]
+
+
+# ---------------------------------------------------------------------------
+# Relevant Interests — a plain, evidence-grounded signal of real recurring
+# student interest, consumed by Decision Lab's "Relevant Interests"
+# strength card and its "Interest alignment" comparison dimension.
+# ---------------------------------------------------------------------------
+
+
+class InterestEvidenceItemDTO(BaseModel):
+    source: str
+    description: str
+    observed_at: datetime
+
+
+class RelevantInterestDTO(BaseModel):
+    topic: str
+    explanation: str
+    evidence: list[InterestEvidenceItemDTO]
+
+
+# ---------------------------------------------------------------------------
+# Decide Batch 1 — Decision Workspace. Composes ~13 existing systems into
+# one per-career card; every nested DTO below is an existing type reused
+# verbatim (ExpertSummaryDTO, JourneyStoryDTO, KnowledgeCircleSummaryDTO,
+# TalentPatternDTO, RelevantInterestDTO, LearningStylePatternDTO,
+# MissionResonanceDTO, CareerWorldDTO, OpportunityEqualityRecommendationDTO,
+# SalaryRangeDTO) — nothing here duplicates a shape that already exists.
+# Placed at the end of the file since it references nearly every DTO
+# defined above it.
+# ---------------------------------------------------------------------------
+
+
+class DecisionExplanationDTO(BaseModel):
+    supporting_by_source: dict[str, list[str]]
+    contradicting_by_source: dict[str, list[str]]
+    missing_evidence: list[str]
+    strength_traits: list[str]
+
+
+class ReadinessCheckpointsDTO(BaseModel):
+    has_reflection: bool
+    has_experiment: bool
+    has_expert_contact: bool
+    has_explored_world: bool
+    has_explored_opportunity: bool
+    has_simulation: bool
+    has_knowledge_circle_engagement: bool
+    percent: int
+
+
+class RealityCheckDTO(BaseModel):
+    daily_work: str
+    work_life_balance: str
+    stress: str
+    automation_risk: str
+    remote_possibility: str
+    travel: str
+    industry_outlook: str
+    salary_ranges: list[SalaryRangeDTO]
+
+
+class CardRecommendationDTO(BaseModel):
+    verdict: str
+    reason: str
+
+
+class NextActionItemDTO(BaseModel):
+    label: str
+    href: str | None = None
+
+
+class CareerDecisionCardDTO(BaseModel):
+    # Overview
+    career_id: str
+    career_name: str
+    one_liner: str
+    why_it_matters: str
+    confidence_label: str
+    confidence_band: str
+    demand_2030: str
+    demand_2035: str
+    demand_2040: str
+    readiness: ReadinessCheckpointsDTO
+    # Reality Check
+    reality_check: RealityCheckDTO
+    # Evidence
+    reasons_for: list[str]
+    reasons_against: list[str]
+    missing_evidence: list[str]
+    explanation: DecisionExplanationDTO
+    # Strengths
+    hidden_strengths: list[TalentPatternDTO]
+    relevant_interests: list[RelevantInterestDTO]
+    learning_style_pattern: LearningStylePatternDTO | None = None
+    # Explore
+    unexplored_worlds: list[CareerWorldDTO]
+    related_life_missions: list[MissionResonanceDTO]
+    top_journey_stories: list[JourneyStoryDTO]
+    top_knowledge_circles: list[KnowledgeCircleSummaryDTO]
+    top_opportunities: list[OpportunityEqualityRecommendationDTO]
+    # People
+    top_experts: list[ExpertSummaryDTO]
+    # Your Next Step
+    decision_gaps: list[str]
+    next_actions: list[NextActionItemDTO]
+    recommendation: CardRecommendationDTO
+
+
+class StageProgressDTO(BaseModel):
+    discover: bool
+    explore: bool
+    connect: bool
+
+
+class DecisionWorkspaceResponse(BaseModel):
+    cards: list[CareerDecisionCardDTO]
+    workspace_gaps: list[str]
+    overall_readiness_percent: int
+    stage_progress: StageProgressDTO
+
+
+# --- Suggest to Aureon --------------------------------------------------
+
+
+class CreateSuggestionRequest(BaseModel):
+    category: str
+    title: str
+    description: str
+    source_url: str | None = None
+    context_type: str | None = None
+    context_id: str | None = None
+    context_metadata: dict[str, Any] | None = None
+
+
+class SuggestionDTO(BaseModel):
+    id: str
+    student_id: str
+    category: str
+    title: str
+    description: str
+    source_url: str | None
+    context_type: str | None
+    context_id: str | None
+    context_metadata: dict[str, Any]
+    status: str
+    review_notes: str | None
+    reviewed_at: datetime | None
+    created_at: datetime
+    updated_at: datetime
+
+
+class SuggestionsResponse(BaseModel):
+    suggestions: list[SuggestionDTO]
+
+
+class UpdateSuggestionStatusRequest(BaseModel):
+    status: str
+    review_notes: str | None = None
+
+
+# --- Exposure Universe merge (Missing Worlds + Exposure Universe) -------
+# Placed here, after CareerWorldDTO/CareerSummaryDTO/KnowledgeCircleSummaryDTO/
+# JourneyStoryDTO/ExpertSummaryDTO are already defined, for the same
+# forward-reference reason Decide Batch 1's DTOs live at the end of this
+# file — Pydantic model fields are resolved at class-definition time here
+# (no `from __future__ import annotations`).
+
+
+class WorldExposureSummaryDTO(BaseModel):
+    world_name: str
+    level: str
+
+
+class ExposureMapDTO(BaseModel):
+    engaged: list[WorldExposureSummaryDTO]
+    limited_or_none: list[WorldExposureSummaryDTO]
+
+
+class MissingWorldCardDTO(BaseModel):
+    world: CareerWorldDTO
+    level: str
+    match_count: int
+    why_missing: str
+    related_careers: list[CareerSummaryDTO]
+    linked_circle: KnowledgeCircleSummaryDTO | None
+
+
+class ExposureSuggestionDTO(BaseModel):
+    """Never a fit score, never a percentage — framed entirely around
+    "have you seen this?", not "you'd be good at this."."""
+
+    career: CareerSummaryDTO
+    curiosity_hook: str
+    #: Explore Polish Batch additions — composed entirely from the
+    #: (already-enriched) Career catalog, plus one reused Experience Lab
+    #: suggestion. See domain/services/exposure_recommendation.py.
+    mini_introduction: str = ""
+    quick_project: str | None = None
+    watch: list[str] = []
+    read: list[str] = []
+    build: list[str] = []
+    join: list[str] = []
+    reflect_prompt: str = ""
+    suggested_experience: ExperimentSummaryDTO | None = None
+    #: Exposure Universe merge — set when this suggestion's industry
+    #: overlaps a currently-recommended Missing World, so the frontend can
+    #: visually connect "this possibility relates to a world you haven't
+    #: explored." None when no such overlap exists — never fabricated.
+    related_missing_world: str | None = None
+
+
+class ExposureUniverseResponse(BaseModel):
+    exposure_map: ExposureMapDTO
+    missing_worlds: list[MissingWorldCardDTO]
+    suggestions: list[ExposureSuggestionDTO]
+
+
+class WorldRelatedStoryDTO(BaseModel):
+    """A lightweight preview, not the full Journey Story view (which needs
+    `build_journey_story_view` plus expert/mission lookups) — proportionate
+    for a "related stories" preview that links out to the real Journey
+    Stories screen for the complete read."""
+
+    id: str
+    career_id: str
+    career_name: str
+    person_label: str
+    journey: str
+    advice: str
+
+
+class WorldExplorationDetailDTO(BaseModel):
+    world: CareerWorldDTO
+    level: str
+    match_count: int
+    why_missing: str
+    related_careers: list[CareerSummaryDTO]
+    related_stories: list[WorldRelatedStoryDTO]
+    related_experts: list[ExpertSummaryDTO]
+    linked_circle: KnowledgeCircleSummaryDTO | None

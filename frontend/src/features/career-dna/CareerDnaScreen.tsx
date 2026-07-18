@@ -3,8 +3,11 @@ import { Compass, Layers, MessagesSquare, ScanSearch, Sparkles } from "lucide-re
 
 import { Badge } from "../../design-system/components/Badge";
 import { EmptyStatePanel } from "../../design-system/components/EmptyStatePanel";
+import { Field } from "../../design-system/components/Field";
 import { ProcessSteps } from "../../design-system/components/ProcessSteps";
 import { Surface } from "../../design-system/components/Surface";
+import { UniverseSummaryCard } from "../discovery/components/UniverseSummaryCard";
+import { UniverseWorkspaceTabs } from "../discovery/components/UniverseWorkspaceTabs";
 import { useDiscoveryContext } from "../discovery/DiscoveryContext";
 import { traitLabel } from "../discovery/network/layoutTraits";
 import { BeliefRevisionEntry } from "../discovery/notebook/BeliefRevisionEntry";
@@ -44,7 +47,7 @@ const FORMATION_STEPS = [
 /** Full Career DNA breakdown — never a percentage, every trait explains
  * why Aureon currently believes it, via the trait's own summary text. */
 export function CareerDnaScreen() {
-  const { careerDna, notebookEntries, confidenceScore, understandingStage } = useDiscoveryContext();
+  const { careerDna, hypotheses, notebookEntries, confidenceScore, understandingStage } = useDiscoveryContext();
   const traits = Object.entries(careerDna);
 
   const evidenceTimeline = [...notebookEntries]
@@ -53,28 +56,26 @@ export function CareerDnaScreen() {
 
   return (
     <div className="mx-auto max-w-2xl px-6 py-10">
+      <div className="mb-8 space-y-4">
+        <UniverseSummaryCard
+          hypotheses={hypotheses}
+          careerDna={careerDna}
+          confidenceScore={confidenceScore}
+          understandingStage={understandingStage}
+        />
+        <UniverseWorkspaceTabs />
+      </div>
+
       <h1 className="text-2xl font-light text-ink">Career DNA</h1>
       <p className="mt-2 text-sm text-ink-muted">
         A living profile, built from evidence rather than a one-time quiz result.
       </p>
 
-      {/* Current Evidence Summary */}
-      <div className="mt-8 grid grid-cols-2 gap-4">
-        <Surface tone="neutral" padding="md">
-          <p className="text-[0.65rem] uppercase tracking-widest text-ink-faint">Traits Tracked</p>
-          <p className="mt-1.5 text-2xl font-light text-ink">{traits.length}</p>
-        </Surface>
-        <Surface tone="neutral" padding="md">
-          <p className="text-[0.65rem] uppercase tracking-widest text-ink-faint">Evidence Entries</p>
-          <p className="mt-1.5 text-2xl font-light text-ink">{notebookEntries.length}</p>
-        </Surface>
-      </div>
-
-      {/* Confidence Progress */}
-      <div className="mt-4">
+      {/* Current Evidence Summary + Confidence Progress */}
+      <div className="mt-8">
         <Surface tone="neutral" padding="md">
           <div className="flex items-center justify-between">
-            <p className="text-[0.65rem] uppercase tracking-widest text-ink-faint">Confidence Progress</p>
+            <p className="font-mono text-[0.6rem] uppercase tracking-[0.14em] text-ink-faint">Confidence Progress</p>
             <Badge tone="warm">{understandingStage}</Badge>
           </div>
           <div className="mt-3 h-1 w-full overflow-hidden rounded-full bg-white/5">
@@ -83,12 +84,22 @@ export function CareerDnaScreen() {
               style={{ width: `${Math.round(confidenceScore * 100)}%` }}
             />
           </div>
+          <div className="mt-4 flex gap-8 border-t border-border pt-4">
+            <div>
+              <p className="text-lg font-light text-ink">{traits.length}</p>
+              <p className="font-mono text-[0.6rem] uppercase tracking-[0.1em] text-ink-faint">Traits tracked</p>
+            </div>
+            <div>
+              <p className="text-lg font-light text-ink">{notebookEntries.length}</p>
+              <p className="font-mono text-[0.6rem] uppercase tracking-[0.1em] text-ink-faint">Evidence entries</p>
+            </div>
+          </div>
         </Surface>
       </div>
 
       {/* Traits Being Built */}
       <div className="mt-8">
-        <p className="mb-3 px-1 text-xs uppercase tracking-widest text-ink-faint">Traits Being Built</p>
+        <p className="mb-3 px-1 font-mono text-[0.6rem] uppercase tracking-[0.14em] text-ink-faint">Traits Being Built</p>
         {traits.length === 0 ? (
           <EmptyStatePanel
             icon={Compass}
@@ -97,30 +108,30 @@ export function CareerDnaScreen() {
             action={
               <Link
                 to="/discover/identity"
-                className="rounded-xl bg-accent px-4 py-2.5 text-sm font-medium text-ink transition hover:bg-accent-soft"
+                className="rounded-lg bg-accent px-4 py-2.5 text-sm font-medium tracking-wide text-ink transition-colors hover:bg-accent-soft"
               >
                 Start a conversation
               </Link>
             }
           />
         ) : (
-          <div className="space-y-4">
+          <Field divided>
             {traits.map(([name, signal]) => (
-              <Surface key={name} tone="neutral" padding="md">
+              <div key={name} className="py-4 first:pt-0 last:pb-0">
                 <div className="flex items-baseline justify-between">
                   <h3 className="text-sm font-medium text-ink">{traitLabel(name)}</h3>
-                  <span className="text-xs text-accent-soft">{qualitativeLabel(signal.score)}</span>
+                  <span className="font-mono text-xs text-accent-soft">{qualitativeLabel(signal.score)}</span>
                 </div>
                 <p className="mt-2 text-sm leading-relaxed text-ink-muted">{signal.summary}</p>
-              </Surface>
+              </div>
             ))}
-          </div>
+          </Field>
         )}
       </div>
 
       {/* Evidence Timeline */}
       <div className="mt-8">
-        <p className="mb-3 px-1 text-xs uppercase tracking-widest text-ink-faint">Evidence Timeline</p>
+        <p className="mb-3 px-1 font-mono text-[0.6rem] uppercase tracking-[0.14em] text-ink-faint">Evidence Timeline</p>
         {evidenceTimeline.length === 0 ? (
           <p className="text-xs text-ink-faint">
             The most recent entries that shaped your Career DNA will appear here once they exist.

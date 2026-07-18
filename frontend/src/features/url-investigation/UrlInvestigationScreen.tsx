@@ -3,6 +3,7 @@ import { FileSearch, GitBranch, Globe, ShieldAlert } from "lucide-react";
 
 import { Button } from "../../design-system/components/Button";
 import { EmptyStatePanel } from "../../design-system/components/EmptyStatePanel";
+import { Input } from "../../design-system/components/Input";
 import { ProcessSteps } from "../../design-system/components/ProcessSteps";
 import { Surface } from "../../design-system/components/Surface";
 import { MissionWorkspace } from "../mission-workspace/MissionWorkspace";
@@ -53,7 +54,7 @@ function findingsReport({
       {Object.entries(structuredFields).length > 0 && (
         <div className="mt-3 flex flex-wrap gap-1.5 border-t border-border pt-3">
           {Object.entries(structuredFields).map(([key, value]) => (
-            <span key={key} className="rounded-full border border-border px-2 py-1 text-[0.68rem] text-ink-faint">
+            <span key={key} className="rounded-full border border-border px-2 py-1 font-mono text-[0.65rem] text-ink-faint">
               {key.replace(/_/g, " ")}: {value}
             </span>
           ))}
@@ -81,18 +82,17 @@ export function UrlInvestigationScreen() {
       </div>
 
       <div className="mt-6 flex gap-2">
-        <input
+        <Input
           value={url}
           onChange={(e) => setUrl(e.target.value)}
           placeholder="https://…"
-          className="w-full rounded-xl border border-border bg-surface px-4 py-2.5 text-sm text-ink placeholder:text-ink-faint focus:border-accent/40 focus:outline-none"
         />
         <Button onClick={() => investigate(url)} disabled={isInvestigating || !url.trim()}>
           {isInvestigating ? "Investigating…" : "Investigate"}
         </Button>
       </div>
 
-      {error && <p className="mt-3 text-xs text-red-400">{error}</p>}
+      {error && <p className="mt-3 text-xs text-danger">{error}</p>}
 
       {!result && !isInvestigating && (
         <div className="mt-6">

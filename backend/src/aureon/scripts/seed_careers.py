@@ -213,6 +213,13 @@ CAREERS: list[dict] = [
             "skills_becoming_valuable": ["AI system monitoring", "responsible AI practices", "incident response for ML systems"],
             "timeline_narrative": "Today this is a new, still-forming role; by 2030 it becomes a standard function at any company deploying AI; by 2035 it professionalizes with its own career ladder and certifications; by 2040 it's as established as today's DevOps roles.",
         },
+        "description": "AI Operations Specialists are the people who make sure AI systems keep behaving well once they're actually out in the world — not building the model, but watching over it, catching problems, and keeping it trustworthy in production.",
+        "why_people_love_it": "It sits right at the intersection of curiosity and impact — every day brings a new puzzle in why a model is behaving strangely, and fixing it has real, immediate consequences for real users.",
+        "branches": [
+            {"name": "AI Reliability Engineering", "description": "Focuses on uptime, latency, and failure recovery for deployed AI systems."},
+            {"name": "Responsible AI Operations", "description": "Focuses on fairness, safety, and compliance monitoring for AI systems in production."},
+        ],
+        "curiosity_hook": "Did you know there's a real, fast-growing job whose entire purpose is keeping AI systems honest after they've already shipped?",
     },
     {
         "id": "genomics_data_scientist",
@@ -250,6 +257,13 @@ CAREERS: list[dict] = [
             "skills_becoming_valuable": ["large-scale ML on biological data", "multi-omics integration", "clinical genomics interpretation"],
             "timeline_narrative": "Today, genomic data analysis is already heavily computational; by 2030 AI models routinely surface candidate discoveries for researchers to validate; by 2035 personalized medicine driven by genomic data is common; by 2040 this field sits at the center of how medicine is practiced.",
         },
+        "description": "Genomics Data Scientists analyze the vast amount of data encoded in DNA to find patterns behind disease, traits, and treatment response — turning raw genetic sequences into real, actionable medical insight.",
+        "why_people_love_it": "It's detective work at the molecular level — every dataset is a real puzzle with a real person's health on the other side of the answer.",
+        "branches": [
+            {"name": "Clinical Genomics", "description": "Applies genomic analysis directly to patient diagnosis and treatment planning."},
+            {"name": "Population Genomics", "description": "Studies genetic variation across large groups to understand disease risk and ancestry."},
+        ],
+        "curiosity_hook": "Did you know there's a real career built entirely around reading the story written in someone's DNA?",
     },
     {
         "id": "sustainability_analyst",
@@ -324,6 +338,13 @@ CAREERS: list[dict] = [
             "skills_becoming_valuable": ["autonomous systems design", "AI-assisted simulation", "sustainable/reusable spacecraft design"],
             "timeline_narrative": "Today, commercial space is rapidly expanding; by 2030 reusable launch and satellite constellations are standard; by 2035 AI-assisted autonomous operations reduce ground-control burden; by 2040 space systems engineering is a mainstream, well-established engineering discipline.",
         },
+        "description": "Space Systems Engineers design and test the hardware and software that lets spacecraft, satellites, and launch vehicles actually survive and function in space — a genuinely rare, high-stakes engineering discipline.",
+        "why_people_love_it": "Almost nothing else feels as real as watching something you helped build actually leave the atmosphere and work exactly as designed, millions of miles from any chance to fix it by hand.",
+        "branches": [
+            {"name": "Satellite Systems", "description": "Focuses on designing and operating the satellites themselves."},
+            {"name": "Launch Vehicle Engineering", "description": "Focuses on the rockets and propulsion systems that get payloads to orbit."},
+        ],
+        "curiosity_hook": "Did you know engineers who design spacecraft rarely get a second chance to fix a mistake once it launches — and that shapes the entire way they work?",
     },
     # ---------------------------------------------------------------- interdisciplinary
     {
@@ -436,6 +457,13 @@ CAREERS: list[dict] = [
             "skills_becoming_valuable": ["large language model evaluation", "multilingual NLP", "AI safety/bias analysis"],
             "timeline_narrative": "Today, computational linguists shape how language models are evaluated; by 2030 their work centers heavily on safety and multilingual fairness; by 2035 low-resource language support becomes a major focus area; by 2040 the field remains central to responsible language AI development.",
         },
+        "description": "Computational Linguists study how language actually works and use that real linguistic knowledge to build and evaluate the language technology millions of people use every day.",
+        "why_people_love_it": "It's a rare career where a genuine love of language and a genuine love of building systems both matter equally, every day.",
+        "branches": [
+            {"name": "Multilingual NLP", "description": "Focuses on making language technology work fairly across many languages, not just the most common ones."},
+            {"name": "Language Model Evaluation", "description": "Focuses on rigorously testing how well language models actually understand and generate language."},
+        ],
+        "curiosity_hook": "Did you know there's a real career for people who want to combine studying language itself with building the AI that uses it?",
     },
     {
         "id": "health_informatics_specialist",
@@ -548,6 +576,13 @@ CAREERS: list[dict] = [
             "skills_becoming_valuable": ["computational modeling of neural data", "machine learning for neuroscience", "brain-computer interface research"],
             "timeline_narrative": "Today, neuroscience increasingly overlaps with computational modeling; by 2030 AI-assisted analysis of neural data is standard; by 2035 brain-computer interface research expands significantly; by 2040 the boundary between neuroscience and AI research is substantially blurred.",
         },
+        "description": "Computational Neuroscience researchers build mathematical and computational models of how real brains actually process information — using code and math to understand the most complex known system in the universe.",
+        "why_people_love_it": "It's one of the few fields where every real discovery about how the brain works also teaches you something new about how to build better AI, and vice versa.",
+        "branches": [
+            {"name": "Brain-Computer Interfaces", "description": "Builds real systems that let neural activity directly control external devices."},
+            {"name": "Computational Modeling of Cognition", "description": "Builds mathematical models of how real brains perform tasks like memory and decision-making."},
+        ],
+        "curiosity_hook": "You may never have heard of Computational Neuroscience — a real field where researchers use code to model how actual brains think.",
     },
     {
         "id": "clinical_research_coordinator",
@@ -884,6 +919,13 @@ CAREERS: list[dict] = [
             "skills_becoming_valuable": ["AI-assisted ecological monitoring", "remote sensing analysis", "climate-adaptive conservation design"],
             "timeline_narrative": "Today, camera traps and satellite data already generate huge datasets; by 2030 AI analyzes most of this automatically, freeing biologists for strategy; by 2035 conservation planning is heavily data-driven; by 2040 small conservation teams can monitor and protect far larger areas than before.",
         },
+        "description": "Conservation Biologists study real ecosystems and wildlife populations in the field to figure out what's actually threatening them, and design real interventions to protect them.",
+        "why_people_love_it": "The work happens in real forests, oceans, and grasslands, not just labs — and the results are measured in species and habitats that genuinely still exist because of it.",
+        "branches": [
+            {"name": "Marine Conservation", "description": "Focuses on protecting ocean ecosystems, from coral reefs to migratory species."},
+            {"name": "Wildlife Population Ecology", "description": "Focuses on tracking and modeling real animal population health and threats."},
+        ],
+        "curiosity_hook": "Have you ever seen how a conservation biologist actually spends a day — mostly outdoors, tracking real, living data most people never see?",
     },
     {
         "id": "human_rights_researcher",

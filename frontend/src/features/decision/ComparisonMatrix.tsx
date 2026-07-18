@@ -17,6 +17,15 @@ const DIMENSION_LABELS: Record<string, string> = {
   stress: "Stress",
   flexibility: "Flexibility",
   entrepreneurship_potential: "Entrepreneurship potential",
+  // Decide Batch 1 — 6 additional dimensions, appended to a comparison's
+  // `dimensions` list by the backend after the LLM-reasoned facts above;
+  // rendering is already generic, so these just need labels.
+  leadership_emphasis: "Leadership emphasis",
+  opportunity_availability: "Opportunity availability",
+  interest_alignment: "Interest alignment",
+  career_dna_alignment: "Career DNA alignment",
+  learning_style_alignment: "Learning style alignment",
+  mission_alignment: "Mission alignment",
 };
 
 /**

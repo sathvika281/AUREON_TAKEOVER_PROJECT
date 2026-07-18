@@ -18,6 +18,8 @@ def record_new_evidence(
     items: list[str],
     relation: Literal["supports", "contradicts"],
     now: datetime,
+    source: Literal["conversation", "reflection", "url", "document", "github", "search", "experiment"] = "conversation",
+    related_trait: str | None = None,
     related_hypothesis: str | None = None,
     related_career: str | None = None,
     related_mentor: str | None = None,
@@ -27,7 +29,12 @@ def record_new_evidence(
     LLM tends to re-state the full current supporting/contradicting list
     each turn/analysis, not just deltas, so this dedupes against what's
     already in the graph for this exact hypothesis/career/mentor/
-    institution."""
+    institution/trait.
+
+    ``source``/``related_trait`` are additive, backward-compatible
+    parameters (Discover Batch 2) — every pre-existing caller omits both
+    and keeps writing ``source="conversation"`` records exactly as before.
+    """
     existing_texts = {
         e.text
         for e in profile.evidence_graph
@@ -35,6 +42,7 @@ def record_new_evidence(
         and e.related_career == related_career
         and e.related_mentor == related_mentor
         and e.related_institution == related_institution
+        and e.related_trait == related_trait
         and e.relation == relation
     }
     for text in items:
@@ -44,7 +52,8 @@ def record_new_evidence(
             EvidenceRecord(
                 id=str(uuid.uuid4()),
                 text=text,
-                source="conversation",
+                source=source,
+                related_trait=related_trait,
                 related_hypothesis=related_hypothesis,
                 related_career=related_career,
                 related_mentor=related_mentor,

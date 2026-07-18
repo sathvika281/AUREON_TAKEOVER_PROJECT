@@ -18,28 +18,24 @@ from aureon.agents.specialized.mentor.tools import (
     MentorProfileReaderTool,
     ResearchProfileReaderTool,
 )
-from aureon.agents.specialized.opportunity.tools import (
-    CompetitionSearchTool,
-    InternshipSearchTool,
-    OpportunitySearchTool,
-    ResearchOpportunitySearchTool,
-)
 from aureon.agents.specialized.roadmap.tools import AdaptivePlanningTool, MilestonePlannerTool
 from aureon.agents.tools.base import ToolStatus, run_tool_safely
 
 #: Every tool that has no real infrastructure to act on yet, across every
 #: specialist. None of these may ever claim a fabricated finding.
-#: NOTE: URLReaderTool (V6) and PDFReaderTool/ResumeReaderTool/
+#: NOTE: URLReaderTool (V6), PDFReaderTool/ResumeReaderTool/
 #: CurriculumReaderTool/AdmissionPDFReaderTool/PublicationReaderTool/
-#: ResearchPaperReaderTool (V8, Document Intelligence) graduated to real
-#: tools — each has its own test coverage elsewhere and is deliberately
-#: excluded from this "still a stub" list.
+#: ResearchPaperReaderTool (V8, Document Intelligence), and
+#: OpportunitySearchTool/InternshipSearchTool/ResearchOpportunitySearchTool/
+#: CompetitionSearchTool (Phase 2 Stage 2, Opportunity Hub — now real
+#: reads through providers/registry.py's fetch_all_safely) graduated to
+#: real tools — each has its own test coverage elsewhere and is
+#: deliberately excluded from this "still a stub" list.
 STUB_TOOLS = [
     DocumentReaderTool, ImageUnderstandingTool, ChatExportReaderTool,
     BrowserInvestigationTool, SearchTool, TrendInvestigationTool,
     UniversityWebsiteReaderTool, ResearchLabReaderTool,
     MentorProfileReaderTool, ResearchProfileReaderTool,
-    OpportunitySearchTool, InternshipSearchTool, ResearchOpportunitySearchTool, CompetitionSearchTool,
     MilestonePlannerTool, AdaptivePlanningTool,
 ]
 

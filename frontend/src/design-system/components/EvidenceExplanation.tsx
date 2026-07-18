@@ -10,20 +10,25 @@ export function EvidenceExplanation({
   supporting,
   contradicting,
   missing,
+  markerClassName = "text-accent-soft",
 }: {
   supporting: string[];
   contradicting: string[];
   missing: string[];
+  /** Overrides the supporting-evidence "+" glyph color only — every
+   * other color here stays the shared default. Used by screens with
+   * their own local palette (e.g. Identity Discovery's indigo/gold). */
+  markerClassName?: string;
 }) {
   return (
     <>
       {supporting.length > 0 && (
         <div className="mt-3">
-          <p className="text-[0.65rem] uppercase tracking-widest text-ink-faint">Supporting evidence</p>
+          <p className="font-mono text-[0.6rem] uppercase tracking-[0.12em] text-ink-faint">Supporting evidence</p>
           <ul className="mt-1.5 space-y-1">
             {supporting.map((item, i) => (
               <li key={i} className="text-xs text-ink-muted">
-                <span className="text-accent-soft">＋</span> {item}
+                <span className={markerClassName}>＋</span> {item}
               </li>
             ))}
           </ul>
@@ -32,10 +37,10 @@ export function EvidenceExplanation({
 
       {contradicting.length > 0 && (
         <div className="mt-3">
-          <p className="text-[0.65rem] uppercase tracking-widest text-ink-faint">Contradicting evidence</p>
+          <p className="font-mono text-[0.6rem] uppercase tracking-[0.12em] text-ink-faint">Contradicting evidence</p>
           <ul className="mt-1.5 space-y-1">
             {contradicting.map((item, i) => (
-              <li key={i} className="text-xs text-red-300/80">
+              <li key={i} className="text-xs text-danger/85">
                 <span>✕</span> {item}
               </li>
             ))}
@@ -45,7 +50,7 @@ export function EvidenceExplanation({
 
       {missing.length > 0 && (
         <div className="mt-3">
-          <p className="text-[0.65rem] uppercase tracking-widest text-ink-faint">Missing evidence</p>
+          <p className="font-mono text-[0.6rem] uppercase tracking-[0.12em] text-ink-faint">Missing evidence</p>
           <ul className="mt-1.5 space-y-1">
             {missing.map((item, i) => (
               <li key={i} className="text-xs text-ink-faint">

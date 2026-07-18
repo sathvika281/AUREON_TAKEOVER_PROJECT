@@ -7,13 +7,18 @@ from aureon.domain.models.career_comparison import CareerComparison, ParallelUni
 from aureon.domain.models.career_dna import CareerDNA
 from aureon.domain.models.career_experience import EventRegistration, ExpertSessionBooking, GuidanceRequest
 from aureon.domain.models.career_exploration import CareerExplorationEvent
+from aureon.domain.models.circle_resource_progress import CircleResourceProgress
+from aureon.domain.models.career_memory import CareerMemory
 from aureon.domain.models.career_hypothesis import CareerHypothesis
 from aureon.domain.models.career_investigation import CareerInvestigationRecord
 from aureon.domain.models.career_simulation import CareerSimulation
 from aureon.domain.models.document_investigation import DocumentInvestigationRecord
 from aureon.domain.models.github_investigation import GitHubInvestigationRecord
 from aureon.domain.models.decision_memory import DecisionMemoryEntry
+from aureon.domain.models.discovery_onboarding import DiscoveryOnboarding
 from aureon.domain.models.evidence import EvidenceRecord
+from aureon.domain.models.experiment import ExperimentCompletion
+from aureon.domain.models.exposure import ExposureHistoryEntry
 from aureon.domain.models.mentor_handoff import MentorHandoff
 from aureon.domain.models.mentor_match import CollegeMatch, MentorMatch
 from aureon.domain.models.notebook import NotebookEntry
@@ -142,6 +147,34 @@ class StudentProfile(BaseModel):
     #: Bookmark list — mentor ids only, per the spec's explicit "no
     #: complex backend logic" for Save Expert.
     saved_experts: list[str] = Field(default_factory=list)
+
+    #: Phase 2 Foundation — shared cross-agent memory facade (Milestone
+    #: B). Additive only; every existing field above stays the single
+    #: source of truth for its own domain — see
+    #: services/foundation/career_memory/service.py.
+    foundation_memory: CareerMemory = Field(default_factory=CareerMemory)
+
+    #: Discover Batch 1 backend migration — adaptive onboarding, World
+    #: Signals, Uncertainty Signals. See domain/models/discovery_onboarding.py.
+    #: FROZEN — do not add to this field or its model; genuinely new
+    #: Explore-stage state gets its own top-level field instead (see
+    #: exposure_history below).
+    discovery_onboarding: DiscoveryOnboarding = Field(default_factory=DiscoveryOnboarding)
+
+    #: Explore Batch 1 — Exposure Universe's own suggestion log, distinct
+    #: from career_exploration_history's real-visit log. See
+    #: domain/models/exposure.py.
+    exposure_history: list[ExposureHistoryEntry] = Field(default_factory=list)
+
+    #: Discover Batch 2 — Student Experiment History. Append-only, same
+    #: never-overwritten reasoning as career_comparisons. Talent Discovery
+    #: Lab reads this directly (see domain/services/talent_pattern_engine.py).
+    career_experiments: list[ExperimentCompletion] = Field(default_factory=list)
+
+    #: Connect Batch 2 — Knowledge Circles. Composite-key toggle list
+    #: (circle_id, resource_type, resource_label) since composed
+    #: resources are plain strings with no stable id of their own.
+    circle_resource_progress: list[CircleResourceProgress] = Field(default_factory=list)
 
     created_at: datetime = Field(default_factory=_utcnow)
     updated_at: datetime = Field(default_factory=_utcnow)
