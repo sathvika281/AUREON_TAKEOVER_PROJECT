@@ -1,4 +1,5 @@
 from aureon.domain.models.career import Career, CareerReality, CareerStory, FutureLens
+from aureon.domain.models.skill import Skill
 from aureon.domain.services.career_view import build_career_detail_dto, build_career_summary_dto
 
 _REALITY = CareerReality(
@@ -57,3 +58,18 @@ def test_stories_are_not_marked_relevant_without_a_student():
     dto = build_career_detail_dto(_career(), [story], student_trait_tags=None)
 
     assert dto.stories[0].relevant_to_student is False
+
+
+def test_required_skills_default_to_empty_when_none_resolved():
+    # A career whose required_skill_ids haven't been backfilled yet (or a
+    # test that doesn't pass any) must never show a fabricated skill list.
+    dto = build_career_detail_dto(_career(), [])
+    assert dto.required_skills == []
+
+
+def test_required_skills_are_resolved_into_real_dtos():
+    skill = Skill(id="programming", name="Programming", category="technical", description="x")
+    dto = build_career_detail_dto(_career(), [], required_skills=[skill])
+    assert len(dto.required_skills) == 1
+    assert dto.required_skills[0].id == "programming"
+    assert dto.required_skills[0].name == "Programming"

@@ -28,6 +28,7 @@ from aureon.api.v1 import (
     opportunity_equality,
     parent_connect,
     search_investigation,
+    skills,
     students,
     suggestions,
     talent_discovery,
@@ -63,6 +64,7 @@ api_router.include_router(career_experiments.router)
 api_router.include_router(talent_discovery.router)
 api_router.include_router(hidden_potential_routes.router)
 api_router.include_router(missing_worlds.router)
+api_router.include_router(skills.router)
 api_router.include_router(life_missions.router)
 api_router.include_router(learning_styles.router)
 api_router.include_router(expert_connect.router)

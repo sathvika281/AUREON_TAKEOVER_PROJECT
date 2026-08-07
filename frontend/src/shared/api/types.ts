@@ -293,6 +293,31 @@ export interface CareerDetail {
   /** Cross-field realistic transitions (e.g. Software Engineer -> Product
    * Manager) — plain names, deliberately separate from `related_careers`. */
   adjacent_careers: string[];
+  /** Sprint 1 — real Skill entities, additive alongside
+   * `reality.required_skills` (left untouched as the display fallback for
+   * any career not yet backfilled with real links). */
+  required_skills: Skill[];
+}
+
+// -- Sprint 1 — Skill Knowledge Base (docs/AUREON_DATA_ARCHITECTURE.md §3) --
+
+export interface Skill {
+  id: string;
+  name: string;
+  category: string;
+  description: string;
+  parent_skill_id: string | null;
+  related_skill_ids: string[];
+  evidence_types_that_count: string[];
+}
+
+export interface SkillsResponse {
+  skills: Skill[];
+}
+
+export interface SkillDetail {
+  skill: Skill;
+  careers_requiring_it: CareerSummary[];
 }
 
 /** No raw confidence number — only the qualitative Evidence Strength

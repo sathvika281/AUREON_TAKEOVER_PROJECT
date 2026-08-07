@@ -98,6 +98,13 @@ class Career(BaseModel):
     branches: list[CareerBranch] = Field(default_factory=list)
     curiosity_hook: str | None = None
 
+    #: Sprint 1 — Skill promotion (docs/AUREON_DATA_ARCHITECTURE.md §3/§6).
+    #: Real edges into the Skill Knowledge Base, additive alongside
+    #: `reality.required_skills` (left untouched) rather than replacing it —
+    #: the free-text list stays the display fallback for any career not
+    #: yet backfilled with real skill links.
+    required_skill_ids: list[str] = Field(default_factory=list)
+
     #: Explore Polish Batch — all additive, all defaulted so existing rows
     #: and tests keep working. Backfilled onto every career via
     #: scripts/enrich_careers.py, not this original creation script.

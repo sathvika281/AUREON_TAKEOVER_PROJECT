@@ -29,6 +29,7 @@ from aureon.services.supabase.repositories.suggestion_repository import Suggesti
 from aureon.services.supabase.repositories.student_profile_repository import (
     StudentProfileRepository,
 )
+from aureon.services.supabase.repositories.skill_repository import SkillRepository
 from aureon.services.supabase.repositories.topic_resource_repository import TopicResourceRepository
 from aureon.services.supabase.repositories.trend_repository import TrendRepository
 
@@ -45,6 +46,10 @@ def get_student_profile_repository() -> StudentProfileRepository:
 
 def get_career_repository() -> CareerRepository:
     return CareerRepository()
+
+
+def get_skill_repository() -> SkillRepository:
+    return SkillRepository()
 
 
 def get_mentor_repository() -> MentorRepository:

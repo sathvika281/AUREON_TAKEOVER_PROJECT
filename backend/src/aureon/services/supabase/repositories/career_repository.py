@@ -58,6 +58,14 @@ class CareerRepository:
         data = await run_in_threadpool(_fetch)
         return Career.model_validate(data) if data else None
 
+    async def list_careers_requiring_skill(self, skill_id: str) -> list[Career]:
+        """Sprint 1 — Skill promotion. Same small-knowledge-base,
+        filter-in-Python convention ``country`` filtering above already
+        uses, applied to the new ``required_skill_ids`` edge rather than
+        a jsonb-containment query, since the whole catalog is ~30 rows."""
+        careers = await self.list_careers()
+        return [c for c in careers if skill_id in c.required_skill_ids]
+
     async def list_stories_for_career(self, career_id: str) -> list[CareerStory]:
         """"Human Stories" on the career detail page — professional/workplace
         narratives only. Excludes composite_student_discovery/student_discovery

@@ -5,6 +5,8 @@ import { OnboardingGate } from "./features/auth/OnboardingGate";
 import { ProtectedRoute } from "./features/auth/ProtectedRoute";
 import { CareerDnaScreen } from "./features/career-dna/CareerDnaScreen";
 import { CareerDetailsScreen } from "./features/career-details/CareerDetailsScreen";
+import { SkillDetailScreen } from "./features/skills/SkillDetailScreen";
+import { SkillsScreen } from "./features/skills/SkillsScreen";
 import { CareerExperienceProvider } from "./features/career-experience/CareerExperienceContext";
 import { CollegeCollaborationScreen } from "./features/career-experience/CollegeCollaborationScreen";
 import { ExpertConnectScreen } from "./features/career-experience/ExpertConnectScreen";
@@ -86,6 +88,11 @@ function AppShell() {
                                 <Route path="/discover/learning-style-discovery" element={<LearningStyleDiscoveryScreen />} />
                                 <Route path="/explore/career-reality" element={<GlobalCareerDiscoveryScreen />} />
                                 <Route path="/explore/career-reality/:careerId" element={<CareerDetailsScreen />} />
+                                {/* Sprint 1 — Skill Knowledge Base. No new top-level nav entry
+                                 * per docs/SPRINT_1.md's scope; reached via real links from a
+                                 * Career page's new Skills section. */}
+                                <Route path="/skills" element={<SkillsScreen />} />
+                                <Route path="/skills/:skillId" element={<SkillDetailScreen />} />
                                 <Route path="/explore/global-trends" element={<GlobalTrendsScreen />} />
                                 <Route path="/explore/exposure-universe" element={<ExposureUniverseScreen />} />
                                 <Route path="/explore/opportunity-equality" element={<OpportunityEqualityScreen />} />

@@ -2,7 +2,7 @@
 
 This is the execution log, not the architecture. The knowledge model, principles, roadmap phases, and quality bar all live in [`AUREON_DATA_ARCHITECTURE.md`](./AUREON_DATA_ARCHITECTURE.md) and are frozen — this document never restates that content, only tracks real progress against it. Phase numbers below (Phase 1-10) refer directly to that document's §14.
 
-**Last re-baselined:** this session, immediately after the architecture doc was committed and frozen.
+**Last re-baselined:** 2026-08-07, after Sprint 1 (Skill Entity Foundation) completed and was live-verified.
 
 ---
 
@@ -11,8 +11,8 @@ This is the execution log, not the architecture. The knowledge model, principles
 | # | Phase | Status |
 |---|---|---|
 | 1 | Knowledge Architecture | ✅ Complete |
-| 2 | Database Architecture | 🔴 Not started |
-| 3 | Real Data & Data Quality | 🔴 Not started |
+| 2 | Database Architecture | 🟡 Partial — Skill entity + Career's promoted edge live-verified (Sprint 1); Company/Project and the remaining promotions (Mentor, Opportunity) not started |
+| 3 | Real Data & Data Quality | 🟡 Partial — 23 real skills seeded, 27/27 careers backfilled with real edges (Sprint 1); Company/Project data not started |
 | 4 | Information Architecture | 🟡 Partial — exists for pre-existing entities, not yet extended to Skill/Company/Project or the adaptive-journey gating |
 | 5 | User Journey & Product Flow | 🟡 Partial — discussed strategically this session, never formalized as real journey maps |
 | 6 | Design System | 🟢 Substantially complete — real tokens, motion, and shared components already exist and are actively enforced |
@@ -21,7 +21,7 @@ This is the execution log, not the architecture. The knowledge model, principles
 | 9 | Production Readiness | 🟡 Partial — real deployment, real auth exist; monitoring, full account-lifecycle, and consent flows unaudited |
 | 10 | Demo Readiness | 🔴 Not started — correctly, per the roadmap, this shouldn't start until closer to the deadline |
 
-**Summary: 1 of 10 phases fully complete (10%).** This is not a from-zero build — a substantial product already exists under the old model. The gap is specifically: the three new entities (Skill, Company, Project) don't exist yet in any form, and nothing built so far reflects the adaptive-journey restructuring the knowledge model was designed to support.
+**Summary: 1 of 10 phases fully complete (10%); Phases 2-3 now genuinely underway (Sprint 1 delivered a real, live-verified vertical slice through both).** Skill is the first of the three missing entities to exist for real — schema live, 23 real skills seeded, 27/27 careers backfilled with genuine edges, fully live-verified end to end. Company and Project remain unbuilt, and nothing built so far reflects the adaptive-journey restructuring the knowledge model was designed to support.
 
 ---
 
@@ -31,7 +31,7 @@ This is the execution log, not the architecture. The knowledge model, principles
 **Status:** ✅ Complete. `AUREON_DATA_ARCHITECTURE.md` committed and frozen.
 
 ### Phase 2 — Database Architecture
-**Status:** 🔴 Not started.
+**Status:** 🟡 Partial. Sprint 1 delivered the Skill table and Career's promoted `required_skill_ids` edge, live-verified. Company, Project, and the remaining promotions (Mentor, Opportunity) are not started.
 **Objective:** Turn the frozen entity model into real schema — starting with the three genuinely new entities (Skill, Company, Project), plus the promotion of existing free-text fields (`required_skills`, `companies`, `projects`) on Career/Mentor/Opportunity to real foreign-key edges.
 **Deliverables:** New tables/models for Skill, Company, Project; additive migrations promoting string-list fields to relationship edges on existing entities; an updated ERD.
 **Estimated complexity:** Medium — the new tables themselves are simple; the promotion migrations touch several already-live, tested models and need care not to break what's currently working.
@@ -40,7 +40,7 @@ This is the execution log, not the architecture. The knowledge model, principles
 **Definition of Done:** Skill/Company/Project exist as real tables; at least Career has real `required_skill_ids` edges alongside (not instead of) its existing string fields; full backend test suite still green.
 
 ### Phase 3 — Real Data & Data Quality
-**Status:** 🔴 Not started (blocked on Phase 2).
+**Status:** 🟡 Partial. Sprint 1 seeded 23 real, curated skills and backfilled real edges onto all 27 seeded careers, live-verified with zero dangling references. Company and Project data not started.
 **Objective:** Seed real, honestly-labeled content for the new entities, and backfill real edges on existing entities.
 **Deliverables:** Seed scripts for Skill (a real, curated taxonomy — not exhaustive, but genuine), Company (real, well-known organizations), Project (real, attemptable briefs); a backfill pass linking existing Career/Opportunity rows to the new Skill/Company entities.
 **Estimated complexity:** Medium — content-writing heavy rather than technically hard, same shape as every existing seed script in this codebase.
@@ -107,9 +107,11 @@ This is the execution log, not the architecture. The knowledge model, principles
 
 ---
 
-## Recommendation: highest-priority next task
+## Recommendation: highest-priority next task (Sprint 1 — executed, see Sprint Log)
 
 **Build the Skill entity end-to-end — schema, real seed data, and a minimal read-only page — before touching anything else.**
+
+*(This recommendation is now Sprint 1, complete and live-verified below. Left in place as the historical record of the reasoning, per the Decision Log's own "why did we build it this way" principle. Sprint 2's priority gets decided fresh, not assumed from here.)*
 
 This is a deliberately narrow vertical slice through Phases 2 and 3, scoped to one entity, not "finish all of Phase 2." Against the stated formula:
 
@@ -126,19 +128,41 @@ Concretely, Sprint 1 (below) scopes this to: the `Skill` model, a real (not exha
 ### Sprint 1 — Skill Entity Foundation
 **Goal:** Skill exists as a real, queryable entity with genuine seed data, and one existing entity (Career) demonstrates the promotion pattern end to end.
 **Tasks:**
-- [ ] Define `Skill` domain model (`name`, `category`, `description`, `parent_skill_id`, `related_skill_ids`, `evidence_types_that_count`)
-- [ ] Additive migration: new `skills` table
-- [ ] Additive migration: `required_skill_ids` on `Career`, alongside (not replacing) the existing `required_skills` string field
-- [ ] Seed script: real skill taxonomy, sufficient depth across all four categories
-- [ ] Backfill: link existing seeded Careers to real Skill rows
-- [ ] Minimal Skill browse page + Skill detail page (hero, where-it's-used, how-to-build-it sections, per the architecture doc's §3 UI Representation)
-- [ ] Backend tests for the new model/repository/route
-- [ ] Full regression pass — existing Career pages/tests unaffected
-**Current Status:** Not started — ready to begin.
-**Blockers:** None.
+- [x] Define `Skill` domain model (`name`, `category`, `description`, `parent_skill_id`, `related_skill_ids`, `evidence_types_that_count`)
+- [x] Additive migration: new `skills` table
+- [x] Additive migration: `required_skill_ids` on `Career`, alongside (not replacing) the existing `required_skills` string field
+- [x] Seed script: real skill taxonomy, sufficient depth across all four categories
+- [x] Backfill: link existing seeded Careers to real Skill rows
+- [x] Minimal Skill browse page + Skill detail page (hero, where-it's-used, how-to-build-it sections, per the architecture doc's §3 UI Representation)
+- [x] Backend tests for the new model/repository/route
+- [x] Full regression pass — existing Career pages/tests unaffected
+**Current Status:** ✅ Complete — live-verified end to end.
+**Blockers:** None (the two migrations required a manual apply via the Supabase SQL Editor, same environment-specific limitation as every prior migration this project; resolved, not a blocker to close the sprint).
 **Dependencies:** None (Phase 1 already complete).
-**Completed Date:** —
-**Notes:** This sprint intentionally does not touch Mentor, Opportunity, or Company edges yet — those are separate future sprints, kept out of scope here to respect "one workstream at a time."
+**Completed Date:** 2026-08-07
+**Notes:** This sprint intentionally does not touch Mentor, Opportunity, or Company edges yet — those are separate future sprints, kept out of scope here to respect "one workstream at a time." Live verification confirmed: schema live (both migrations applied cleanly, additive, nothing existing altered), 23 skills seeded exactly as designed, 27/27 careers backfilled with zero dangling skill references (real application-level referential integrity holds despite no DB-level FK — matches the intentional trade-off already recorded in the Technical Debt Register), full Playwright walkthrough passed (Career → real skill chips → Skill detail → real requiring careers → round-trip link back), cold-load and hard-refresh both verified directly on the Skill detail route, old `reality.required_skills` field confirmed untouched and still serving, zero regressions across 773 backend tests. No genuinely new technical debt surfaced during verification — every already-documented trade-off held up exactly as anticipated, so the Technical Debt Register is unchanged by this sprint's completion.
+
+### Sprint 1 — Release Summary
+
+**Sprint Goal:** Skill exists as a real, queryable, connected entity — and Career proves the promotion pattern (free-text list → real linked entity) works end to end, before it's repeated anywhere else.
+
+**What Was Implemented:** The `Skill` domain model (4 real categories: technical, domain_knowledge, soft_skill, tool); 23 real, curated skills seeded, derived directly from the real career data already in the catalog, not invented in parallel; Career's `required_skills` promoted to real Skill edges (`required_skill_ids`), additive alongside the untouched original field; the full backend repository/service/route stack for Skill; a Skill browse page, a Skill detail page, and a new Skills section on the existing Career detail page, all fully routed and cross-linked.
+
+**Database Changes:** Migration 0025 (new `skills` table, FK on `parent_skill_id`, unique index on `name`, index on `category`); migration 0026 (new `required_skill_ids` jsonb column on `careers`, additive, defaulted). Both applied live and verified. Nothing existing altered or dropped.
+
+**API Changes:** New `GET /v1/skills` (list, category filter) and `GET /v1/skills/{id}` (detail, includes real requiring careers). `GET /v1/careers/{id}` extended with a `required_skills: Skill[]` field, additive alongside the existing `reality.required_skills` string list.
+
+**Frontend Changes:** New `SkillsScreen`, `SkillDetailScreen`, and `CareerSkillsSection` (on the existing Career page). New routes `/skills` and `/skills/:skillId` — no new top-level nav entry, reached via real links from Career pages, per sprint scope.
+
+**Tests Added:** 10 new/updated backend tests — Skill DTO composition, Skill detail composition (including honest empty-state behavior), 5 route tests (list, category filter, detail, honesty check, 404), 2 Career view tests (skill resolution + default-empty backward compatibility). All passing.
+
+**Regression Status:** 773/773 backend tests passing (763 pre-existing + 10 new) — zero failures, zero regressions. `tsc` clean. Production build clean.
+
+**Known Technical Debt (Intentional):** Fully documented in `TECHNICAL_DEBT_REGISTER.md` — no DB-level FK on `required_skill_ids` (trusted to application-level discipline; live-verified zero dangling references), reverse lookup via full-table scan (fine at current ~27-career scale), exact-string alias matching (100% correct against current data, no fuzzy fallback), manual SQL migration application (the one item flagged as must-change-before-real-production). Nothing new surfaced during live verification — every anticipated trade-off held up exactly as designed.
+
+**Merge Recommendation:** Approved. Additive-only, fully tested, fully live-verified against real seeded data, zero regressions to any existing feature.
+
+**Readiness for Sprint 2:** Ready. The promotion pattern — additive jsonb edge, additive migration, repository/service/route mirroring Trend's existing shape, backfill-from-real-data seeding — is now proven once, live, end to end. Company and Project can follow the same shape with the approach already de-risked.
 
 ### Sprint 2+ 
 Not yet planned in detail — will be scoped once Sprint 1 reaches Definition of Done, per the one-workstream-at-a-time rule. Expected candidates in priority order (subject to re-confirmation at that point): Company entity, Project entity, remaining edge promotions (Mentor, Opportunity), then Phase 4/5 formalization.

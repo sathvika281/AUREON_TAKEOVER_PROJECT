@@ -14,6 +14,7 @@ import { TimelineComparison } from "../future-lens/TimelineComparison";
 import { CareerDeepDiveSection } from "./CareerDeepDiveSection";
 import { CareerFAQSection } from "./CareerFAQSection";
 import { CareerResourcesSection } from "./CareerResourcesSection";
+import { CareerSkillsSection } from "./CareerSkillsSection";
 import { HumanStoriesSection } from "./HumanStoriesSection";
 import { RealitySection } from "./RealitySection";
 import { RelatedExplorationSection } from "./RelatedExplorationSection";
@@ -137,6 +138,12 @@ export function CareerDetailsScreen() {
         Career Reality
       </p>
       <RealitySection reality={career.reality} />
+
+      {career.required_skills.length > 0 && (
+        <div className="mt-4">
+          <CareerSkillsSection skills={career.required_skills} />
+        </div>
+      )}
 
       <p className="mb-2 mt-8 px-1 font-mono text-[0.6rem] uppercase tracking-[0.14em] text-ink-faint">
         A Day and Week in This Career

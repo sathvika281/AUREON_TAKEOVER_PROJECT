@@ -193,6 +193,20 @@ class CareerStoryDTO(BaseModel):
     relevant_to_student: bool
 
 
+# -- Sprint 1 — Skill Knowledge Base (docs/AUREON_DATA_ARCHITECTURE.md §3) --
+# Defined here, ahead of CareerDetailDTO, since that DTO references it below.
+
+
+class SkillDTO(BaseModel):
+    id: str
+    name: str
+    category: str
+    description: str
+    parent_skill_id: str | None
+    related_skill_ids: list[str]
+    evidence_types_that_count: list[str]
+
+
 class CareerDetailDTO(BaseModel):
     id: str
     name: str
@@ -237,6 +251,11 @@ class CareerDetailDTO(BaseModel):
     #: Cross-field realistic transitions — deliberately separate from
     #: `related_careers` above (same-field/tag-overlap computation).
     adjacent_careers: list[str] = []
+    #: Sprint 1 — real Skill entities resolved from Career.required_skill_ids
+    #: (never a raw id list — the frontend renders these as real linked
+    #: chips). Additive alongside `reality.required_skills`, which stays
+    #: untouched as the display fallback for any career not yet backfilled.
+    required_skills: list[SkillDTO] = []
 
 
 class CareerCandidateDTO(BaseModel):
@@ -1479,6 +1498,17 @@ class FutureSkillDTO(BaseModel):
     skill: str
     mentioned_in_trend_count: int
     related_trend_ids: list[str]
+
+
+class SkillsResponse(BaseModel):
+    skills: list[SkillDTO]
+
+
+class SkillDetailResponse(BaseModel):
+    skill: SkillDTO
+    #: Real careers requiring this skill, resolved live from
+    #: Career.required_skill_ids — never stored/duplicated on Skill itself.
+    careers_requiring_it: list[CareerSummaryDTO]
 
 
 class FutureSkillsResponse(BaseModel):

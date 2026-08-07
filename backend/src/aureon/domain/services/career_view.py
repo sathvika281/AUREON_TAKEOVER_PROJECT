@@ -1,5 +1,7 @@
 from aureon.domain.models.career import Career, CareerStory
+from aureon.domain.models.skill import Skill
 from aureon.domain.models.trend import Trend
+from aureon.domain.services.skill_view import build_skill_dto
 from aureon.shared.schemas import (
     CareerBranchDTO,
     CareerDetailDTO,
@@ -43,6 +45,7 @@ def build_career_detail_dto(
     related_careers: list[Career] | None = None,
     recommended_next_exploration: Career | None = None,
     related_trends: list[Trend] | None = None,
+    required_skills: list[Skill] | None = None,
 ) -> CareerDetailDTO:
     story_dtos = [
         CareerStoryDTO(
@@ -134,4 +137,5 @@ def build_career_detail_dto(
         common_misconceptions=career.common_misconceptions,
         faqs=[CareerFAQDTO(question=f.question, answer=f.answer) for f in career.faqs],
         adjacent_careers=career.adjacent_careers,
+        required_skills=[build_skill_dto(s) for s in (required_skills or [])],
     )
