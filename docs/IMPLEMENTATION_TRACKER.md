@@ -11,8 +11,8 @@ This is the execution log, not the architecture. The knowledge model, principles
 | # | Phase | Status |
 |---|---|---|
 | 1 | Knowledge Architecture | ✅ Complete |
-| 2 | Database Architecture | 🟡 Partial — Skill entity + Career's promoted edge live-verified (Sprint 1); Company/Project and the remaining promotions (Mentor, Opportunity) not started |
-| 3 | Real Data & Data Quality | 🟡 Partial — 23 real skills seeded, 27/27 careers backfilled with real edges (Sprint 1); Company/Project data not started |
+| 2 | Database Architecture | 🟡 Partial — Skill (Sprint 1) and Company (Sprint 2) entities + their Career edges live-verified; Project and the remaining promotions (Mentor, Opportunity) not started |
+| 3 | Real Data & Data Quality | 🟡 Partial — 23 real skills + 31 real companies seeded, real Career backfills live-verified for both; Project data not started |
 | 4 | Information Architecture | 🟡 Partial — exists for pre-existing entities, not yet extended to Skill/Company/Project or the adaptive-journey gating |
 | 5 | User Journey & Product Flow | 🟡 Partial — discussed strategically this session, never formalized as real journey maps |
 | 6 | Design System | 🟢 Substantially complete — real tokens, motion, and shared components already exist and are actively enforced |
@@ -21,7 +21,7 @@ This is the execution log, not the architecture. The knowledge model, principles
 | 9 | Production Readiness | 🟡 Partial — real deployment, real auth exist; monitoring, full account-lifecycle, and consent flows unaudited |
 | 10 | Demo Readiness | 🔴 Not started — correctly, per the roadmap, this shouldn't start until closer to the deadline |
 
-**Summary: 1 of 10 phases fully complete (10%); Phases 2-3 now genuinely underway (Sprint 1 delivered a real, live-verified vertical slice through both).** Skill is the first of the three missing entities to exist for real — schema live, 23 real skills seeded, 27/27 careers backfilled with genuine edges, fully live-verified end to end. Company and Project remain unbuilt, and nothing built so far reflects the adaptive-journey restructuring the knowledge model was designed to support.
+**Summary: 1 of 10 phases fully complete (10%); Phases 2-3 now two-thirds underway on the entity list (Skill and Company both real, live-verified; Project remains).** The promotion pattern has now proven itself twice, on two different entities, without needing a new abstraction — real evidence it generalizes rather than a one-off. Nothing built so far reflects the adaptive-journey restructuring the knowledge model was designed to support.
 
 ---
 
@@ -31,7 +31,7 @@ This is the execution log, not the architecture. The knowledge model, principles
 **Status:** ✅ Complete. `AUREON_DATA_ARCHITECTURE.md` committed and frozen.
 
 ### Phase 2 — Database Architecture
-**Status:** 🟡 Partial. Sprint 1 delivered the Skill table and Career's promoted `required_skill_ids` edge, live-verified. Company, Project, and the remaining promotions (Mentor, Opportunity) are not started.
+**Status:** 🟡 Partial. Sprint 1 delivered Skill; Sprint 2 delivered Company — both tables plus their Career-promoted edges (`required_skill_ids`, `company_ids`) live-verified. Project and the remaining promotions (Mentor, Opportunity) are not started.
 **Objective:** Turn the frozen entity model into real schema — starting with the three genuinely new entities (Skill, Company, Project), plus the promotion of existing free-text fields (`required_skills`, `companies`, `projects`) on Career/Mentor/Opportunity to real foreign-key edges.
 **Deliverables:** New tables/models for Skill, Company, Project; additive migrations promoting string-list fields to relationship edges on existing entities; an updated ERD.
 **Estimated complexity:** Medium — the new tables themselves are simple; the promotion migrations touch several already-live, tested models and need care not to break what's currently working.
@@ -40,7 +40,7 @@ This is the execution log, not the architecture. The knowledge model, principles
 **Definition of Done:** Skill/Company/Project exist as real tables; at least Career has real `required_skill_ids` edges alongside (not instead of) its existing string fields; full backend test suite still green.
 
 ### Phase 3 — Real Data & Data Quality
-**Status:** 🟡 Partial. Sprint 1 seeded 23 real, curated skills and backfilled real edges onto all 27 seeded careers, live-verified with zero dangling references. Company and Project data not started.
+**Status:** 🟡 Partial. Sprint 1 seeded 23 real skills (27/27 careers backfilled); Sprint 2 seeded 31 real companies (21/27 careers backfilled) — both live-verified with zero dangling references. Project data not started.
 **Objective:** Seed real, honestly-labeled content for the new entities, and backfill real edges on existing entities.
 **Deliverables:** Seed scripts for Skill (a real, curated taxonomy — not exhaustive, but genuine), Company (real, well-known organizations), Project (real, attemptable briefs); a backfill pass linking existing Career/Opportunity rows to the new Skill/Company entities.
 **Estimated complexity:** Medium — content-writing heavy rather than technically hard, same shape as every existing seed script in this codebase.
@@ -164,8 +164,39 @@ Concretely, Sprint 1 (below) scopes this to: the `Skill` model, a real (not exha
 
 **Readiness for Sprint 2:** Ready. The promotion pattern — additive jsonb edge, additive migration, repository/service/route mirroring Trend's existing shape, backfill-from-real-data seeding — is now proven once, live, end to end. Company and Project can follow the same shape with the approach already de-risked.
 
-### Sprint 2+ 
-Not yet planned in detail — will be scoped once Sprint 1 reaches Definition of Done, per the one-workstream-at-a-time rule. Expected candidates in priority order (subject to re-confirmation at that point): Company entity, Project entity, remaining edge promotions (Mentor, Opportunity), then Phase 4/5 formalization.
+### Sprint 2 — Company Entity Foundation
+**Goal:** Company exists as a real, queryable entity; Career demonstrates the same promotion pattern Sprint 1 proved for Skill, confirming it generalizes to a second entity. Full plan: [`SPRINT_2.md`](./SPRINT_2.md).
+**Tasks:** All complete — see `SPRINT_2.md`'s Task Checklist.
+**Current Status:** ✅ Complete — live-verified end to end.
+**Blockers:** None (same manual SQL Editor step as Sprint 1 for the two migrations — resolved, not a blocker to close the sprint).
+**Dependencies:** Sprint 1 (Skill) complete — satisfied.
+**Completed Date:** 2026-08-07
+**Notes:** Career-only promotion this sprint, same discipline as Sprint 1 (Mentor/Trend/Institution's own `companies` fields deferred, not touched). One real bug caught and fixed during implementation, before touching live data: the seed script initially conflated two different real companies (Cerner/Oracle Health vs. Epic Systems) — caught via cross-checking every alias key against the actual live database rather than trusting a manual read a second time, fixed immediately per the sprint's own "bug → fix now" rule. Live verification confirmed: schema live, 31 companies seeded (24 company / 5 nonprofit / 2 government — an honest reflection of the real seeded data, which includes real governments and NGOs, not only for-profit companies), 21/27 careers backfilled with zero dangling references, full Playwright walkthrough passed (Career → real company chips → Company detail → real hiring careers → round-trip link back, browse page + organization_kind filter both correct), old `companies` field confirmed untouched and still rendering simultaneously with the new section. One genuine, new, non-blocking finding: this sandbox cannot resolve external DNS for the Clearbit logo API at all, so every logo fell back to the designed initials tile — confirmed working exactly as intended, but the real-logo path itself has never been directly observed, only inferred; logged in the Technical Debt Register as a verification gap, not a defect, with a real trigger (next deploy with normal internet access). Zero regressions: 784/784 backend tests passing.
+
+### Sprint 2 — Release Summary
+
+**Sprint Goal:** Company exists as a real, queryable, connected entity — and Career demonstrates the same promotion pattern proven for Skill in Sprint 1, confirming it generalizes to a second entity rather than being a one-off.
+
+**What Was Implemented:** The `Company` domain model (reusing `OrganizationKind` from the existing `Opportunity` model rather than inventing a parallel taxonomy — the real seeded data includes genuine governments and NGOs, not only for-profit companies); 31 real, curated companies seeded, derived directly from the real `companies` text already in the career catalog; Career's `companies` promoted to real Company edges (`company_ids`), additive alongside the untouched original field; the full backend repository/service/route stack for Company; a Company browse page, a Company detail page, and a new Companies section on the existing Career detail page — including a genuinely new small component, `CompanyLogo`, with a designed and live-confirmed initials fallback for when a real logo doesn't resolve.
+
+**Database Changes:** Migration 0027 (new `companies` table, unique index on `name`, index on `industry`); migration 0028 (new `company_ids` jsonb column on `careers`, additive, defaulted). Both applied live and verified. Nothing existing altered or dropped.
+
+**API Changes:** New `GET /v1/companies` (list, `industry`/`organization_kind` filters) and `GET /v1/companies/{id}` (detail, includes real hiring careers). `GET /v1/careers/{id}` extended with a `hiring_companies: Company[]` field, additive alongside the existing `companies` string list.
+
+**Frontend Changes:** New `CompaniesScreen`, `CompanyDetailScreen`, `CompanyLogo` (shared, three real call sites), and `CareerCompaniesSection` on the existing Career page. New routes `/companies` and `/companies/:companyId` — no new top-level nav entry, same scope discipline as Sprint 1.
+
+**Tests Added:** 11 new/updated backend tests — Company DTO composition, Company detail composition (including honest empty-state and non-company-org edge cases), 5 route tests (list, organization_kind filter, detail, honesty check, 404), 2 Career view tests (company resolution + default-empty backward compatibility).
+
+**Regression Status:** 784/784 backend tests passing (773 pre-existing + 11 new) — zero failures, zero regressions. `tsc` clean. Production build clean.
+
+**Known Technical Debt (Intentional):** Fully documented in `TECHNICAL_DEBT_REGISTER.md`, mostly extending Sprint 1's already-tracked items to a second entity (no DB-level FK, full-table reverse lookup, exact-string alias matching) rather than introducing new categories of debt. One genuinely new, real finding: this development sandbox cannot resolve external DNS for the Clearbit logo API, so the real-logo path has never been directly observed — only the fallback has, and it works correctly. Logged with a concrete revisit trigger (first deploy with normal internet access), not a defect.
+
+**Merge Recommendation:** Approved. Additive-only, fully tested, fully live-verified against real seeded data, zero regressions to any existing feature. One real bug (a company mismatch in the seed script) was caught and fixed before it ever touched live data.
+
+**Readiness for Sprint 3:** Ready. The promotion pattern has now proven itself twice on two different entities without needing a new abstraction — real, repeated evidence it generalizes. Project (the next priority per the architecture doc's own ordering) can follow the same shape with even more confidence than Sprint 2 had.
+
+### Sprint 3+
+Not yet planned in detail — will be scoped once Sprint 3 is chosen, per the one-workstream-at-a-time rule.
 
 ---
 

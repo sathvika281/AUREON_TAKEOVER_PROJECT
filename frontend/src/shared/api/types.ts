@@ -297,6 +297,9 @@ export interface CareerDetail {
    * `reality.required_skills` (left untouched as the display fallback for
    * any career not yet backfilled with real links). */
   required_skills: Skill[];
+  /** Sprint 2 — real Company entities, additive alongside `companies`
+   * above (left untouched as the display fallback). */
+  hiring_companies: Company[];
 }
 
 // -- Sprint 1 — Skill Knowledge Base (docs/AUREON_DATA_ARCHITECTURE.md §3) --
@@ -318,6 +321,29 @@ export interface SkillsResponse {
 export interface SkillDetail {
   skill: Skill;
   careers_requiring_it: CareerSummary[];
+}
+
+// -- Sprint 2 — Company Knowledge Base (docs/AUREON_DATA_ARCHITECTURE.md §5) --
+
+export interface Company {
+  id: string;
+  name: string;
+  organization_kind: string;
+  industry: string;
+  size_category: string | null;
+  what_they_do: string;
+  logo_url: string | null;
+  hiring_focus_areas: string[];
+  notable_for: string;
+}
+
+export interface CompaniesResponse {
+  companies: Company[];
+}
+
+export interface CompanyDetail {
+  company: Company;
+  careers_hiring_from_it: CareerSummary[];
 }
 
 /** No raw confidence number — only the qualitative Evidence Strength

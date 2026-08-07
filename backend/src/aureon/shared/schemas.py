@@ -207,6 +207,22 @@ class SkillDTO(BaseModel):
     evidence_types_that_count: list[str]
 
 
+# -- Sprint 2 — Company Knowledge Base (docs/AUREON_DATA_ARCHITECTURE.md §5) --
+# Also defined here, ahead of CareerDetailDTO, for the same forward-reference reason.
+
+
+class CompanyDTO(BaseModel):
+    id: str
+    name: str
+    organization_kind: str
+    industry: str
+    size_category: str | None
+    what_they_do: str
+    logo_url: str | None
+    hiring_focus_areas: list[str]
+    notable_for: str
+
+
 class CareerDetailDTO(BaseModel):
     id: str
     name: str
@@ -256,6 +272,9 @@ class CareerDetailDTO(BaseModel):
     #: chips). Additive alongside `reality.required_skills`, which stays
     #: untouched as the display fallback for any career not yet backfilled.
     required_skills: list[SkillDTO] = []
+    #: Sprint 2 — real Company entities resolved from Career.company_ids,
+    #: additive alongside the existing `companies` string list above.
+    hiring_companies: list[CompanyDTO] = []
 
 
 class CareerCandidateDTO(BaseModel):
@@ -1509,6 +1528,17 @@ class SkillDetailResponse(BaseModel):
     #: Real careers requiring this skill, resolved live from
     #: Career.required_skill_ids — never stored/duplicated on Skill itself.
     careers_requiring_it: list[CareerSummaryDTO]
+
+
+class CompaniesResponse(BaseModel):
+    companies: list[CompanyDTO]
+
+
+class CompanyDetailResponse(BaseModel):
+    company: CompanyDTO
+    #: Real careers hiring from this company, resolved live from
+    #: Career.company_ids — never stored/duplicated on Company itself.
+    careers_hiring_from_it: list[CareerSummaryDTO]
 
 
 class FutureSkillsResponse(BaseModel):

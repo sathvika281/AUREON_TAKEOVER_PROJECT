@@ -11,6 +11,7 @@ import { useCareerIntelligenceContext } from "../career-intelligence/CareerIntel
 import { useCareerExplorationContext } from "../career-exploration/CareerExplorationContext";
 import { useSuggestionsContext } from "../suggestions/SuggestionsContext";
 import { TimelineComparison } from "../future-lens/TimelineComparison";
+import { CareerCompaniesSection } from "./CareerCompaniesSection";
 import { CareerDeepDiveSection } from "./CareerDeepDiveSection";
 import { CareerFAQSection } from "./CareerFAQSection";
 import { CareerResourcesSection } from "./CareerResourcesSection";
@@ -142,6 +143,12 @@ export function CareerDetailsScreen() {
       {career.required_skills.length > 0 && (
         <div className="mt-4">
           <CareerSkillsSection skills={career.required_skills} />
+        </div>
+      )}
+
+      {career.hiring_companies.length > 0 && (
+        <div className="mt-4">
+          <CareerCompaniesSection companies={career.hiring_companies} />
         </div>
       )}
 

@@ -66,6 +66,13 @@ class CareerRepository:
         careers = await self.list_careers()
         return [c for c in careers if skill_id in c.required_skill_ids]
 
+    async def list_careers_hiring_from_company(self, company_id: str) -> list[Career]:
+        """Sprint 2 — Company promotion. Same convention as
+        list_careers_requiring_skill above, applied to company_ids —
+        the pattern generalizing to a second entity, as intended."""
+        careers = await self.list_careers()
+        return [c for c in careers if company_id in c.company_ids]
+
     async def list_stories_for_career(self, career_id: str) -> list[CareerStory]:
         """"Human Stories" on the career detail page — professional/workplace
         narratives only. Excludes composite_student_discovery/student_discovery

@@ -1,4 +1,5 @@
 from aureon.domain.models.career import Career, CareerReality, CareerStory, FutureLens
+from aureon.domain.models.company import Company
 from aureon.domain.models.skill import Skill
 from aureon.domain.services.career_view import build_career_detail_dto, build_career_summary_dto
 
@@ -73,3 +74,18 @@ def test_required_skills_are_resolved_into_real_dtos():
     assert len(dto.required_skills) == 1
     assert dto.required_skills[0].id == "programming"
     assert dto.required_skills[0].name == "Programming"
+
+
+def test_hiring_companies_default_to_empty_when_none_resolved():
+    # A career whose company_ids haven't been backfilled yet must never
+    # show a fabricated company list.
+    dto = build_career_detail_dto(_career(), [])
+    assert dto.hiring_companies == []
+
+
+def test_hiring_companies_are_resolved_into_real_dtos():
+    company = Company(id="google", name="Google", organization_kind="company", industry="technology", what_they_do="x")
+    dto = build_career_detail_dto(_career(), [], hiring_companies=[company])
+    assert len(dto.hiring_companies) == 1
+    assert dto.hiring_companies[0].id == "google"
+    assert dto.hiring_companies[0].name == "Google"

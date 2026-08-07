@@ -104,6 +104,11 @@ class Career(BaseModel):
     #: the free-text list stays the display fallback for any career not
     #: yet backfilled with real skill links.
     required_skill_ids: list[str] = Field(default_factory=list)
+    #: Sprint 2 — Company promotion (docs/AUREON_DATA_ARCHITECTURE.md §5/§6).
+    #: Real edges into the Company Knowledge Base, additive alongside the
+    #: top-level `companies` free-text list above (left untouched) — same
+    #: pattern as required_skill_ids.
+    company_ids: list[str] = Field(default_factory=list)
 
     #: Explore Polish Batch — all additive, all defaulted so existing rows
     #: and tests keep working. Backfilled onto every career via

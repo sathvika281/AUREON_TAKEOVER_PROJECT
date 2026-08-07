@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from aureon.api.deps import (
     get_career_repository,
+    get_company_repository,
     get_skill_repository,
     get_student_profile_repository,
     get_trend_repository,
@@ -10,6 +11,7 @@ from aureon.domain.services.career_view import build_career_detail_dto, build_ca
 from aureon.domain.services.related_careers import find_related_careers
 from aureon.domain.services.world_signal_alignment import compute_tag_alignment
 from aureon.services.supabase.repositories.career_repository import CareerRepository
+from aureon.services.supabase.repositories.company_repository import CompanyRepository
 from aureon.services.supabase.repositories.skill_repository import SkillRepository
 from aureon.services.supabase.repositories.student_profile_repository import (
     StudentProfileRepository,
@@ -64,6 +66,7 @@ async def get_career_detail(
     profiles: StudentProfileRepository = Depends(get_student_profile_repository),
     trends: TrendRepository = Depends(get_trend_repository),
     skills: SkillRepository = Depends(get_skill_repository),
+    companies: CompanyRepository = Depends(get_company_repository),
 ) -> CareerDetailDTO:
     """Career Reality + Future Lens + Human Stories for one career, plus
     Explore Batch 1's Related Careers / Recommended Next Exploration /
@@ -97,9 +100,11 @@ async def get_career_detail(
 
     related_trends = await trends.list_trends(industry=career.industry)
     required_skills = await skills.list_by_ids(career.required_skill_ids)
+    hiring_companies = await companies.list_by_ids(career.company_ids)
 
     return build_career_detail_dto(
         career, stories, student_trait_tags=student_trait_tags,
         related_careers=related, recommended_next_exploration=recommended_next_exploration,
         related_trends=related_trends, required_skills=required_skills,
+        hiring_companies=hiring_companies,
     )
