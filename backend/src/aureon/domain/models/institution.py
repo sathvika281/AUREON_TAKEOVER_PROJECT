@@ -2,6 +2,8 @@ from datetime import datetime, timezone
 
 from pydantic import BaseModel, Field
 
+from aureon.domain.models.career_dna import TraitName
+
 
 class ResearchLab(BaseModel):
     id: str
@@ -110,7 +112,7 @@ class Institution(BaseModel):
     industry_collaboration: str
     placements: str
     learning_environment: str
-    trait_tags: list[str] = Field(default_factory=list)
+    trait_tags: list[TraitName] = Field(default_factory=list)
     is_partner: bool = False
     #: Explore Batch 1 — additive, nullable-defaulted. campus_life_and_culture
     #: intentionally consolidates social-life and ethos into one field

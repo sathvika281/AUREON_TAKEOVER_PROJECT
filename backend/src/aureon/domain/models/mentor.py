@@ -1,11 +1,19 @@
 from datetime import datetime, timezone
+from typing import Literal
 
 from pydantic import BaseModel, Field
 
 from aureon.domain.models.career import CareerFAQ
+from aureon.domain.models.career_dna import TraitName
 from aureon.domain.models.career_journey import CareerJourneyMilestone, CareerJourneyStage
 
 __all__ = ["CareerJourneyMilestone", "CareerJourneyStage", "LinkRef", "Mentor"]
+
+#: Sprint 4 — Data Representation audit. Live data already used exactly
+#: these 5 values with zero drift; this makes that real discipline a
+#: structural guarantee instead of an accidental one (see the inline
+#: comment this replaces).
+RoleType = Literal["professor", "researcher", "industry_professional", "founder", "creator"]
 
 
 class LinkRef(BaseModel):
@@ -40,10 +48,10 @@ class Mentor(BaseModel):
 
     id: str
     name: str
-    role_type: str  # professor | researcher | industry_professional | founder | creator
+    role_type: RoleType
     field: str
     bio: str
-    trait_tags: list[str] = Field(default_factory=list)  # same TRAIT_NAMES vocabulary as careers
+    trait_tags: list[TraitName] = Field(default_factory=list)
     learning_style_fit: str
     #: V13 — Expert Connect; additive, richer profile fields for the
     #: existing Mentor Knowledge Base entries (no new parallel "Expert"

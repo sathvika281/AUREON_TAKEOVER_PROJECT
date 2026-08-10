@@ -53,7 +53,7 @@ EXPERTS: list[dict] = [
         "projects": ["Sold core routing technology to a larger logistics competitor"], "research": [],
         "certifications": [], "conferences": ["Web Summit (speaker, 2022)"], "organizations": [],
         "volunteer_work": ["Mentors early-stage founders through a regional startup accelerator"],
-        "portfolio_links": [], "social_links": [{"label": "LinkedIn", "url": "https://linkedin.com/in/example-inesdubois"}],
+        "portfolio_links": [], "social_links": [],
     },
     {
         "id": "expert_investment_banker_arjun_mehta",

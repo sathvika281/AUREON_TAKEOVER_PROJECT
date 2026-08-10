@@ -18,7 +18,7 @@ _FUTURE = FutureLens(
 )
 CAREER = Career(
     id="ai_research", name="AI Research", category="research", industry="tech",
-    trait_tags=["curiosity", "analytical"], one_liner="x", reality=_REALITY, future_lens=_FUTURE,
+    trait_tags=["curiosity", "analytical_thinking"], one_liner="x", reality=_REALITY, future_lens=_FUTURE,
 )
 
 

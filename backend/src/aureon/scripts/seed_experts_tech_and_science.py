@@ -77,8 +77,8 @@ EXPERTS: list[dict] = [
         "conferences": ["PyCon Brasil (speaker, 2023)"],
         "organizations": ["PyLadies São Paulo (mentor)"],
         "volunteer_work": ["Teaches a free weekend coding class for unemployed adults"],
-        "portfolio_links": [{"label": "GitHub", "url": "https://github.com/example/mariasantos"}],
-        "social_links": [{"label": "LinkedIn", "url": "https://linkedin.com/in/example-mariasantos"}],
+        "portfolio_links": [],
+        "social_links": [],
     },
     {
         "id": "expert_ml_engineer_daniel_okafor",
@@ -143,8 +143,8 @@ EXPERTS: list[dict] = [
         "conferences": ["Deep Learning Indaba (attendee, 2022)"],
         "organizations": ["Data Science Nigeria (volunteer instructor)"],
         "volunteer_work": ["Runs a free monthly ML study group for career switchers in Lagos"],
-        "portfolio_links": [{"label": "GitHub", "url": "https://github.com/example/danielokafor"}],
-        "social_links": [{"label": "Twitter/X", "url": "https://twitter.com/example_danielokafor"}],
+        "portfolio_links": [],
+        "social_links": [],
     },
     {
         "id": "expert_frontend_engineer_priya_menon",
@@ -188,7 +188,7 @@ EXPERTS: list[dict] = [
         "projects": ["Rebuilt the checkout flow, reducing cart abandonment by 15%"], "research": [], "certifications": [],
         "conferences": ["React India (attendee, 2023)"], "organizations": ["Women Who Code Bengaluru"],
         "volunteer_work": ["Mentors career switchers through a local coding bootcamp's alumni network"],
-        "portfolio_links": [{"label": "Portfolio site", "url": "https://example.com/priyamenon"}], "social_links": [],
+        "portfolio_links": [], "social_links": [],
     },
     {
         "id": "expert_cybersecurity_engineer_jonas_weber",
@@ -233,7 +233,7 @@ EXPERTS: list[dict] = [
         "certifications": ["OSCP (Offensive Security Certified Professional)", "CISSP"],
         "conferences": ["DEF CON (attendee)"], "organizations": ["OWASP Frankfurt chapter"],
         "volunteer_work": ["Runs a free capture-the-flag workshop for university students"],
-        "portfolio_links": [], "social_links": [{"label": "LinkedIn", "url": "https://linkedin.com/in/example-jonasweber"}],
+        "portfolio_links": [], "social_links": [],
     },
     {
         "id": "expert_devops_engineer_grace_muthoni",
@@ -278,7 +278,7 @@ EXPERTS: list[dict] = [
         "certifications": ["AWS Certified Solutions Architect – Professional", "AWS Certified DevOps Engineer"],
         "conferences": ["AWS Summit Cape Town (attendee, 2022)"], "organizations": ["AWS User Group Nairobi (organizer)"],
         "volunteer_work": ["Runs free cloud-fundamentals workshops for IT support staff wanting to move up"],
-        "portfolio_links": [], "social_links": [{"label": "LinkedIn", "url": "https://linkedin.com/in/example-gracemuthoni"}],
+        "portfolio_links": [], "social_links": [],
     },
     {
         "id": "expert_data_scientist_hannah_liu",
@@ -321,7 +321,7 @@ EXPERTS: list[dict] = [
         "projects": ["Built a ranking signal now core to the production recommendation engine"], "research": [],
         "certifications": [], "conferences": ["Strata Data Conference (attendee, 2021)"], "organizations": [],
         "volunteer_work": ["Volunteers with a nonprofit teaching statistics to high schoolers"],
-        "portfolio_links": [], "social_links": [{"label": "LinkedIn", "url": "https://linkedin.com/in/example-hannahliu"}],
+        "portfolio_links": [], "social_links": [],
     },
     {
         "id": "expert_robotics_engineer_ahmed_farouk",

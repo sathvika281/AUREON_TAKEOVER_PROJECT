@@ -102,7 +102,11 @@ class Opportunity(BaseModel):
     application_steps: list[str] = Field(default_factory=list)
     timeline: list[OpportunityTimelineStep] = Field(default_factory=list)
     benefits: list[str] = Field(default_factory=list)
-    official_link: str
+    #: Sprint 4 — loosened from a required str. These are illustrative
+    #: composite postings (see source_note below) with no real listing to
+    #: link to; a fabricated URL is worse than an honest absence. None
+    #: means the frontend renders no "View Details" link at all.
+    official_link: str | None = None
     required_documents: list[str] = Field(default_factory=list)
     #: Same honesty convention as institution.py's StudentAmbassador/StudentProject.
     source_note: str = (

@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { BookOpen, Compass, Sparkles } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { BookOpen, Compass, ShieldAlert, Sparkles } from "lucide-react";
 
 import { Badge } from "../../design-system/components/Badge";
 import { EmptyStatePanel } from "../../design-system/components/EmptyStatePanel";
@@ -125,6 +125,12 @@ export function JourneyStoriesScreen() {
   const studentId = useRef(getCurrentStudentId()).current;
 
   const [stories, setStories] = useState<JourneyStory[]>([]);
+  // Sprint 4 fix: a failed request and a genuinely empty result are
+  // different product states and must never render the same way — see
+  // TECHNICAL_DEBT_REGISTER.md's Journey Stories P0. "success" with zero
+  // stories still reaches the existing honest "No Stories Found" panel
+  // below; only "error" gets its own distinct state.
+  const [storiesStatus, setStoriesStatus] = useState<"loading" | "success" | "error">("loading");
   const [relevantStories, setRelevantStories] = useState<JourneyStory[]>([]);
   const [filters, setFilters] = useState<JourneyStoryFiltersResponse | null>(null);
   const [query, setQuery] = useState("");
@@ -134,11 +140,23 @@ export function JourneyStoriesScreen() {
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
-  useEffect(() => {
+  const loadStories = useCallback(() => {
+    setStoriesStatus("loading");
     apiClient
       .get<JourneyStorySearchResponse>("/v1/journey-stories?limit=300")
-      .then((r) => setStories(r.stories))
-      .catch(() => {});
+      .then((r) => {
+        setStories(r.stories);
+        setStoriesStatus("success");
+      })
+      .catch(() => setStoriesStatus("error"));
+  }, []);
+
+  useEffect(() => {
+    loadStories();
+    // Filters and "Stories You May Relate To" are additive, non-primary
+    // sections that already degrade honestly on failure (they simply
+    // don't render — see their own `{... && (...)}` guards below), so
+    // they don't need the same error-state treatment as the main list.
     apiClient
       .get<JourneyStoryFiltersResponse>("/v1/journey-stories/filters")
       .then(setFilters)
@@ -147,7 +165,7 @@ export function JourneyStoriesScreen() {
       .get<RelevantJourneyStoriesResponse>(`/v1/students/${studentId}/journey-stories/relevant`)
       .then((r) => setRelevantStories(r.stories))
       .catch(() => {});
-  }, [studentId]);
+  }, [studentId, loadStories]);
 
   const filteredStories = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -334,7 +352,25 @@ export function JourneyStoriesScreen() {
         </div>
       )}
 
-      {filteredStories.length === 0 ? (
+      {storiesStatus === "loading" ? (
+        <p className="mt-8 text-sm text-ink-faint">Loading…</p>
+      ) : storiesStatus === "error" ? (
+        <div className="mt-8">
+          <EmptyStatePanel
+            icon={ShieldAlert}
+            title="Couldn't Load Stories"
+            description="Something went wrong reaching Aureon's servers — this isn't the same as there being no stories. Try again."
+            action={
+              <button
+                onClick={loadStories}
+                className="rounded-lg border border-border px-4 py-2 text-xs font-medium text-ink-muted transition-colors hover:border-border-strong hover:text-ink"
+              >
+                Retry
+              </button>
+            }
+          />
+        </div>
+      ) : filteredStories.length === 0 ? (
         <div className="mt-8">
           <EmptyStatePanel icon={BookOpen} title="No Stories Found" description="Try clearing a filter or searching a different term." />
         </div>

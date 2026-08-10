@@ -58,8 +58,9 @@
 - **Current implementation:** numbered, forward-only SQL files, applied by hand via the Supabase Dashboard SQL Editor — the same workaround used for every migration this session, because this development machine has no direct Postgres route.
 - **Why it was correct:** Matches 26 prior migrations in this exact codebase. Building real migration tooling was never in scope for any sprint, including this one.
 - **Future risk:** This is the one item in this whole review that's genuinely not fine for a real product. Manual SQL pasting doesn't survive multiple environments, multiple engineers, or any real release cadence.
+- **Sprint 4 update — this risk materialized concretely, not just theoretically:** migration `0021_journey_stories_discovery_themes.sql` existed correctly in the repo for an entire sprint (Connect Batch 2) without ever being applied to the live database — nothing in the codebase or process tracked *which* migrations had actually been run live versus merely written. The result was a live 500 error on a real, seeded feature (Student Stories), silently masked as an honest empty state by an unrelated frontend bug (see item 12) until a Sprint 4 fresh-user audit happened to surface it. This is exactly the failure mode this item already predicted — logged here as confirmation, not as a new item.
 - **Earliest sprint to revisit:** Before any real production launch — maps directly to the architecture doc's own Phase 9 (Production Readiness).
-- **Recommended long-term direction:** A GitHub Actions step that applies pending migrations automatically on merge to `main`, using a Postgres connection Actions' runners can actually reach (the network limitation is specific to this local machine, not a real infrastructure constraint — the frontend deploy workflow already proves CI automation works in this repo).
+- **Recommended long-term direction:** A GitHub Actions step that applies pending migrations automatically on merge to `main`, using a Postgres connection Actions' runners can actually reach (the network limitation is specific to this local machine, not a real infrastructure constraint — the frontend deploy workflow already proves CI automation works in this repo). At minimum, before that exists: a simple live-schema-vs-migrations-directory diff check, run manually before any sprint closes.
 - **Classification: Must Change Before Production**
 
 ### 7. Scaling characteristics (small-catalog assumptions)
@@ -107,6 +108,24 @@
 - **Recommended long-term direction:** A cheap, real guard: a small script or test that connects to the live schema (or a startup assertion) and diffs `StudentProfile.model_fields.keys()` against `student_profiles`' real columns, failing loudly if any Python field has no matching column. Doesn't require new tooling, just a script mirroring what `seed_*.py`'s live-data cross-checks already do for id references.
 - **Classification: Monitor — but this is the second occurrence, so treat the next as preventable, not surprising**
 
+### 12. Three independent, unreconciled skill representations coexist in the codebase
+
+- **Current implementation:** (a) the canonical `Skill` catalog (Sprint 1, 23 curated conceptual categories like "programming," "experimental_design"); (b) `Opportunity.required_skills`/`preferred_skills` — free-text, granular tool/technology names ("python," "docker," "react," "git"); (c) `CareerMemory.growth.skills[].skill` — a third, independent free-text field, dynamically populated by Growth Agent conversation events, currently empty in all live profiles.
+- **Why it was correct to leave alone this sprint:** A Sprint 4 audit checked real overlap between (a) and (b) directly: **0 of 33** distinct skill strings used across all 40 Opportunities match any real Skill catalog entry. The vocabularies are genuinely different in kind (broad conceptual categories vs. granular tool names), not just inconsistently spelled — a real promotion would require first expanding the Skill catalog with entries it doesn't have yet, which is content curation, not a data-representation fix. (c) is runtime student data, not seed/catalog data, and touching it means touching Student-adjacent memory — explicitly out of scope for a data-quality sprint.
+- **Future risk:** Opportunity Fit scoring (`opportunity/scoring.py::_match_skills`) matches against (b) via free-text substring search against evidence text, never using the real Skill catalog or the `EvidenceRecord.related_skill` structured link Sprint 3 built — meaning Project completions (which write precise, structured skill evidence) currently contribute nothing extra to Opportunity Fit accuracy that a vaguer text match wouldn't already provide.
+- **Earliest sprint to revisit:** A future "Skill taxonomy v2" sprint that deliberately expands Skill's catalog to cover granular tool/technology names, paired with updating `_match_skills` to use `EvidenceRecord.related_skill` — two coupled changes, not one.
+- **Recommended long-term direction:** Expand the Skill catalog's depth (not just breadth) to include the technology-specific vocabulary Opportunity already uses, then promote `Opportunity.required_skills` the same way Career's was in Sprint 1, then update `_match_skills` to prefer structured evidence over substring text search.
+- **Classification: Monitor**
+
+### 13. The Journey Stories silent-failure fix is not yet known to be the only instance of this anti-pattern
+
+- **Current implementation:** `JourneyStoriesScreen.tsx`'s main story-list fetch was fixed this sprint to distinguish `loading`/`success`/`error` explicitly, so a failed request can never again render as a false "No Stories Found." This fix was scoped to exactly the one screen and one request the audit's fresh-user walkthrough happened to catch failing live.
+- **Why it was correct to scope narrowly:** The task was explicitly bounded to the one confirmed defect, not a codebase-wide sweep — fixing more than what was demonstrated would have been "manufacturing work" against this sprint's own governing principle.
+- **Future risk:** The same `.catch(() => {})`-silently-becomes-`[]` shape is a common pattern in this codebase (seen during this sprint's audits in multiple `*Context.tsx`/`*Screen.tsx` files for other features) — it's plausible other screens have the identical latent bug, just not yet caught by a live failure during a walkthrough the way this one was.
+- **Earliest sprint to revisit:** The Product Polish pass (Phase 8) — a real audit of every list-fetching screen's error handling, not reactive one-off fixes each time a walkthrough happens to hit a live failure.
+- **Recommended long-term direction:** A shared hook (e.g. `useFetchState<T>`) encoding the loading/success/error/retry shape once, so future screens get it by construction instead of by remembering to replicate this fix's pattern by hand.
+- **Classification: Monitor**
+
 ---
 
 ## What We Deliberately Chose Not to Optimize
@@ -135,6 +154,10 @@ Every one of these was a conscious trade-off, not an oversight — documented he
 
 **No backfill/alias script for Project, unlike Skill and Company.** Not an oversight — Project's edges are seeded directly as real ids on the Project rows themselves (`target_skill_ids`, `related_career_ids`, `related_company_ids`), since Project is a new entity carrying its own outgoing edges rather than a promotion of an existing Career field. There was never a free-text field to alias-match against. See the Decision Log entry below for the full reasoning.
 
+**`Opportunity.required_skills`/`preferred_skills` left as free text despite matching the textbook "promote this to a real entity" pattern.** Sprint 4's Data Representation audit found this immediately — it's the exact shape named in the audit's own brief. Checked the real overlap before assuming a fix was warranted: 0 of 33 real skill strings match the Skill catalog. Avoided promoting a relationship that would either be near-empty (only exact matches) or require inventing new Skill catalog entries mid-audit, neither of which is a data-representation fix. See Debt Register item 12 and the Decision Log entry below.
+
+**No codebase-wide sweep for the silent-`.catch()`-becomes-empty-state anti-pattern.** Sprint 4 fixed the one instance a live fresh-user walkthrough actually caught failing (Journey Stories). Avoided expanding a demonstrated, scoped bug fix into a speculative audit of every fetch in the app, which the sprint's own scope rules explicitly warned against ("do not manufacture work"). See Debt Register item 13.
+
 ---
 
 ## Technical Debt Register
@@ -153,6 +176,8 @@ Prioritized, not chronological — read top to bottom as "what to think about fi
 | 7 | `RealitySection`/`CareerSkillsSection`, `CareerResourcesSection`/`CareerCompaniesSection`, and now the plain-text `projects` list/`CareerProjectsSection` cosmetic overlaps on backfilled careers | Low | Minor visual redundancy, not a functional bug | Low | Whenever any of the old sections is next touched for any reason | Low |
 | 8 | `tool` skill category thin (2 entries); general catalog depth for Skill, Company, and Project | Low | Minor — a category or difficulty tier feels sparse if browsed directly | None (pure content work) | Opportunistic, alongside any future content pass | Low |
 | 9 | Real company logo rendering has never been visually verified from this development environment | Low | None if the fallback is honestly working (confirmed live); real risk only if logos silently never resolve in production either | Low — the code path is correct either way, this is a verification gap, not a defect | Next time a deploy environment with normal internet access is available for a manual check | Low (a five-minute visual check, not a code change) |
+| 12 | Three unreconciled skill representations (Skill catalog, Opportunity's free-text skills, GrowthSkill) — confirmed 0/33 real overlap between the first two | Medium | Opportunity Fit scoring can't benefit from Project's structured skill evidence yet | Medium — requires expanding Skill's catalog depth first, then updating scoring | A future "Skill taxonomy v2" sprint | Medium-High (content curation + scoring logic change, two coupled efforts) |
+| 13 | The silent-failure fix (loading/success/error) was applied to one screen; other list-fetching screens are unaudited for the same anti-pattern | Low-Medium | Unknown — could be masking real failures as empty states elsewhere, same as the Journey Stories P0 | Low per screen if the pattern is extracted into a shared hook first | Product Polish pass (Phase 8) | Medium (a shared hook, then a real per-screen audit) |
 
 ---
 
@@ -262,3 +287,21 @@ Prioritized, not chronological — read top to bottom as "what to think about fi
 - **Why this decision won:** An alias map exists to bridge *already-existing* uncontrolled text to controlled ids. Project never had uncontrolled text — its edges were authored directly as real ids from the start, cross-checked programmatically against the real Skill/Career/Company id lists (catching zero invented references) rather than needing a matching step at all. Building the alias/backfill machinery anyway would have been process cosplay, not a real need.
 - **Consequences:** Project's seeding is one script instead of two, and carries no "unmatched alias" risk the way Skill/Company's backfills do (Debt Register item 3/5) — a genuine, structural reduction in risk, not just less code.
 - **Revisit trigger:** Only if a future entity is, like Skill/Company, promoted from an existing free-text field — at that point the alias/backfill pattern is the right one to reach for again, not this sprint's direct-seed approach.
+
+### CareerStory.trait_tags deliberately excluded from the Sprint 4 Literal-typing fix
+
+- **Decision:** `Career.trait_tags`, `Mentor.trait_tags`, and `Institution.trait_tags` were all promoted from `list[str]` to `list[TraitName]` (a real `Literal` derived from `CareerDNA.TRAIT_NAMES`). `CareerStory.trait_tags` — same field name, same default value shape, same 100%-conforming live data — was deliberately left as `list[str]`.
+- **Context:** All four fields looked identical from the outside: same name, same type signature, same real-data conformance to the 13 CareerDNA trait names. The fix was almost applied uniformly to all four before tracing each field's actual consumer.
+- **Alternatives considered:** Apply `TraitName` to all four for consistency, since the live data conformed everywhere.
+- **Why this decision won:** `CareerStory.trait_tags` is consumed by `personalize_stories()` via `compute_tag_alignment()` against real World Signals (Space/AI/Healthcare/...) — a topic/world-alignment match, not a CareerDNA-trait match — and its own test suite intentionally exercises non-trait topic words ("space," "physics") as valid input. The live data's conformance to `TRAIT_NAMES` was incidental (nothing had ever been seeded with a genuine topic word), not the field's designed contract. Applying the Literal would have silently broken 24 of the 54 real Student Discovery Stories seeded later this same sprint, which correctly use non-trait tags — this was caught before shipping, not after.
+- **Consequences:** Two fields with the same name, in the same file, now have genuinely different types — worth a inline code comment (added) so a future reader doesn't "fix" the inconsistency without re-deriving this reasoning.
+- **Revisit trigger:** None expected — this is the correct, permanent state, not a placeholder.
+
+### Reused EmptyStatePanel for the Journey Stories error state instead of building a new component
+
+- **Decision:** The "Couldn't Load Stories" error state reuses the existing `EmptyStatePanel` component (same one used for genuine empty states throughout the app), differentiated only by icon (`ShieldAlert`, matching `HistoryScreen.tsx`'s existing precedent for this exact class of state), copy, and a Retry action passed through the panel's existing `action` slot.
+- **Context:** The task explicitly required the error state not be visually confused with an empty state, and to reuse an existing pattern if one exists rather than duplicate it.
+- **Alternatives considered:** A dedicated `ErrorStatePanel` component; an inline, one-off error block specific to this screen.
+- **Why this decision won:** `HistoryScreen.tsx` already established the exact convention needed (`EmptyStatePanel` + `ShieldAlert` + "Couldn't Load..." copy) for a different screen's error case — reusing it keeps error states visually consistent app-wide for free, and adding a Retry action only required using a slot the component already exposed, not extending it.
+- **Consequences:** Error and empty states share a visual shell (icon-in-ring + title + description) but are unambiguous in content (different icon, explicit "couldn't load"/"try again" language, an action button only the error state has) — satisfies "distinct" without needing two components.
+- **Revisit trigger:** If a third or fourth screen needs this same error-state treatment, that's the signal to consider a small `useFetchState` hook (see Debt Register item 13) rather than repeating the local `useState`/`useCallback` boilerplate by hand each time.

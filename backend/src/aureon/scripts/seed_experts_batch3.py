@@ -50,7 +50,7 @@ EXPERTS: list[dict] = [
         "projects": ["Contributed gameplay programming to a studio's modestly successful commercial game"], "research": [],
         "certifications": [], "conferences": ["Game Developers Conference (attendee)"], "organizations": [],
         "volunteer_work": ["Mentors aspiring solo developers on realistic project scoping"],
-        "portfolio_links": [{"label": "itch.io", "url": "https://felixnguyen.itch.io"}], "social_links": [],
+        "portfolio_links": [], "social_links": [],
     },
     {
         "id": "expert_veterinarian_sanne_de_vries",

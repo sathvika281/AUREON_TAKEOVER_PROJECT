@@ -18,7 +18,7 @@ _FUTURE = FutureLens(
     emerging_opportunities="x", timeline_narrative="x",
 )
 CAREER_A = Career(id="ai_research", name="AI Research", category="research", industry="tech", one_liner="x", reality=_REALITY, future_lens=_FUTURE)
-CAREER_B = Career(id="robotics", name="Robotics Engineering", category="engineering", industry="tech", one_liner="x", reality=_REALITY, future_lens=_FUTURE)
+CAREER_B = Career(id="robotics", name="Robotics Engineering", category="traditional", industry="tech", one_liner="x", reality=_REALITY, future_lens=_FUTURE)
 
 SIMULATION_ARGS = {
     "learning_journey": "A grounded learning path.",

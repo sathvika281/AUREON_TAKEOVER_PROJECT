@@ -2,7 +2,7 @@
 
 This is the execution log, not the architecture. The knowledge model, principles, roadmap phases, and quality bar all live in [`AUREON_DATA_ARCHITECTURE.md`](./AUREON_DATA_ARCHITECTURE.md) and are frozen — this document never restates that content, only tracks real progress against it. Phase numbers below (Phase 1-10) refer directly to that document's §14.
 
-**Last re-baselined:** 2026-08-07, after Sprint 3 (Project Entity Foundation) completed and was live-verified.
+**Last re-baselined:** 2026-08-07, after Sprint 4 (Real Data & Data Quality) completed and was live-verified.
 
 ---
 
@@ -12,7 +12,7 @@ This is the execution log, not the architecture. The knowledge model, principles
 |---|---|---|
 | 1 | Knowledge Architecture | ✅ Complete |
 | 2 | Database Architecture | 🟢 Substantially complete on the entity list — Skill (Sprint 1), Company (Sprint 2), and Project (Sprint 3) all live-verified; remaining promotions (Mentor, Opportunity edges) not started |
-| 3 | Real Data & Data Quality | 🟢 Substantially complete on the entity list — 23 real skills + 31 real companies + 20 real projects seeded, real Career backfills/links live-verified for all three |
+| 3 | Real Data & Data Quality | 🟢 Substantially complete — entity list (23 skills + 31 companies + 20 projects) from Sprints 1-3, plus Sprint 4's full-catalog data-quality pass: fake placeholder URLs found and removed (46 instances), category/vocabulary fields promoted to real enforced types where genuinely justified, 54 real Student Discovery Stories seeded, and a real live data-serving bug found and fixed |
 | 4 | Information Architecture | 🟡 Partial — exists for pre-existing entities, not yet extended to the adaptive-journey gating |
 | 5 | User Journey & Product Flow | 🟡 Partial — discussed strategically this session, never formalized as real journey maps |
 | 6 | Design System | 🟢 Substantially complete — real tokens, motion, and shared components already exist and are actively enforced |
@@ -21,7 +21,7 @@ This is the execution log, not the architecture. The knowledge model, principles
 | 9 | Production Readiness | 🟡 Partial — real deployment, real auth exist; monitoring, full account-lifecycle, and consent flows unaudited |
 | 10 | Demo Readiness | 🔴 Not started — correctly, per the roadmap, this shouldn't start until closer to the deadline |
 
-**Summary: 1 of 10 phases fully complete (10%); Phases 2-3 now substantially complete on the entity list (Skill, Company, and Project all real, live-verified).** The promotion pattern proved itself on Skill and Company; Project proved a second pattern — real, evidence-producing completion — generalizes onto the shared Evidence Graph without duplicating it. Nothing built so far reflects the adaptive-journey restructuring the knowledge model was designed to support.
+**Summary: 1 of 10 phases fully complete (10%); Phases 2-3 now substantially complete (Skill, Company, and Project all real and live-verified, and the whole existing catalog's data quality — not just the three new entities — has now been genuinely audited and corrected, not merely assumed clean).** The promotion pattern proved itself on Skill and Company; Project proved a second pattern — real, evidence-producing completion — generalizes onto the shared Evidence Graph without duplicating it; Sprint 4 proved the product can survive being tested as a genuine stranger would experience it, catching and fixing a real silent-failure bug that had been live and undetected. Nothing built so far reflects the adaptive-journey restructuring the knowledge model was designed to support.
 
 ---
 
@@ -40,7 +40,7 @@ This is the execution log, not the architecture. The knowledge model, principles
 **Definition of Done:** Skill/Company/Project exist as real tables; at least Career has real `required_skill_ids` edges alongside (not instead of) its existing string fields; full backend test suite still green.
 
 ### Phase 3 — Real Data & Data Quality
-**Status:** 🟢 Substantially complete on the entity list. Sprint 1 seeded 23 real skills (27/27 careers backfilled); Sprint 2 seeded 31 real companies (21/27 careers backfilled); Sprint 3 seeded 20 real, attemptable projects spanning 20/27 careers, cross-checked programmatically against the real Skill/Career/Company id lists rather than trusted from memory — all three live-verified with zero dangling references.
+**Status:** 🟢 Substantially complete. Sprint 1 seeded 23 real skills (27/27 careers backfilled); Sprint 2 seeded 31 real companies (21/27 careers backfilled); Sprint 3 seeded 20 real, attemptable projects spanning 20/27 careers — all live-verified with zero dangling references. Sprint 4 then audited the *quality* of the whole catalog (not just the three new entities): found and removed 46 fake `example.com`/`.org` placeholder URLs across Opportunities and Mentors, added permanent regression validation against the same class of mistake, promoted several category/vocabulary fields to real enforced types where live data already justified it, seeded 54 real Student Discovery Stories that existed in the repo but were never applied, and caught a real live bug (an existing migration that had never been run against production) plus a real frontend bug (a failed request silently rendering as an honest empty state) — both fixed and verified.
 **Objective:** Seed real, honestly-labeled content for the new entities, and backfill real edges on existing entities.
 **Deliverables:** Seed scripts for Skill (a real, curated taxonomy — not exhaustive, but genuine), Company (real, well-known organizations), Project (real, attemptable briefs); a backfill pass linking existing Career/Opportunity rows to the new Skill/Company entities.
 **Estimated complexity:** Medium — content-writing heavy rather than technically hard, same shape as every existing seed script in this codebase.
@@ -85,7 +85,7 @@ This is the execution log, not the architecture. The knowledge model, principles
 **Definition of Done:** Every new entity page is reachable, renders real data, and satisfies the no-dead-ends rule; existing pages are unaffected (regression-tested).
 
 ### Phase 8 — Product Polish
-**Status:** 🟡 Partial (pockets only).
+**Status:** 🟡 Partial (pockets only). Sprint 4's Final Release Audit (a fresh-user, no-implementation-knowledge walkthrough) produced a real, concrete, prioritized backlog for whenever this phase starts: a P1/P2 findings list covering loading states, empty-state honesty, 404 handling, catalog discoverability, and completion-state persistence — see the Sprint 4 Release Summary below. Not implemented in Sprint 4 by explicit scope decision (only the one P0 that silently misrepresented a real feature as absent was fixed); this phase should start from that list rather than re-auditing from scratch.
 **Objective:** A systematic pass — not another one-off — against the "minute details" checklist already established this session (empty states, loading feedback, copy consistency, chrome consistency).
 **Deliverables:** A tracked audit, screen by screen, checked against Definition of Excellence §15.
 **Estimated complexity:** Medium, mostly in volume rather than difficulty.
@@ -94,7 +94,7 @@ This is the execution log, not the architecture. The knowledge model, principles
 **Definition of Done:** Definition of Excellence §15's UX/Design/Maturity checklists pass on every page in scope for the hackathon demo.
 
 ### Phase 9 — Production Readiness
-**Status:** 🟡 Partial.
+**Status:** 🟡 Partial. Sprint 4's Final Release Audit confirmed password reset genuinely does not exist at any layer (no UI link, no `resetPasswordForEmail` call, no profile-page password change) — this phase's own Definition of Done already named "confirmed-working password reset" as a requirement; the gap is now concretely documented rather than assumed.
 **Objective:** Audit and close gaps in error handling, auth lifecycle, and consent/privacy flows.
 **Deliverables:** Confirmed-working password reset, logout, and data-export flows; basic error monitoring.
 **Estimated complexity:** Medium.
@@ -226,8 +226,44 @@ Concretely, Sprint 1 (below) scopes this to: the `Skill` model, a real (not exha
 
 **Readiness for Sprint 4:** Ready. Three entities (Skill, Company, Project) now share a proven repository/service/route shape, and Project additionally proves the Evidence Graph can grow a new dimension without forking into a parallel system. Per this session's explicit instruction, Sprint 4 is not scoped or started in this session — it begins fresh, once requested.
 
-### Sprint 4+
-Not yet planned in detail — will be scoped once Sprint 3 reaches Definition of Done, per the one-workstream-at-a-time rule.
+### Sprint 4 — Real Data & Data Quality
+**Goal:** Make Aureon's existing knowledge ecosystem feel like a real, curated product rather than a database populated for demonstration — audited first, corrected only where genuinely justified, never "improved" by inventing content.
+**Tasks:** Kickoff audit (data credibility question) → External References & Data Assets audit + fixes → Data Representation audit + fixes → a fresh-user Final Release Audit → the one P0 finding fixed (migration + real content seeding + a real frontend bug) end to end.
+**Current Status:** ✅ Complete — live-verified end to end.
+**Blockers:** None (two manual SQL Editor steps this sprint — the `discovery_themes` migration and the `official_link` nullability migration — same environment-specific limitation as every prior sprint; resolved, not a blocker to close the sprint).
+**Dependencies:** Sprint 1-3 (Skill, Company, Project) complete — satisfied.
+**Completed Date:** 2026-08-07
+**Notes:** This sprint had no dedicated planning document (unlike Sprints 1-3's `SPRINT_N.md`) — it was scoped and executed phase-by-phase via direct instruction, each phase gated on a report-before-fix checkpoint. Two real, live bugs were found and fixed, neither of which any prior sprint's test suite could have caught: (1) a real migration (`0021_journey_stories_discovery_themes.sql`) that existed correctly in the repo but was never applied to the live database, silently 500-ing a real, seeded feature; (2) a frontend `.catch(() => {})` that converted that failure (and any future one) into a false "No Stories Found" honest-looking empty state — fixed by making `loading`/`success`/`error` explicit, reusing the existing `EmptyStatePanel`/`ShieldAlert` error-state convention already established in `HistoryScreen.tsx`, with a working Retry action. A near-miss was caught before shipping: `CareerStory.trait_tags` was almost given the same `Literal[TraitName]` type-tightening applied to `Career`/`Mentor`/`Institution`'s same-named field, which would have broken 24 of the 54 real Student Discovery Stories seeded later this same sprint (that field is genuinely a different concept — topic/world alignment, not CareerDNA traits — despite the coincidental name and data-shape match). The Final Release Audit (a genuinely fresh, no-implementation-knowledge account walked through signup → onboarding → every nav section → project completion → deep links → logout) produced a full P0/P1/P2 findings report; only the one P0 (the silently-masked feature failure) was fixed this sprint, by explicit, repeated scope instruction — Forgot Password, Your Universe's blank loading window, generic 404 handling, Project-attempt-state persistence, and catalog nav discoverability are all real, confirmed, but deliberately deferred to the later product/UI pass (Phase 8/9).
+
+### Sprint 4 — Release Summary
+
+**Sprint Goal:** Make Aureon's existing catalog and product surface feel like it was genuinely curated and tested, not just built — auditing before changing anything, fixing only what real evidence justified, and closing the one defect severe enough to make a real, fully-seeded feature invisible to every user.
+
+**What Was Implemented:**
+- **External references cleanup:** found and removed 46 fake `example.com`/`.org` placeholder URLs (40 `Opportunity.official_link` values, 6 `Mentor` portfolio/social links across 9 seed files), plus one unverifiable-but-plausible link for a fictional persona (Felix Nguyen's itch.io URL) removed under the same "verified destination > honest absence > fabricated destination" principle. `Opportunity.official_link` loosened from required to optional (`str | None`) since illustrative composite postings genuinely have no real listing to link to; the frontend now renders no "View Details" link at all rather than a link to nowhere.
+- **Permanent regression validation:** two new generic tests (`test_seed_data_quality.py`) scanning all 36 real catalog seed sources for reserved/placeholder domains and malformed URL-shaped fields — structural, not hardcoded to the specific records found.
+- **Data representation fixes:** `Career.category`, `Mentor.role_type`, and `trait_tags` (Career/Mentor/Institution) promoted from unconstrained `str`/`list[str]` to real `Literal` types, derived from vocabularies that live data already conformed to 100% — closes a class of silent-drift risk the same way the URL validation does, for category fields instead of links. `CareerStory.trait_tags` deliberately excluded after tracing its real, different consumer (see Decision Log).
+- **Student Discovery content seeding:** 54 real stories (2 pre-written, previously-unseeded scripts) seeded live, bringing `career_stories` from 150 (all Career Explorer "Human Stories") to 204 (150 + 54 genuinely distinct Student Discovery narratives) — zero fabricated content, all pre-existing and validated before seeding.
+- **One real live bug found and fixed:** migration `0021_journey_stories_discovery_themes.sql` existed in the repo but was never applied to the live database — Student Stories 500'd on every request, masked as an honest-looking empty catalog by a frontend bug. Both the missing migration and the masking bug are now fixed.
+
+**Database Changes:** Migration `0021` (finally applied — pre-existing, additive, `career_stories.discovery_themes`); migration `0031` (new, additive — `opportunities.official_link` constraint loosened to nullable). 54 new `career_stories` rows seeded (`story_type='composite_student_discovery'`). 46 live rows corrected (`official_link` nulled on 40 Opportunities; `portfolio_links`/`social_links` cleared on 17 Mentors). Zero destructive changes; the pre-existing 150 Career Explorer stories, 31 companies, and all other catalog data verified untouched throughout.
+
+**API Changes:** None new. `OpportunitySummaryDTO.official_link` loosened to `str | None` (backward-compatible for any consumer already handling a string).
+
+**Frontend Changes:** `OpportunityEqualityScreen.tsx` — conditional "View Details" rendering. `JourneyStoriesScreen.tsx` — explicit `loading`/`success`/`error` states replacing a silent catch, with a working Retry action reusing the existing `EmptyStatePanel` component.
+
+**Tests Added:** 2 new backend tests (`test_no_reserved_example_domains_in_any_seed_data`, `test_url_shaped_fields_are_well_formed_https_urls`), both generic/structural across all 36 real seed sources, plus a coverage-guard test ensuring no future seed script goes unchecked. 11 pre-existing test fixtures fixed (placeholder category/trait values that predated this sprint, caught by the new `Literal` types doing exactly their job).
+
+**Regression Status:** 805/805 backend tests passing throughout every phase of this sprint. `tsc` clean. Production build clean, verified after every change.
+
+**Known Technical Debt (Sprint 4 review):** Fully documented in `TECHNICAL_DEBT_REGISTER.md` — two genuinely new items logged (three unreconciled skill representations with a confirmed 0/33 real vocabulary overlap between Opportunity and the Skill catalog; the silent-failure fix applied to one screen with others unaudited), plus a concrete real-world confirmation added to the already-tracked manual-migration-risk item. Five new Decision Log entries record the real "why" calls made this sprint, including the `CareerStory.trait_tags` near-miss.
+
+**Merge Recommendation:** Approved. Every fix was grounded in a read-before-write audit, verified live, and scoped exactly to demonstrated evidence — no speculative fixes, no manufactured debt, no scope creep into the deliberately-deferred P1/P2 backlog.
+
+**Readiness for Sprint 5:** Ready, whenever scoped. A real, prioritized P1/P2 backlog now exists from the Final Release Audit (Forgot Password, Your Universe's loading state, generic 404 handling, Project-attempt persistence, catalog nav discoverability) for whichever future sprint takes on Phase 8/9 polish work — not started or assumed in Sprint 4, per explicit scope instruction.
+
+### Sprint 5+
+Not yet planned in detail — will be scoped once requested, per the one-workstream-at-a-time rule.
 
 ---
 

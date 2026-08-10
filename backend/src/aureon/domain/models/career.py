@@ -3,7 +3,17 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
+from aureon.domain.models.career_dna import TraitName
 from aureon.domain.models.career_journey import CareerJourneyMilestone
+
+#: Sprint 4 — Data Representation audit. Live data already used exactly
+#: these 8 values across all 27 seeded careers with zero drift; this
+#: makes that real discipline a structural guarantee instead of an
+#: accidental one.
+CareerCategory = Literal[
+    "traditional", "emerging", "interdisciplinary", "research",
+    "startup", "government", "non_profit", "country_specific",
+]
 
 
 class SalaryRange(BaseModel):
@@ -86,11 +96,11 @@ class Career(BaseModel):
 
     id: str
     name: str
-    category: str
+    category: CareerCategory
     industry: str
     countries: list[str] = Field(default_factory=list)  # empty = global
     one_liner: str
-    trait_tags: list[str] = Field(default_factory=list)
+    trait_tags: list[TraitName] = Field(default_factory=list)
     reality: CareerReality
     future_lens: FutureLens
     description: str = ""
@@ -166,6 +176,16 @@ class CareerStory(BaseModel):
     turning_points: str
     advice: str
     lessons_learned: str
+    #: Sprint 4 audit note: despite the field name matching Career/Mentor/
+    #: Institution's trait_tags, this one is genuinely different and
+    #: deliberately stays `list[str]` — `personalize_stories()` matches it
+    #: against real World Signals via `compute_tag_alignment` (a topic/
+    #: world-name alignment, not a CareerDNA-trait one), and its own test
+    #: suite intentionally exercises non-trait topic words ("space",
+    #: "physics"). Current live data happens to only use trait-shaped
+    #: values, but that's incidental, not the field's designed contract —
+    #: restricting it to TraitName would be merging two concepts that
+    #: only coincidentally share a name.
     trait_tags: list[str] = Field(default_factory=list)
 
     #: Connect Batch 2 — structured timeline, reusing the exact sub-model

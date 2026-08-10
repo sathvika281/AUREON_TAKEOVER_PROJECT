@@ -52,7 +52,7 @@ EXPERTS: list[dict] = [
         "faqs": [{"question": "Why do apps get rejected from app stores?", "answer": "Usually for specific guideline violations, not because the idea is bad — careful, complete reading of the feedback almost always reveals a fixable issue."}],
         "projects": ["Built a health app with over 500,000 downloads"], "research": [], "certifications": [],
         "conferences": [], "organizations": [], "volunteer_work": ["Teaches a free weekend iOS development course"],
-        "portfolio_links": [{"label": "GitHub", "url": "https://github.com/example/sarahaddad"}], "social_links": [],
+        "portfolio_links": [], "social_links": [],
     },
     {
         "id": "expert_product_manager_owen_clarke",

@@ -13,6 +13,13 @@ Opportunity's own `source_note`. Idempotent: uses
 OpportunityRepository.upsert_opportunity, which only bumps `version`
 when real content differs, so re-running with unchanged data is a true
 no-op.
+
+Sprint 4 — no `official_link` is set on any entry. These are composite
+postings with no real listing to point at; a fabricated URL (the
+`example.org` placeholders every entry originally carried) is a worse
+failure than an honest absence — see Opportunity.official_link's own
+docstring. Never add a `reserved-domain` (example.com/.org/.net) URL
+here again; test_seed_data_quality.py enforces this.
 """
 
 import asyncio
@@ -41,7 +48,6 @@ OPPORTUNITIES: list[dict] = [
         "application_steps": ["Submit resume + GitHub link", "Take-home ML exercise", "Interview"],
         "timeline": [{"label": "Applications close", "detail": "Final day to apply", "date": "2026-09-15T00:00:00Z"}],
         "benefits": ["Mentorship from senior engineers", "Letter of recommendation on completion"],
-        "official_link": "https://example.org/opportunities/applied-ai-internship",
         "required_documents": ["Resume", "GitHub profile link"],
     },
     {
@@ -64,7 +70,6 @@ OPPORTUNITIES: list[dict] = [
         "application_steps": ["Submit resume", "Coding assessment", "Interview"],
         "timeline": [{"label": "Applications close", "detail": "Final day to apply", "date": "2026-08-05T00:00:00Z"}],
         "benefits": ["Full-time offer track", "Mentorship"],
-        "official_link": "https://example.org/opportunities/frontend-internship",
         "required_documents": ["Resume"],
     },
     {
@@ -87,7 +92,6 @@ OPPORTUNITIES: list[dict] = [
         "application_steps": ["Submit resume", "Data case study", "Interview"],
         "timeline": [{"label": "Applications close", "detail": "Final day to apply", "date": "2026-07-24T00:00:00Z"}],
         "benefits": ["Mentorship", "Conference travel stipend"],
-        "official_link": "https://example.org/opportunities/data-science-internship",
         "required_documents": ["Resume", "Unofficial transcript"],
     },
     {
@@ -110,7 +114,6 @@ OPPORTUNITIES: list[dict] = [
         "application_steps": ["Register as a team of up to 4", "Attend the build sprint"],
         "timeline": [{"label": "Registration closes", "detail": "Last day to register a team", "date": "2026-07-20T00:00:00Z"}],
         "benefits": ["Robotics kit to keep", "Cash prizes for top 3 teams"],
-        "official_link": "https://example.org/opportunities/robotics-build-sprint",
         "required_documents": [],
     },
     {
@@ -133,7 +136,6 @@ OPPORTUNITIES: list[dict] = [
         "application_steps": ["Register a team", "Submit a working prototype by the deadline"],
         "timeline": [{"label": "Registration closes", "detail": "Last day to register", "date": "2026-08-20T00:00:00Z"}],
         "benefits": ["Cash prizes", "Mentorship from industry judges"],
-        "official_link": "https://example.org/opportunities/global-ai-hackathon",
         "required_documents": [],
     },
     {
@@ -156,7 +158,6 @@ OPPORTUNITIES: list[dict] = [
         "application_steps": ["Submit resume + statement of interest", "Faculty interview"],
         "timeline": [{"label": "Applications close", "detail": "Final day to apply", "date": "2026-10-01T00:00:00Z"}],
         "benefits": ["Co-authorship opportunity on publications", "Letter of recommendation"],
-        "official_link": "https://example.org/opportunities/cv-research-program",
         "required_documents": ["Resume", "Statement of interest", "Unofficial transcript"],
     },
     {
@@ -179,7 +180,6 @@ OPPORTUNITIES: list[dict] = [
         "application_steps": ["Submit resume + statement of interest", "Faculty interview"],
         "timeline": [{"label": "Applications close", "detail": "Final day to apply", "date": "2026-11-01T00:00:00Z"}],
         "benefits": ["Lab experience", "Letter of recommendation"],
-        "official_link": "https://example.org/opportunities/materials-research-program",
         "required_documents": ["Resume", "Statement of interest"],
     },
     {
@@ -202,7 +202,6 @@ OPPORTUNITIES: list[dict] = [
         "application_steps": ["Submit team registration + concept proposal", "Advance to build phase if selected"],
         "timeline": [{"label": "Proposals due", "detail": "Concept proposal deadline", "date": "2026-08-10T00:00:00Z"}],
         "benefits": ["Cash prizes", "National recognition"],
-        "official_link": "https://example.org/opportunities/robotics-innovation-competition",
         "required_documents": ["Concept proposal"],
     },
     {
@@ -225,7 +224,6 @@ OPPORTUNITIES: list[dict] = [
         "application_steps": ["Register", "Compete during the live window"],
         "timeline": [{"label": "Registration closes", "detail": "Last day to register", "date": "2026-07-26T00:00:00Z"}],
         "benefits": ["Cash prizes", "Recognition from sponsor companies"],
-        "official_link": "https://example.org/opportunities/oss-security-challenge",
         "required_documents": [],
     },
     {
@@ -248,7 +246,6 @@ OPPORTUNITIES: list[dict] = [
         "application_steps": ["Submit application + essays", "Academic reference letters", "Interview"],
         "timeline": [{"label": "Applications close", "detail": "Final day to apply", "date": "2026-12-01T00:00:00Z"}],
         "benefits": ["Partial tuition coverage", "Monthly living stipend", "Alumni network"],
-        "official_link": "https://example.org/opportunities/germany-excellence-scholarship",
         "required_documents": ["Academic transcript", "Essays", "Reference letters"],
     },
     {
@@ -271,7 +268,6 @@ OPPORTUNITIES: list[dict] = [
         "application_steps": ["Submit application + essay"],
         "timeline": [{"label": "Applications close", "detail": "Final day to apply", "date": "2026-09-30T00:00:00Z"}],
         "benefits": ["One-time monetary award", "Mentorship program access"],
-        "official_link": "https://example.org/opportunities/women-in-stem-scholarship",
         "required_documents": ["Essay", "Proof of enrollment"],
     },
     {
@@ -294,7 +290,6 @@ OPPORTUNITIES: list[dict] = [
         "application_steps": ["Open a first-timers-only issue", "Get paired with a mentor"],
         "timeline": [],
         "benefits": ["Real open-source contribution history", "Mentor guidance"],
-        "official_link": "https://example.org/opportunities/oss-contributor-program",
         "required_documents": [],
     },
     {
@@ -317,7 +312,6 @@ OPPORTUNITIES: list[dict] = [
         "application_steps": ["Submit research proposal", "Reference letters", "Interview"],
         "timeline": [{"label": "Proposals due", "detail": "Final day to submit a proposal", "date": "2026-11-15T00:00:00Z"}],
         "benefits": ["Annual stipend", "Publication support", "Fellow network"],
-        "official_link": "https://example.org/opportunities/early-career-fellowship",
         "required_documents": ["Research proposal", "Reference letters"],
     },
     {
@@ -340,7 +334,6 @@ OPPORTUNITIES: list[dict] = [
         "application_steps": ["Submit application", "Short interview"],
         "timeline": [],
         "benefits": ["Monthly stipend", "Company swag", "Networking with the developer relations team"],
-        "official_link": "https://example.org/opportunities/campus-ambassador-program",
         "required_documents": [],
     },
     {
@@ -363,7 +356,6 @@ OPPORTUNITIES: list[dict] = [
         "application_steps": ["Register for a ticket"],
         "timeline": [{"label": "Registration closes", "detail": "Last day to register", "date": "2026-08-18T00:00:00Z"}],
         "benefits": ["Networking", "Access to talks and workshops"],
-        "official_link": "https://example.org/opportunities/student-ai-robotics-conference",
         "required_documents": [],
     },
     {
@@ -386,7 +378,6 @@ OPPORTUNITIES: list[dict] = [
         "application_steps": ["Register for a seat"],
         "timeline": [{"label": "Registration closes", "detail": "Last day to register", "date": "2026-07-21T00:00:00Z"}],
         "benefits": ["Hands-on ML exercise", "Course materials to keep"],
-        "official_link": "https://example.org/opportunities/intro-ml-workshop",
         "required_documents": [],
     },
     {
@@ -409,7 +400,6 @@ OPPORTUNITIES: list[dict] = [
         "application_steps": ["Submit application", "Enrollment"],
         "timeline": [{"label": "Enrollment closes", "detail": "Last day to enroll", "date": "2026-08-30T00:00:00Z"}],
         "benefits": ["Career services support", "Portfolio projects"],
-        "official_link": "https://example.org/opportunities/fullstack-bootcamp",
         "required_documents": [],
     },
     {
@@ -432,7 +422,6 @@ OPPORTUNITIES: list[dict] = [
         "application_steps": ["Submit team registration + problem statement", "Submit final prototype"],
         "timeline": [{"label": "Registration closes", "detail": "Last day to register a team", "date": "2026-09-05T00:00:00Z"}],
         "benefits": ["Cash prizes", "Incubator introduction for top teams"],
-        "official_link": "https://example.org/opportunities/sustainable-tech-challenge",
         "required_documents": ["Problem statement"],
     },
     # Explore Polish Batch — 22 new entries concentrated in the
@@ -460,7 +449,6 @@ OPPORTUNITIES: list[dict] = [
         "application_steps": ["Submit income and academic documentation via the government portal", "Await verification"],
         "timeline": [{"label": "Applications close", "detail": "Final day to submit documentation", "date": "2026-10-31T00:00:00Z"}],
         "benefits": ["Tuition support", "Monthly stipend", "Renewable each academic year"],
-        "official_link": "https://example.org/opportunities/india-national-merit-scheme",
         "required_documents": ["Income certificate", "Academic transcript"],
     },
     {
@@ -483,7 +471,6 @@ OPPORTUNITIES: list[dict] = [
         "application_steps": ["Submit application through the university financial aid office", "Provide proof of enrollment"],
         "timeline": [{"label": "Applications close", "detail": "Final day to apply", "date": "2026-09-20T00:00:00Z"}],
         "benefits": ["Partial tuition coverage", "Priority renewal for STEM students"],
-        "official_link": "https://example.org/opportunities/nigeria-education-access-grant",
         "required_documents": ["Proof of enrollment", "Citizenship documentation"],
     },
     {
@@ -506,7 +493,6 @@ OPPORTUNITIES: list[dict] = [
         "application_steps": ["Submit application with faculty endorsement", "Language proficiency check", "Placement matching"],
         "timeline": [{"label": "Applications close", "detail": "Final day to apply", "date": "2026-11-10T00:00:00Z"}],
         "benefits": ["Travel and living stipend", "International research experience", "Host-lab mentorship"],
-        "official_link": "https://example.org/opportunities/brazil-science-mobility-scheme",
         "required_documents": ["Faculty endorsement letter", "Academic transcript"],
     },
     {
@@ -529,7 +515,6 @@ OPPORTUNITIES: list[dict] = [
         "application_steps": ["Register online", "Complete an initial digital-literacy assessment"],
         "timeline": [],
         "benefits": ["Free training", "Government-issued completion certificate", "Job-placement referrals"],
-        "official_link": "https://example.org/opportunities/philippines-digital-skills-scheme",
         "required_documents": ["Proof of residency or citizenship"],
     },
     {
@@ -552,7 +537,6 @@ OPPORTUNITIES: list[dict] = [
         "application_steps": ["Submit application + goals statement", "Mentor matching"],
         "timeline": [{"label": "Applications close", "detail": "Final day to apply", "date": "2026-08-31T00:00:00Z"}],
         "benefits": ["Monthly 1:1 mentor sessions", "Peer cohort community", "Career-goal accountability check-ins"],
-        "official_link": "https://example.org/opportunities/global-women-tech-mentorship",
         "required_documents": ["Goals statement"],
     },
     {
@@ -575,7 +559,6 @@ OPPORTUNITIES: list[dict] = [
         "application_steps": ["Complete a short intake form", "Get matched with a mentor within 2 weeks"],
         "timeline": [],
         "benefits": ["Ongoing mentor relationship", "Access to a first-gen peer community", "Application and career-planning guidance"],
-        "official_link": "https://example.org/opportunities/first-gen-mentorship-network",
         "required_documents": [],
     },
     {
@@ -598,7 +581,6 @@ OPPORTUNITIES: list[dict] = [
         "application_steps": ["Submit venture summary", "Founder mentor matching interview"],
         "timeline": [{"label": "Applications close", "detail": "Final day to apply", "date": "2026-09-12T00:00:00Z"}],
         "benefits": ["Biweekly mentor sessions", "Regional founder community access", "Investor-intro opportunities for standout ventures"],
-        "official_link": "https://example.org/opportunities/sea-founder-mentorship",
         "required_documents": ["Venture summary"],
     },
     {
@@ -621,7 +603,6 @@ OPPORTUNITIES: list[dict] = [
         "application_steps": ["Complete an intake form", "Mentor matching"],
         "timeline": [],
         "benefits": ["Ongoing mentor relationship", "Community events", "Scholarship application guidance"],
-        "official_link": "https://example.org/opportunities/indigenous-stem-mentorship",
         "required_documents": [],
     },
     {
@@ -644,7 +625,6 @@ OPPORTUNITIES: list[dict] = [
         "application_steps": ["Enroll for free", "Complete modules", "Pass the proctored exam"],
         "timeline": [],
         "benefits": ["Free shareable certification", "Practice labs included", "Recognized entry-level cloud credential"],
-        "official_link": "https://example.org/opportunities/free-cloud-certification",
         "required_documents": [],
     },
     {
@@ -667,7 +647,6 @@ OPPORTUNITIES: list[dict] = [
         "application_steps": ["Enroll for free", "Complete modules and hands-on labs", "Pass the final assessment"],
         "timeline": [],
         "benefits": ["Free shareable certification", "Hands-on lab environment", "Community forum access"],
-        "official_link": "https://example.org/opportunities/free-cybersecurity-certification",
         "required_documents": [],
     },
     {
@@ -690,7 +669,6 @@ OPPORTUNITIES: list[dict] = [
         "application_steps": ["Enroll for free", "Complete guided projects", "Earn the completion certificate"],
         "timeline": [],
         "benefits": ["Free shareable certificate", "Portfolio-ready guided projects", "Career-resource library access"],
-        "official_link": "https://example.org/opportunities/free-data-analytics-certificate",
         "required_documents": [],
     },
     {
@@ -713,7 +691,6 @@ OPPORTUNITIES: list[dict] = [
         "application_steps": ["Enroll for free", "Complete course modules", "Pass the certification exam"],
         "timeline": [],
         "benefits": ["Free shareable certification", "Widely recognized by employers", "Self-paced learning"],
-        "official_link": "https://example.org/opportunities/free-digital-marketing-certification",
         "required_documents": [],
     },
     {
@@ -736,7 +713,6 @@ OPPORTUNITIES: list[dict] = [
         "application_steps": ["Submit project proposal + budget", "Faculty advisor endorsement"],
         "timeline": [{"label": "Applications close", "detail": "Final day to apply", "date": "2026-10-15T00:00:00Z"}],
         "benefits": ["One-time project funding", "Listed in the foundation's funded-projects registry"],
-        "official_link": "https://example.org/opportunities/undergrad-research-micro-grant",
         "required_documents": ["Project proposal", "Budget breakdown", "Faculty endorsement"],
     },
     {
@@ -759,7 +735,6 @@ OPPORTUNITIES: list[dict] = [
         "application_steps": ["Submit pitch deck + application", "Pitch panel review"],
         "timeline": [{"label": "Applications close", "detail": "Final day to apply", "date": "2026-09-25T00:00:00Z"}],
         "benefits": ["Non-dilutive funding", "Advisory office hours", "Founder community access"],
-        "official_link": "https://example.org/opportunities/student-startup-seed-grant",
         "required_documents": ["Pitch deck"],
     },
     {
@@ -782,7 +757,6 @@ OPPORTUNITIES: list[dict] = [
         "application_steps": ["Submit project proposal", "Impact plan review"],
         "timeline": [{"label": "Applications close", "detail": "Final day to apply", "date": "2026-10-05T00:00:00Z"}],
         "benefits": ["Project funding", "Featured in the nonprofit's youth impact showcase"],
-        "official_link": "https://example.org/opportunities/environmental-action-grant",
         "required_documents": ["Project proposal"],
     },
     {
@@ -805,7 +779,6 @@ OPPORTUNITIES: list[dict] = [
         "application_steps": ["Submit project proposal + creative sample"],
         "timeline": [{"label": "Applications close", "detail": "Final day to apply", "date": "2026-11-20T00:00:00Z"}],
         "benefits": ["Project funding", "Featured artist/creator spotlight"],
-        "official_link": "https://example.org/opportunities/arts-humanities-project-grant",
         "required_documents": ["Project proposal", "Creative sample"],
     },
     {
@@ -828,7 +801,6 @@ OPPORTUNITIES: list[dict] = [
         "application_steps": ["Join the community platform", "Introduce yourself in the newcomers channel"],
         "timeline": [],
         "benefits": ["Peer code review", "Project-matching help", "Regular community events"],
-        "official_link": "https://example.org/opportunities/global-open-source-community",
         "required_documents": [],
     },
     {
@@ -851,7 +823,6 @@ OPPORTUNITIES: list[dict] = [
         "application_steps": ["Join the community platform"],
         "timeline": [],
         "benefits": ["Peer study groups", "Recorded talks library", "Regional meetup listings"],
-        "official_link": "https://example.org/opportunities/women-stem-community",
         "required_documents": [],
     },
     {
@@ -874,7 +845,6 @@ OPPORTUNITIES: list[dict] = [
         "application_steps": ["Register your club or join an existing one", "Attend the next joint event"],
         "timeline": [],
         "benefits": ["Shared workshop materials", "Joint cross-campus events", "Regional recognition for active clubs"],
-        "official_link": "https://example.org/opportunities/regional-coding-club-network",
         "required_documents": [],
     },
     {
@@ -897,7 +867,6 @@ OPPORTUNITIES: list[dict] = [
         "application_steps": ["Join the community platform"],
         "timeline": [],
         "benefits": ["Co-founder matching channel", "Recorded founder AMAs", "Peer feedback threads"],
-        "official_link": "https://example.org/opportunities/student-entrepreneurship-community",
         "required_documents": [],
     },
     {
@@ -920,7 +889,6 @@ OPPORTUNITIES: list[dict] = [
         "application_steps": ["Submit application + research statement", "Reference letters", "Interview"],
         "timeline": [{"label": "Applications close", "detail": "Final day to apply", "date": "2026-12-10T00:00:00Z"}],
         "benefits": ["Full tuition coverage", "Monthly living stipend", "Korean language support courses"],
-        "official_link": "https://example.org/opportunities/south-korea-stem-scholarship",
         "required_documents": ["Research statement", "Reference letters", "Academic transcript"],
     },
     {
@@ -943,7 +911,6 @@ OPPORTUNITIES: list[dict] = [
         "application_steps": ["Register individually or as a team of up to 3", "Submit final analysis notebook"],
         "timeline": [{"label": "Registration closes", "detail": "Last day to register", "date": "2026-08-22T00:00:00Z"}],
         "benefits": ["Cash prizes", "Regional recognition", "Judged feedback from data professionals"],
-        "official_link": "https://example.org/opportunities/latam-data-science-competition",
         "required_documents": [],
     },
 ]

@@ -215,7 +215,7 @@ EXPERTS: list[dict] = [
         "projects": ["Published an internationally recognized photo essay on urban migration"], "research": [],
         "certifications": [], "conferences": [], "organizations": [],
         "volunteer_work": ["Teaches free documentary photography workshops for young people in his neighborhood"],
-        "portfolio_links": [{"label": "Portfolio", "url": "https://example.com/estebandiaz"}], "social_links": [],
+        "portfolio_links": [], "social_links": [],
     },
 ]
 

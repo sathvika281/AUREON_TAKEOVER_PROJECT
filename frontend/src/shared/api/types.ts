@@ -1264,7 +1264,9 @@ export interface OpportunitySummary {
   location: string;
   is_remote: boolean;
   application_deadline: string | null;
-  official_link: string;
+  // Sprint 4 — null when no legitimate destination exists (illustrative
+  // composite postings have nothing real to link to).
+  official_link: string | null;
 }
 
 export interface OpportunityEqualityRecommendation {

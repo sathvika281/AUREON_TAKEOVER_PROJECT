@@ -177,7 +177,7 @@ EXPERTS: list[dict] = [
         "projects": ["Has voiced lead characters in several successful animated productions"], "research": [], "certifications": [],
         "conferences": [], "organizations": ["Italian voice actors guild"],
         "volunteer_work": ["Speaks to drama students about vocal health for performers"],
-        "portfolio_links": [{"label": "Demo reel", "url": "https://example.com/marcorinaldi-voice"}], "social_links": [],
+        "portfolio_links": [], "social_links": [],
     },
     {
         "id": "expert_water_resource_engineer_amara_diallo",

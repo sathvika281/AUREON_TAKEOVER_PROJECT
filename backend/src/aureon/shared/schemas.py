@@ -1637,7 +1637,9 @@ class OpportunitySummaryDTO(BaseModel):
     location: str
     is_remote: bool
     application_deadline: datetime | None
-    official_link: str
+    #: Sprint 4 — None when no legitimate destination exists (see
+    #: domain/models/opportunity.py's own comment on this field).
+    official_link: str | None
 
 
 class OpportunityEqualityRecommendationDTO(BaseModel):

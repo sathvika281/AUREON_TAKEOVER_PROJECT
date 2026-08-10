@@ -51,7 +51,7 @@ EXPERTS: list[dict] = [
         "projects": ["Designed a product that won an international design award"], "research": [], "certifications": [],
         "conferences": ["Dutch Design Week"], "organizations": ["Dutch industrial designers association"],
         "volunteer_work": ["Mentors design students on manufacturing-aware design practice"],
-        "portfolio_links": [{"label": "Portfolio", "url": "https://example.com/noahbergman"}], "social_links": [],
+        "portfolio_links": [], "social_links": [],
     },
     {
         "id": "expert_database_administrator_yara_haddad",

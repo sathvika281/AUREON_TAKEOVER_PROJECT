@@ -92,7 +92,7 @@ EXPERTS: list[dict] = [
         "projects": ["Leads a studio with a growing hospitality and residential portfolio"], "research": [], "certifications": [],
         "conferences": [], "organizations": ["French interior designers association"],
         "volunteer_work": ["Mentors design school graduates on real-world project budgeting"],
-        "portfolio_links": [{"label": "Portfolio", "url": "https://example.com/chloebernard"}], "social_links": [],
+        "portfolio_links": [], "social_links": [],
     },
     {
         "id": "expert_special_education_teacher_amina_yusuf",

@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+from typing import Literal
 
 from pydantic import BaseModel, Field
 
@@ -24,6 +25,15 @@ TRAIT_NAMES = (
     "empathy",
     "systems_thinking",
 )
+
+#: Sprint 4 — Data Representation audit. `Literal[*TRAIT_NAMES]` derives
+#: directly from the tuple above (Python 3.11+ Literal unpacking) so the
+#: two can never drift apart. Used by every entity's `trait_tags` field
+#: (Career, Mentor, Institution) that already claimed, by comment only,
+#: to share this vocabulary — live data confirmed 100% real conformance
+#: across all three tables before this was added; this only makes that
+#: existing discipline structurally guaranteed instead of accidental.
+TraitName = Literal[*TRAIT_NAMES]
 
 
 class TraitSignal(BaseModel):

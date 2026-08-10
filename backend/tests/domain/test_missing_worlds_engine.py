@@ -21,8 +21,8 @@ def _world(**overrides) -> CareerWorld:
 
 def _career(**overrides) -> Career:
     defaults = dict(
-        id="career_1", name="Aerospace Engineer", category="engineering", industry="aerospace",
-        countries=["US"], one_liner="d", trait_tags=["space", "physics"],
+        id="career_1", name="Aerospace Engineer", category="traditional", industry="aerospace",
+        countries=["US"], one_liner="d", trait_tags=["curiosity", "analytical_thinking"],
         reality=CareerReality(
             daily_work="d", work_environment="w", collaboration_level="c", creativity_level="c",
             research_intensity="r", learning_curve="l", travel="t", remote_possibility="r",

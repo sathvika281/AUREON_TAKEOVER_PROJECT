@@ -113,14 +113,19 @@ export function OpportunityEqualityScreen() {
                 </ul>
               )}
               <div className="mt-4 flex items-center gap-4">
-                <a
-                  href={rec.opportunity.official_link}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-xs font-medium text-accent-soft transition-colors hover:text-accent"
-                >
-                  View Details
-                </a>
+                {/* Sprint 4 — an illustrative composite posting has no real
+                 * destination to link to; showing nothing is more honest
+                 * than a link that goes nowhere. */}
+                {rec.opportunity.official_link && (
+                  <a
+                    href={rec.opportunity.official_link}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-xs font-medium text-accent-soft transition-colors hover:text-accent"
+                  >
+                    View Details
+                  </a>
+                )}
                 <button
                   onClick={() => save(rec.opportunity.id)}
                   disabled={savedIds.has(rec.opportunity.id)}

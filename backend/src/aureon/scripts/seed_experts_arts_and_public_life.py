@@ -51,7 +51,7 @@ EXPERTS: list[dict] = [
         "projects": ["Redesigned onboarding flow that doubled user activation"], "research": [], "certifications": [],
         "conferences": ["Interaction Design Conference (attendee)"], "organizations": [],
         "volunteer_work": ["Reviews portfolios for design school applicants for free"],
-        "portfolio_links": [{"label": "Portfolio", "url": "https://example.com/camilareyes"}], "social_links": [],
+        "portfolio_links": [], "social_links": [],
     },
     {
         "id": "expert_architect_hiroshi_sato",
@@ -135,7 +135,7 @@ EXPERTS: list[dict] = [
         "projects": ["Directed a documentary that won a major African film festival award"], "research": [],
         "certifications": [], "conferences": ["Durban International Film Festival"], "organizations": [],
         "volunteer_work": ["Teaches a free documentary filmmaking workshop for township youth"],
-        "portfolio_links": [{"label": "Vimeo", "url": "https://vimeo.com/example-ameliaokonjo"}], "social_links": [],
+        "portfolio_links": [], "social_links": [],
     },
     {
         "id": "expert_journalist_marco_ferrari",
@@ -219,7 +219,7 @@ EXPERTS: list[dict] = [
         "faqs": [{"question": "Is it realistic to make a living as an independent music producer?", "answer": "Yes, but it usually takes several years to build a reliable client base — plan financially for a slow ramp-up, not instant income."}],
         "projects": ["Produced an album that reached a national top-10 chart"], "research": [], "certifications": [],
         "conferences": [], "organizations": [], "volunteer_work": ["Offers discounted studio time to young unsigned artists"],
-        "portfolio_links": [{"label": "SoundCloud", "url": "https://soundcloud.com/example-tomaszkowalski"}], "social_links": [],
+        "portfolio_links": [], "social_links": [],
     },
     {
         "id": "expert_fashion_designer_aisha_bello",
@@ -262,7 +262,7 @@ EXPERTS: list[dict] = [
         "projects": ["Label featured in a major regional fashion week"], "research": [], "certifications": [],
         "conferences": ["Lagos Fashion Week"], "organizations": [],
         "volunteer_work": ["Mentors young designers on pricing and small-batch production"],
-        "portfolio_links": [], "social_links": [{"label": "Instagram", "url": "https://instagram.com/example_aishabello"}],
+        "portfolio_links": [], "social_links": [],
     },
 ]
 
