@@ -10,16 +10,16 @@
 
 ### 1. `required_skill_ids` stored as a JSON array, not a true relational edge
 
-- **Current implementation:** `careers.required_skill_ids` is a `jsonb` array of skill id strings. No foreign key back to `skills.id`. `Skill.parent_skill_id` *does* have a real FK — only one side of this sprint's relationships is actually enforced by the database.
-- **Why it was correct for Sprint 1:** ~27 careers, ~23 skills. A join table for a relationship this size is pure overhead, and it matches an established, documented convention already in this codebase (`Opportunity`/`CareerWorld` deliberately keep small single-purpose lists flat rather than normalized).
-- **Future risk:** No referential integrity — nothing stops a future write from pointing at a skill id that doesn't exist. Combined with item 2 below, this is the core of the "isolated string list wearing a graph costume" risk the whole Skill entity was built to move away from — it's better than free text (typed, validated ids) but it isn't the real thing yet.
-- **Earliest sprint to revisit:** When Project's own `target_skill_ids` gets built — building a third jsonb-array edge without addressing this compounds the debt threefold instead of once. Realistically Sprint 3-4.
+- **Current implementation:** `careers.required_skill_ids` is a `jsonb` array of skill id strings. No foreign key back to `skills.id`. `Skill.parent_skill_id` *does* have a real FK — only one side of this sprint's relationships is actually enforced by the database. **Sprint 3 update:** `projects.target_skill_ids`/`related_career_ids`/`related_company_ids` are the same shape — a third (and fourth, and fifth) unenforced jsonb edge, now pointing outward from Project instead of inward to it.
+- **Why it was correct for Sprint 1:** ~27 careers, ~23 skills. A join table for a relationship this size is pure overhead, and it matches an established, documented convention already in this codebase (`Opportunity`/`CareerWorld` deliberately keep small single-purpose lists flat rather than normalized). Sprint 3 extended the same reasoning to a ~20-row Project catalog.
+- **Future risk:** No referential integrity — nothing stops a future write from pointing at a skill id that doesn't exist. Combined with item 2 below, this is the core of the "isolated string list wearing a graph costume" risk the whole Skill entity was built to move away from — it's better than free text (typed, validated ids) but it isn't the real thing yet. Now three entities (Career, Company, Project) each carry unenforced edges.
+- **Earliest sprint to revisit:** Now that Project's own edges exist too, this is the natural trigger the original note anticipated — worth a real look in Sprint 4, before a fourth entity compounds it again.
 - **Recommended long-term direction:** A real `career_skills(career_id, skill_id)` join table (or a generalized `entity_skill_edges` table if the pattern needs to serve Career/Project/Opportunity/Mentor uniformly), with FKs and indexes on both columns.
 - **Classification: Monitor**
 
 ### 2. Full-table reverse lookups
 
-- **Current implementation:** `CareerRepository.list_careers_requiring_skill` fetches every career and filters in Python — not a jsonb containment query, not an indexed lookup.
+- **Current implementation:** `CareerRepository.list_careers_requiring_skill` fetches every career and filters in Python — not a jsonb containment query, not an indexed lookup. **Sprint 3 update:** `ProjectRepository.list_projects_for_career` does the identical thing in the reverse direction — fetches every project and filters in Python for `career_id in related_career_ids`.
 - **Why it was correct:** Identical to the existing `country` filter's own pattern, already precedent in this codebase before this sprint touched anything. Consistency over inventing a one-off query style for a single new field.
 - **Future risk:** Cost scales linearly with catalog size, and repeats identically the moment Company, Mentor, or Opportunity each want their own "which X requires this skill" view.
 - **Earliest sprint to revisit:** Tied to item 1 — fixing the join table largely fixes this too.
@@ -37,12 +37,12 @@
 
 ### 4. Route dependency growth
 
-- **Current implementation:** the Career detail route now depends on four repositories (Career, StudentProfile, Trend, Skill).
+- **Current implementation:** the Career detail route now depends on six repositories (Career, StudentProfile, Trend, Skill, Company, Project) — up from four at Sprint 1, five at Sprint 2.
 - **Why it was correct:** Each dependency was added incrementally and justified on its own merits across separate batches, including this one — no single addition was ever wrong.
 - **Future risk:** The architecture doc's own Career UI spec eventually wants Companies, Projects, Opportunities, and Mentors resolved on the same page — this route could reach 8+ sequential dependencies, becoming slow (sequential awaits where lookups could parallelize) and hard to unit test.
-- **Earliest sprint to revisit:** When the route crosses roughly 6 repository dependencies — worth a proactive check rather than waiting until it's unmanageable.
+- **Earliest sprint to revisit:** **This threshold is now crossed** (6 dependencies, exactly the trigger this item named) — worth a proactive check at the start of Sprint 4, before a seventh makes the route genuinely unwieldy.
 - **Recommended long-term direction:** Extract a `CareerDetailComposer` owning the sub-repositories with one clean method exposed to the route; use `asyncio.gather` for independent lookups.
-- **Classification: Monitor**
+- **Classification: Monitor → worth prioritizing next sprint**
 
 ### 5. Alias matching strategy (exact string match only)
 
@@ -91,12 +91,21 @@
 
 ### 10. Future maintainability (pattern duplication risk)
 
-- **Current implementation:** Skill's repository/service/route stack closely mirrors Trend's — the only real precedent to follow, so consistency was easy and correct.
-- **Why it was correct:** One clear precedent, faithfully followed.
-- **Future risk:** Once Company and Project exist as near-identical third and fourth copies of the same shape, the question changes from "is this consistent with the one precedent" to "should this be a shared generic base instead of four copies of the same pattern" — copy-paste consistency is good until it becomes its own debt (a shape change later means N edits instead of one).
-- **Earliest sprint to revisit:** After both Company and Project exist — two data points (Trend, Skill) aren't enough to safely generalize from; premature abstraction is its own risk.
-- **Recommended long-term direction:** A deliberate, retrospective evaluation of a shared `CatalogRepository`/`CatalogView` base, only once there's real evidence of the pattern repeating 3+ times.
-- **Classification: Monitor**
+- **Current implementation:** Skill's repository/service/route stack closely mirrors Trend's; Company and now Project both copy the same shape a third and fourth time.
+- **Why it was correct:** One clear precedent, faithfully followed each time, including Project's completion-route addition (itself copied from the already-proven `career_experiments.py` shape).
+- **Future risk:** **The trigger condition below is now met.** Four near-identical repository/service/route stacks (Trend, Skill, Company, Project) exist side by side — the question genuinely changes from "is this consistent" to "should this be a shared generic base."
+- **Earliest sprint to revisit:** Now — four real data points (Trend, Skill, Company, Project) is enough to identify what's actually shared versus what only looked shared. Worth a deliberate look before a fifth entity makes the case even stronger without anyone acting on it.
+- **Recommended long-term direction:** A deliberate, retrospective evaluation of a shared `CatalogRepository`/`CatalogView` base, extracting what's genuinely identical across all four (list/get/list_by_ids, DTO composition) while leaving entity-specific filters as-is.
+- **Classification: Monitor → ready to act on**
+
+### 11. `student_profiles`' column-per-field storage is invisible to unit tests, and has now caused the same class of bug twice
+
+- **Current implementation:** `StudentProfileRepository.save()` does `client.table("student_profiles").upsert(profile.model_dump(mode="json"))` — every top-level `StudentProfile` field must have a matching real column, not a single jsonb blob column. Every backend unit test uses `FakeStudentProfileRepository` (an in-memory dict), which has no schema at all, so nothing in the test suite can ever catch a missing column.
+- **Why it happened again:** `StudentProfile.project_attempts` was added to the Python model in this sprint; the matching `alter table student_profiles add column ... project_attempts` migration was not written until the live-verification walkthrough failed with a real PostgREST schema-cache error. This is the exact same gap `0019_student_profiles_circle_resource_progress.sql` fixed once before, for the exact same reason, in an earlier sprint — meaning the lesson from the first occurrence didn't generalize into a process change, only a one-time fix.
+- **Future risk:** Every future additive field on `StudentProfile` (and only `StudentProfile` — this table's storage shape is unique in this codebase) risks the same failure, discovered only at live-verification time rather than at code-review or test time. Two occurrences is a pattern, not a coincidence.
+- **Earliest sprint to revisit:** Before the next sprint that adds any new field to `StudentProfile`.
+- **Recommended long-term direction:** A cheap, real guard: a small script or test that connects to the live schema (or a startup assertion) and diffs `StudentProfile.model_fields.keys()` against `student_profiles`' real columns, failing loudly if any Python field has no matching column. Doesn't require new tooling, just a script mirroring what `seed_*.py`'s live-data cross-checks already do for id references.
+- **Classification: Monitor — but this is the second occurrence, so treat the next as preventable, not surprising**
 
 ---
 
@@ -122,6 +131,10 @@ Every one of these was a conscious trade-off, not an oversight — documented he
 
 **Real company logos via the Clearbit API, with a designed fallback, deployed without visually confirming the real-logo path in this specific environment.** Sprint 2's Kickoff Review flagged the external-dependency risk in advance and designed the initials-fallback for exactly this reason — which turned out to be the right call, since this development sandbox cannot resolve external DNS for arbitrary hosts at all, and every logo fell back correctly with zero broken images. Avoided treating "the fallback might be needed" as a reason not to ship real logos at all. Revisit trigger: the first deploy to an environment with normal internet access should include a five-minute manual check that real logos actually render there, since that's never been directly observed, only inferred from correct URLs and a correctly-working fallback.
 
+**No skill-evidence-tier display consuming Project's new `related_skill` evidence, even though the data now exists.** Sprint 3 explicitly built the data (real `EvidenceRecord`s tagged by skill) without building a UI to visualize "how much evidence exists for this skill" — a real, natural next feature, deliberately deferred rather than built reactively mid-sprint once the data made it tempting. Revisit once Skill's detail page is next touched for any reason, or when a future sprint wants a genuine reason to revisit Skill's UI.
+
+**No backfill/alias script for Project, unlike Skill and Company.** Not an oversight — Project's edges are seeded directly as real ids on the Project rows themselves (`target_skill_ids`, `related_career_ids`, `related_company_ids`), since Project is a new entity carrying its own outgoing edges rather than a promotion of an existing Career field. There was never a free-text field to alias-match against. See the Decision Log entry below for the full reasoning.
+
 ---
 
 ## Technical Debt Register
@@ -131,13 +144,14 @@ Prioritized, not chronological — read top to bottom as "what to think about fi
 | # | Item | Priority | Product Impact | Engineering Impact | Suggested Sprint | Estimated Difficulty |
 |---|---|---|---|---|---|---|
 | 1 | Manual, hand-applied SQL migrations — no CI-driven schema deploys | **High** (for production; Low for hackathon) | None directly, but blocks reliable, repeatable releases | High — every future migration depends on a human pasting SQL correctly | Before any real production launch (Phase 9) | Low-Medium (a GitHub Actions step; the frontend deploy workflow already proves this repo can automate this way) |
-| 2 | No real relational edges for Skill↔Career or Company↔Career (JSON arrays, no FKs, full-scan reverse lookups) | Medium (High once Project adds a third) | Low today; becomes real (slow pages, silently missing links) as the catalog grows | Medium — touches repository, migration, and DTO layers when fixed, now for two entities instead of one | When Project's own edges are built (~Sprint 3-4) | Medium (one shared join-table pattern + FKs + indexed queries would fix both at once; no UI change needed) |
+| 11 | `student_profiles`' column-per-field shape is invisible to unit tests — second real occurrence this project | **Medium-High** (has now caused two live failures) | None if caught before deploy (both times were); real risk of a broken signup/save flow if it ever reaches production undetected | Low to build the guard, but recurring cost every sprint until built | Before the next sprint that adds any `StudentProfile` field | Low (a schema-diff script, no new tooling) |
+| 2 | No real relational edges for Skill/Company/Project↔Career (JSON arrays, no FKs, full-scan reverse lookups) | Medium | Low today; becomes real (slow pages, silently missing links) as the catalog grows | Medium — touches repository, migration, and DTO layers when fixed, now for three entities | Sprint 4 — the "third entity" trigger this item named is now met | Medium (one shared join-table pattern + FKs + indexed queries would fix all three at once; no UI change needed) |
 | 3 | Alias matching is exact-string only, silent on mismatch | Medium | Silently thinner skill/company-linking data over time — no crash, a quiet quality regression | Low to detect (a report), Medium to fully solve (fuzzy matching) | Next sprint adding Career seed content | Low for detection; Medium for a full fix |
-| 4 | Career detail route's growing repository dependency list (now 5, up from 4 after Sprint 2) | Low today, Medium by Sprint 3 | None directly — a performance/readability concern, not a correctness one | Medium — route becomes harder to test and reason about as it grows | When the route reaches ~6 dependencies (one more entity away) | Medium (extracting a composer service is a real refactor) |
-| 5 | Backfill scripts have no unit test coverage of their core alias-resolution logic (Skill and Company both) | Low-Medium | None directly | Medium — a silent regression risk the next time either file is touched | Next time either file is touched | Low (pure functions, easy to isolate) |
-| 6 | No generic base pattern across near-identical catalog entities (Trend, Skill, Company now share the same shape) | Low | None | Low today, Medium if left unaddressed once Project makes it four | After Project also exists | Medium (risk of over-abstracting if done too early — three real data points is close to enough, four settles it) |
-| 7 | `RealitySection`/`CareerSkillsSection` and `CareerResourcesSection`/`CareerCompaniesSection` cosmetic overlaps on backfilled careers | Low | Minor visual redundancy, not a functional bug | Low | Whenever either old section is next touched for any reason | Low |
-| 8 | `tool` skill category thin (2 entries); general catalog depth for both Skill and Company | Low | Minor — a category or organization_kind feels sparse if browsed directly | None (pure content work) | Opportunistic, alongside any future content pass | Low |
+| 4 | Career detail route's growing repository dependency list (now 6, up from 5 after Sprint 2) | **Medium** (threshold now crossed) | None directly — a performance/readability concern, not a correctness one | Medium — route becomes harder to test and reason about as it grows | Sprint 4 — worth a proactive check now that 6 dependencies is reached | Medium (extracting a composer service is a real refactor) |
+| 6 | No generic base pattern across near-identical catalog entities (Trend, Skill, Company, Project now share the same shape — four copies) | **Medium** (four data points now exist) | None | Low today, Medium if left unaddressed as a fifth entity arrives | Sprint 4 — four real data points is enough to safely generalize from | Medium (extracting the genuinely shared list/get/list_by_ids/DTO shape) |
+| 5 | Backfill/seed scripts have no unit test coverage of their core resolution logic (Skill, Company, and Project's cross-reference validation) | Low-Medium | None directly | Medium — a silent regression risk the next time any of these files is touched | Next time any of these files is touched | Low (pure functions, easy to isolate) |
+| 7 | `RealitySection`/`CareerSkillsSection`, `CareerResourcesSection`/`CareerCompaniesSection`, and now the plain-text `projects` list/`CareerProjectsSection` cosmetic overlaps on backfilled careers | Low | Minor visual redundancy, not a functional bug | Low | Whenever any of the old sections is next touched for any reason | Low |
+| 8 | `tool` skill category thin (2 entries); general catalog depth for Skill, Company, and Project | Low | Minor — a category or difficulty tier feels sparse if browsed directly | None (pure content work) | Opportunistic, alongside any future content pass | Low |
 | 9 | Real company logo rendering has never been visually verified from this development environment | Low | None if the fallback is honestly working (confirmed live); real risk only if logos silently never resolve in production either | Low — the code path is correct either way, this is a verification gap, not a defect | Next time a deploy environment with normal internet access is available for a manual check | Low (a five-minute visual check, not a code change) |
 
 ---
@@ -212,3 +226,39 @@ Prioritized, not chronological — read top to bottom as "what to think about fi
 - **Why this decision won:** A design document that keeps moving while code is being written against it stops being a reliable reference — nobody can be sure whether it reflects the current plan or an earlier draft. Freezing it forced a clean separation: the architecture answers "what and why," execution documents answer "how is it actually going," and only the execution layer is expected to change week to week.
 - **Consequences:** Real discoveries made during implementation (like the JSON-array/FK trade-offs this sprint) don't get folded back into the frozen doc — they're deliberately logged here or in the Technical Debt Register instead, which is more process overhead but keeps the architecture trustworthy as a fixed reference point.
 - **Revisit trigger:** Only if implementation reveals the architecture itself was fundamentally wrong, not merely incomplete — per the sprint execution rule already in place: stop, explain, propose the smallest fix, and wait for approval before proceeding.
+
+### ProjectAttemptEvidence built structurally distinct from ExperimentEvidence, unified only at the writer
+
+- **Decision:** `ProjectAttemptEvidence` is `artifact_url: str | None` + `reflection: str` — it shares no fields with `ExperimentEvidence` (`enjoyment`/`curiosity`/`frustration`/`persistence`/`confidence`/`reflection`). Both still write through the same `record_new_evidence()` function.
+- **Context:** Sprint 3's kickoff explicitly required verifying Project evidence is fundamentally different from Experiment evidence before writing any completion code — Experiment answers "did the student explore this," Project answers "did the student demonstrate this."
+- **Alternatives considered:** Reuse `ExperimentEvidence` as-is for Project too (fastest to build, but would ask a student "did you enjoy building this?" for a capability claim, and would make Skill evidence indistinguishable from Trait evidence); add a generic `ActivityEvidence` union type covering both.
+- **Why this decision won:** The two evidential questions are genuinely different — a feeling isn't a capability claim, and collapsing them would have made the Evidence Graph's `source`/`related_*` fields lie about what kind of claim each record actually represents. A generic union would have solved a problem neither entity actually has yet, at the cost of an abstraction with only two data points to generalize from (this codebase's own established caution — see item 10 above).
+- **Consequences:** Two structurally distinct evidence shapes now exist in one codebase, both funneling into the same shared writer and the same `evidence_graph` list — real polymorphism at the storage layer, real type safety at the input layer.
+- **Revisit trigger:** If a third, genuinely different "activity" type is ever added (e.g. a Mentor session log) and it turns out to need a third distinct shape too, that's the point to look for a real common denominator across three data points — not before.
+
+### Project completion does not reinforce a World Signal
+
+- **Decision:** `complete_project_attempt()` never touches `profile.discovery_onboarding.world_signals`, unlike `complete_experiment()` which always reinforces the matching World.
+- **Context:** `Project` has no `related_world` field — it was deliberately not given one, since a project's connection to Skills/Careers/Companies is the meaningful edge, not a connection to one of the seven onboarding Worlds.
+- **Alternatives considered:** Add a `related_world` to `Project` for consistency with Experiment, so completion could reinforce World Signals the same way.
+- **Why this decision won:** World Signal reinforcement answers "does this student seem curious about this World" — a question about interest, which is exactly the Experiment-shaped question Sprint 3's design checkpoint said not to duplicate. Forcing a World mapping onto Project would have re-introduced the interest/capability conflation the whole sprint was built to avoid, just one level up the model.
+- **Consequences:** Project and Experiment now reinforce genuinely different parts of a student's profile (Skills vs. Worlds/Traits) — the Evidence Graph gets richer along a new axis instead of two mechanisms competing to update the same one.
+- **Revisit trigger:** Only if a future product decision explicitly wants "building X made me more interested in the Y World" as a real, evidenced claim — at that point it's a new, deliberate feature, not a default extension of completion.
+
+### Project's genuine-engagement gate is stricter than Experiment's
+
+- **Decision:** `complete_experiment()` always writes at least one evidence string (falling back to `f"Completed '{title}'"` when no flags/reflection are reported); `complete_project_attempt()` writes zero evidence when neither `artifact_url` nor `reflection` is real.
+- **Context:** Both gates exist to keep "completion alone" from being treated as evidence — but Experiment's fallback string still counts as *something* (a real completion event, even undescribed), while Project's gate withholds entirely.
+- **Alternatives considered:** Mirror Experiment's fallback exactly, writing `"Attempted 'title'"` even on an empty submission, for consistency between the two completion flows.
+- **Why this decision won:** Experiment evidence supports a *trait*, where "the student did the activity at all" is itself a weak-but-real signal about exploration. Project evidence supports a *skill capability claim*, where "the student clicked a button" proves nothing about whether they can do the thing — a fallback string here would be exactly the "completion alone is not evidence" failure mode Sprint 3 was built to avoid, just relocated into the fallback branch instead of removed.
+- **Consequences:** A student can mark a project attempted with zero real content (the attempt itself is still honestly recorded — it happened), but it contributes nothing to their Skill evidence. Verified live both ways during Sprint 3's manual walkthrough.
+- **Revisit trigger:** None expected — this asymmetry is the intended, considered behavior, not a placeholder.
+
+### No backfill/alias script for Project, unlike Skill and Company
+
+- **Decision:** Project's `target_skill_ids`/`related_career_ids`/`related_company_ids` are written directly as real ids in `seed_projects.py`, with no `REQUIRED_SKILL_ALIASES`-style dictionary and no separate `backfill_project_*_edges.py` script.
+- **Context:** Skill and Company were *promotions* — an existing free-text field on Career (`reality.required_skills`, `companies`) already held real strings that needed matching to canonical ids. Project is not a promotion; it's a new entity with no prior free-text form to reconcile.
+- **Alternatives considered:** Build the alias/backfill pair anyway, for structural consistency with Sprint 1/2's pattern.
+- **Why this decision won:** An alias map exists to bridge *already-existing* uncontrolled text to controlled ids. Project never had uncontrolled text — its edges were authored directly as real ids from the start, cross-checked programmatically against the real Skill/Career/Company id lists (catching zero invented references) rather than needing a matching step at all. Building the alias/backfill machinery anyway would have been process cosplay, not a real need.
+- **Consequences:** Project's seeding is one script instead of two, and carries no "unmatched alias" risk the way Skill/Company's backfills do (Debt Register item 3/5) — a genuine, structural reduction in risk, not just less code.
+- **Revisit trigger:** Only if a future entity is, like Skill/Company, promoted from an existing free-text field — at that point the alias/backfill pattern is the right one to reach for again, not this sprint's direct-seed approach.

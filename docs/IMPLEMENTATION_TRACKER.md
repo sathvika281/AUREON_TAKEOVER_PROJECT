@@ -2,7 +2,7 @@
 
 This is the execution log, not the architecture. The knowledge model, principles, roadmap phases, and quality bar all live in [`AUREON_DATA_ARCHITECTURE.md`](./AUREON_DATA_ARCHITECTURE.md) and are frozen — this document never restates that content, only tracks real progress against it. Phase numbers below (Phase 1-10) refer directly to that document's §14.
 
-**Last re-baselined:** 2026-08-07, after Sprint 1 (Skill Entity Foundation) completed and was live-verified.
+**Last re-baselined:** 2026-08-07, after Sprint 3 (Project Entity Foundation) completed and was live-verified.
 
 ---
 
@@ -11,17 +11,17 @@ This is the execution log, not the architecture. The knowledge model, principles
 | # | Phase | Status |
 |---|---|---|
 | 1 | Knowledge Architecture | ✅ Complete |
-| 2 | Database Architecture | 🟡 Partial — Skill (Sprint 1) and Company (Sprint 2) entities + their Career edges live-verified; Project and the remaining promotions (Mentor, Opportunity) not started |
-| 3 | Real Data & Data Quality | 🟡 Partial — 23 real skills + 31 real companies seeded, real Career backfills live-verified for both; Project data not started |
-| 4 | Information Architecture | 🟡 Partial — exists for pre-existing entities, not yet extended to Skill/Company/Project or the adaptive-journey gating |
+| 2 | Database Architecture | 🟢 Substantially complete on the entity list — Skill (Sprint 1), Company (Sprint 2), and Project (Sprint 3) all live-verified; remaining promotions (Mentor, Opportunity edges) not started |
+| 3 | Real Data & Data Quality | 🟢 Substantially complete on the entity list — 23 real skills + 31 real companies + 20 real projects seeded, real Career backfills/links live-verified for all three |
+| 4 | Information Architecture | 🟡 Partial — exists for pre-existing entities, not yet extended to the adaptive-journey gating |
 | 5 | User Journey & Product Flow | 🟡 Partial — discussed strategically this session, never formalized as real journey maps |
 | 6 | Design System | 🟢 Substantially complete — real tokens, motion, and shared components already exist and are actively enforced |
-| 7 | Frontend Implementation | 🟡 Partial — large surface area already live (Discover/Explore/Connect/Decide), but nothing yet for the new entities or the adaptive shell |
+| 7 | Frontend Implementation | 🟡 Partial — large surface area already live (Discover/Explore/Connect/Decide), plus Skill/Company/Project now, but nothing yet for the adaptive shell |
 | 8 | Product Polish | 🟡 Partial — done in pockets (e.g. Your Universe's hover explainability), never as a systematic pass |
 | 9 | Production Readiness | 🟡 Partial — real deployment, real auth exist; monitoring, full account-lifecycle, and consent flows unaudited |
 | 10 | Demo Readiness | 🔴 Not started — correctly, per the roadmap, this shouldn't start until closer to the deadline |
 
-**Summary: 1 of 10 phases fully complete (10%); Phases 2-3 now two-thirds underway on the entity list (Skill and Company both real, live-verified; Project remains).** The promotion pattern has now proven itself twice, on two different entities, without needing a new abstraction — real evidence it generalizes rather than a one-off. Nothing built so far reflects the adaptive-journey restructuring the knowledge model was designed to support.
+**Summary: 1 of 10 phases fully complete (10%); Phases 2-3 now substantially complete on the entity list (Skill, Company, and Project all real, live-verified).** The promotion pattern proved itself on Skill and Company; Project proved a second pattern — real, evidence-producing completion — generalizes onto the shared Evidence Graph without duplicating it. Nothing built so far reflects the adaptive-journey restructuring the knowledge model was designed to support.
 
 ---
 
@@ -31,7 +31,7 @@ This is the execution log, not the architecture. The knowledge model, principles
 **Status:** ✅ Complete. `AUREON_DATA_ARCHITECTURE.md` committed and frozen.
 
 ### Phase 2 — Database Architecture
-**Status:** 🟡 Partial. Sprint 1 delivered Skill; Sprint 2 delivered Company — both tables plus their Career-promoted edges (`required_skill_ids`, `company_ids`) live-verified. Project and the remaining promotions (Mentor, Opportunity) are not started.
+**Status:** 🟢 Substantially complete on the entity list. Sprint 1 delivered Skill; Sprint 2 delivered Company — both tables plus their Career-promoted edges (`required_skill_ids`, `company_ids`) live-verified. Sprint 3 delivered Project — its own table, carrying its own outgoing edges (`target_skill_ids`, `related_career_ids`, `related_company_ids`) natively, plus the additive `student_profiles.project_attempts` column and the `EvidenceRecord.related_skill`/`"project"` source extension. The remaining promotions (Mentor, Opportunity) are not started.
 **Objective:** Turn the frozen entity model into real schema — starting with the three genuinely new entities (Skill, Company, Project), plus the promotion of existing free-text fields (`required_skills`, `companies`, `projects`) on Career/Mentor/Opportunity to real foreign-key edges.
 **Deliverables:** New tables/models for Skill, Company, Project; additive migrations promoting string-list fields to relationship edges on existing entities; an updated ERD.
 **Estimated complexity:** Medium — the new tables themselves are simple; the promotion migrations touch several already-live, tested models and need care not to break what's currently working.
@@ -40,7 +40,7 @@ This is the execution log, not the architecture. The knowledge model, principles
 **Definition of Done:** Skill/Company/Project exist as real tables; at least Career has real `required_skill_ids` edges alongside (not instead of) its existing string fields; full backend test suite still green.
 
 ### Phase 3 — Real Data & Data Quality
-**Status:** 🟡 Partial. Sprint 1 seeded 23 real skills (27/27 careers backfilled); Sprint 2 seeded 31 real companies (21/27 careers backfilled) — both live-verified with zero dangling references. Project data not started.
+**Status:** 🟢 Substantially complete on the entity list. Sprint 1 seeded 23 real skills (27/27 careers backfilled); Sprint 2 seeded 31 real companies (21/27 careers backfilled); Sprint 3 seeded 20 real, attemptable projects spanning 20/27 careers, cross-checked programmatically against the real Skill/Career/Company id lists rather than trusted from memory — all three live-verified with zero dangling references.
 **Objective:** Seed real, honestly-labeled content for the new entities, and backfill real edges on existing entities.
 **Deliverables:** Seed scripts for Skill (a real, curated taxonomy — not exhaustive, but genuine), Company (real, well-known organizations), Project (real, attemptable briefs); a backfill pass linking existing Career/Opportunity rows to the new Skill/Company entities.
 **Estimated complexity:** Medium — content-writing heavy rather than technically hard, same shape as every existing seed script in this codebase.
@@ -195,8 +195,39 @@ Concretely, Sprint 1 (below) scopes this to: the `Skill` model, a real (not exha
 
 **Readiness for Sprint 3:** Ready. The promotion pattern has now proven itself twice on two different entities without needing a new abstraction — real, repeated evidence it generalizes. Project (the next priority per the architecture doc's own ordering) can follow the same shape with even more confidence than Sprint 2 had.
 
-### Sprint 3+
-Not yet planned in detail — will be scoped once Sprint 3 is chosen, per the one-workstream-at-a-time rule.
+### Sprint 3 — Project Entity Foundation
+**Goal:** Project exists as a real entity, and — unlike Skill/Company — produces real, evidence-backed capability signals on completion, extending the shared Evidence Graph with a new `related_skill` dimension rather than duplicating Experiment's evidence system. Full plan: [`SPRINT_3.md`](./SPRINT_3.md).
+**Tasks:** All complete — see `SPRINT_3.md`'s Task Checklist.
+**Current Status:** ✅ Complete — live-verified end to end.
+**Blockers:** None (two manual SQL Editor steps for this sprint, same environment-specific limitation as every prior migration — resolved, not a blocker to close the sprint).
+**Dependencies:** Sprint 1 (Skill) and Sprint 2 (Company) complete — satisfied.
+**Completed Date:** 2026-08-07
+**Notes:** No migration needed on `careers` this sprint — Project carries its own outgoing edges rather than being promoted from an existing Career field, unlike Skill/Company. Learning Resource relationship explicitly and honestly omitted (entity doesn't exist yet). One real gap caught during live verification (not during code review or tests): `StudentProfile.project_attempts` was added to the Python model but no migration added the matching column to the real `student_profiles` table — that table does a column-per-field upsert, not a jsonb-blob write, so every profile save failed with a PostgREST schema-cache error until migration 0030 was applied. This is the *second* time this exact class of gap has occurred (the first was `circle_resource_progress`, fixed by migration 0019) — logged as a reinforced Technical Debt Register item rather than a one-off, since unit tests (which use in-memory fakes) structurally cannot catch it; only live verification can, which is exactly why it's a mandatory gate before any sprint closes. Live verification confirmed: both migrations applied cleanly, 20 projects seeded (cross-checked programmatically against real Skill/Career/Company ids, zero invented references), a real completion via the live API and the live UI both wrote exactly 2 evidence records per target skill (artifact_url + reflection, 3 skills → 6 records) correctly tagged `source="project"`/`related_skill`, an empty completion recorded the attempt but wrote zero evidence (the genuine-engagement gate holds both ways, live), zero World Signal reinforcement (correctly excluded), and the Career detail page's new Projects section correctly resolves the real reverse link. Zero regressions: 802/802 backend tests passing (784 pre-existing + 18 new).
+
+### Sprint 3 — Release Summary
+
+**Sprint Goal:** Project exists as a real, queryable, connected entity — and, unlike Skill/Company, becomes the first entity in this series to produce real, evidence-backed signals about a student's *demonstrated capability* rather than just interest, by extending the shared Evidence Graph with a genuinely new dimension instead of duplicating Experiment's evidence system.
+
+**What Was Implemented:** The `Project` domain model (`difficulty_level` reusing the existing `DifficultyLevel` type rather than a parallel enum, same reuse discipline as Sprint 2's `OrganizationKind`); 20 real, attemptable project briefs seeded, spanning 20 of the 27 seeded careers, each with real `target_skill_ids`/`related_career_ids`/optional `related_company_ids` cross-checked programmatically against the real seed data; `EvidenceRecord` extended with a new nullable `related_skill` field and a new `"project"` source literal, additive and backward-compatible; `ProjectAttemptEvidence` (artifact_url + reflection) built structurally distinct from `ExperimentEvidence` (enjoyment/curiosity/persistence/confidence flags) — Experiment answers "did the student explore this," Project answers "did the student demonstrate this" — while both write through the same shared `record_new_evidence` writer, one evidence ecosystem, not two; `complete_project_attempt()` mirrors `complete_experiment()`'s composition shape but deliberately does *not* reinforce a World Signal (Project has no `related_world`) and applies a stricter genuine-engagement gate — completion alone writes an honest attempt record but zero evidence unless the student provided a real artifact URL or reflection; the full backend repository/service/route stack for Project, including a student-scoped completion route; a Project browse page, a Project detail page with an inline completion form, and a new Projects section on the Career detail page.
+
+**Database Changes:** Migration 0029 (new `projects` table, unique index on `title`, index on `difficulty_level`); migration 0030 (new `project_attempts` jsonb column on `student_profiles`, additive, defaulted — the same class of gap `circle_resource_progress` hit once before). Both applied live and verified. Nothing existing altered or dropped. `EvidenceRecord.related_skill` and the `"project"` source literal are additive, nullable/backward-compatible changes to a shared, multi-consumer model.
+
+**API Changes:** New `GET /v1/projects` (list, `difficulty_level` filter) and `GET /v1/projects/{id}` (detail, real resolved target skills/related careers/related companies). New `POST /v1/students/{student_id}/projects/{project_id}/complete` (student-scoped, `require_own_profile`-gated, mirrors the experiment-completion route's shape). `GET /v1/careers/{id}` extended with a `related_projects: Project[]` field — the reverse-lookup direction, since Project holds the edge rather than Career.
+
+**Frontend Changes:** New `ProjectsScreen`, `ProjectDetailScreen` (with the inline artifact-url/reflection completion form), and `CareerProjectsSection` on the existing Career page. New routes `/projects` and `/projects/:projectId` — no new top-level nav entry, same scope discipline as Sprint 1/2.
+
+**Tests Added:** 18 new backend tests — Project DTO/detail-view composition (including honest empty-state behavior), a dedicated genuine-engagement-gate suite proving evidence is written correctly for real content and withheld for empty/whitespace-only content (plus dedup and non-reinforcement-of-World-Signal checks), full route tests for the catalog and the completion flow (including a live-path proof that an empty completion writes zero evidence through the real HTTP layer), and 2 Career view tests for `related_projects` resolution.
+
+**Regression Status:** 802/802 backend tests passing (784 pre-existing + 18 new) — zero failures, zero regressions. `tsc` clean. Production build clean.
+
+**Known Technical Debt (Intentional and newly found):** Fully documented in `TECHNICAL_DEBT_REGISTER.md` — Project's own edges extend the existing "no DB-level FK, full-table reverse lookup" trade-off (items 1/2) to a third entity, as anticipated; the Career detail route now carries 6 repository dependencies, crossing the threshold item 4 flagged as worth a proactive check. One genuinely new, reinforced finding: `student_profiles`' column-per-field storage shape is invisible to unit tests (which use in-memory fakes) and has now caused the same class of live-verification-only bug twice — logged as its own debt item with a concrete mitigation recommendation, not treated as a one-off mistake.
+
+**Merge Recommendation:** Approved. Additive-only, fully tested, fully live-verified against real seeded data including both directions of the genuine-engagement gate, zero regressions to any existing feature. One real gap (the missing `project_attempts` column) was caught by the mandatory live-verification step and fixed with a dedicated, precedented migration before merge.
+
+**Readiness for Sprint 4:** Ready. Three entities (Skill, Company, Project) now share a proven repository/service/route shape, and Project additionally proves the Evidence Graph can grow a new dimension without forking into a parallel system. Per this session's explicit instruction, Sprint 4 is not scoped or started in this session — it begins fresh, once requested.
+
+### Sprint 4+
+Not yet planned in detail — will be scoped once Sprint 3 reaches Definition of Done, per the one-workstream-at-a-time rule.
 
 ---
 

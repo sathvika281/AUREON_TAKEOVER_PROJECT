@@ -73,6 +73,21 @@ class CareerRepository:
         careers = await self.list_careers()
         return [c for c in careers if company_id in c.company_ids]
 
+    async def list_by_ids(self, career_ids: list[str]) -> list[Career]:
+        """Sprint 3 — resolves a Project's related_career_ids into real
+        Career objects. Same list_by_ids convention as SkillRepository/
+        CompanyRepository, added here since nothing needed this direction
+        (ids -> Career rows) before Project carried its own outgoing edge."""
+        if not career_ids:
+            return []
+
+        def _fetch() -> list[dict]:
+            result = self._client.table("careers").select("*").in_("id", career_ids).execute()
+            return result.data or []
+
+        rows = await run_in_threadpool(_fetch)
+        return [Career.model_validate(row) for row in rows]
+
     async def list_stories_for_career(self, career_id: str) -> list[CareerStory]:
         """"Human Stories" on the career detail page — professional/workplace
         narratives only. Excludes composite_student_discovery/student_discovery

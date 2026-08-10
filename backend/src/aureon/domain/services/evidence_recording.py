@@ -18,22 +18,27 @@ def record_new_evidence(
     items: list[str],
     relation: Literal["supports", "contradicts"],
     now: datetime,
-    source: Literal["conversation", "reflection", "url", "document", "github", "search", "experiment"] = "conversation",
+    source: Literal[
+        "conversation", "reflection", "url", "document", "github", "search", "experiment", "project"
+    ] = "conversation",
     related_trait: str | None = None,
     related_hypothesis: str | None = None,
     related_career: str | None = None,
     related_mentor: str | None = None,
     related_institution: str | None = None,
+    related_skill: str | None = None,
 ) -> None:
     """Only newly-seen evidence strings become new EvidenceRecords — the
     LLM tends to re-state the full current supporting/contradicting list
     each turn/analysis, not just deltas, so this dedupes against what's
     already in the graph for this exact hypothesis/career/mentor/
-    institution/trait.
+    institution/trait/skill.
 
     ``source``/``related_trait`` are additive, backward-compatible
     parameters (Discover Batch 2) — every pre-existing caller omits both
     and keeps writing ``source="conversation"`` records exactly as before.
+    ``related_skill`` (Sprint 3) is the same story: omitted by every
+    pre-existing caller, set only by Project-completion evidence.
     """
     existing_texts = {
         e.text
@@ -43,6 +48,7 @@ def record_new_evidence(
         and e.related_mentor == related_mentor
         and e.related_institution == related_institution
         and e.related_trait == related_trait
+        and e.related_skill == related_skill
         and e.relation == relation
     }
     for text in items:
@@ -58,6 +64,7 @@ def record_new_evidence(
                 related_career=related_career,
                 related_mentor=related_mentor,
                 related_institution=related_institution,
+                related_skill=related_skill,
                 relation=relation,
                 created_at=now,
             )

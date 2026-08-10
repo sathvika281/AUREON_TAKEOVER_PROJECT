@@ -14,6 +14,7 @@ import { TimelineComparison } from "../future-lens/TimelineComparison";
 import { CareerCompaniesSection } from "./CareerCompaniesSection";
 import { CareerDeepDiveSection } from "./CareerDeepDiveSection";
 import { CareerFAQSection } from "./CareerFAQSection";
+import { CareerProjectsSection } from "./CareerProjectsSection";
 import { CareerResourcesSection } from "./CareerResourcesSection";
 import { CareerSkillsSection } from "./CareerSkillsSection";
 import { HumanStoriesSection } from "./HumanStoriesSection";
@@ -149,6 +150,12 @@ export function CareerDetailsScreen() {
       {career.hiring_companies.length > 0 && (
         <div className="mt-4">
           <CareerCompaniesSection companies={career.hiring_companies} />
+        </div>
+      )}
+
+      {career.related_projects.length > 0 && (
+        <div className="mt-4">
+          <CareerProjectsSection projects={career.related_projects} />
         </div>
       )}
 

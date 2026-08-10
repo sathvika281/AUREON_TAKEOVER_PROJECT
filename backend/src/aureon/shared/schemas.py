@@ -223,6 +223,22 @@ class CompanyDTO(BaseModel):
     notable_for: str
 
 
+# -- Sprint 3 — Project Knowledge Base (docs/AUREON_DATA_ARCHITECTURE.md §4) --
+# Also defined here, ahead of CareerDetailDTO, for the same forward-reference reason.
+
+
+class ProjectDTO(BaseModel):
+    id: str
+    title: str
+    brief: str
+    difficulty_level: str
+    estimated_hours: float
+    target_skill_ids: list[str]
+    related_career_ids: list[str]
+    related_company_ids: list[str]
+    submission_type: str
+
+
 class CareerDetailDTO(BaseModel):
     id: str
     name: str
@@ -275,6 +291,11 @@ class CareerDetailDTO(BaseModel):
     #: Sprint 2 — real Company entities resolved from Career.company_ids,
     #: additive alongside the existing `companies` string list above.
     hiring_companies: list[CompanyDTO] = []
+    #: Sprint 3 — real Project entities that list this career in their own
+    #: related_career_ids (Project holds the edge, not Career — see
+    #: docs/SPRINT_3.md). Named distinctly from the existing plain-text
+    #: `projects` field above so the two never collide.
+    related_projects: list[ProjectDTO] = []
 
 
 class CareerCandidateDTO(BaseModel):
@@ -1539,6 +1560,44 @@ class CompanyDetailResponse(BaseModel):
     #: Real careers hiring from this company, resolved live from
     #: Career.company_ids — never stored/duplicated on Company itself.
     careers_hiring_from_it: list[CareerSummaryDTO]
+
+
+class ProjectsResponse(BaseModel):
+    projects: list[ProjectDTO]
+
+
+class ProjectDetailResponse(BaseModel):
+    project: ProjectDTO
+    #: Real Skill/Career/Company entities resolved live from the
+    #: project's own target_skill_ids/related_career_ids/
+    #: related_company_ids — never stored/duplicated on Project itself.
+    target_skills: list[SkillDTO] = []
+    related_careers: list[CareerSummaryDTO] = []
+    related_companies: list[CompanyDTO] = []
+
+
+class ProjectAttemptEvidenceRequest(BaseModel):
+    """Structured self-report, not a score — see
+    domain/models/project.py::ProjectAttemptEvidence. Structurally
+    distinct from ExperimentEvidenceRequest: a demonstrated artifact
+    and/or a written account, not emotional-state flags."""
+
+    artifact_url: str | None = None
+    reflection: str = ""
+
+
+class ProjectAttemptEvidenceDTO(BaseModel):
+    artifact_url: str | None
+    reflection: str
+
+
+class ProjectAttemptDTO(BaseModel):
+    id: str
+    project_id: str
+    project_title: str
+    target_skill_ids: list[str]
+    attempted_at: datetime
+    evidence: ProjectAttemptEvidenceDTO
 
 
 class FutureSkillsResponse(BaseModel):

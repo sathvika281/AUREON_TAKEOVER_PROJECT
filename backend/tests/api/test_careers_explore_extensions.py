@@ -29,6 +29,11 @@ class _FakeTrendRepository:
         return []
 
 
+class _FakeProjectRepository:
+    async def list_projects_for_career(self, career_id):
+        return []
+
+
 @pytest.fixture
 def api_client():
     from fastapi.testclient import TestClient
@@ -45,12 +50,14 @@ def api_client():
     app.dependency_overrides[deps.get_career_repository] = lambda: fake_careers
     app.dependency_overrides[deps.get_student_profile_repository] = lambda: fake_profiles
     app.dependency_overrides[deps.get_trend_repository] = lambda: _FakeTrendRepository()
+    app.dependency_overrides[deps.get_project_repository] = lambda: _FakeProjectRepository()
     try:
         yield TestClient(app), fake_profiles
     finally:
         app.dependency_overrides.pop(deps.get_career_repository, None)
         app.dependency_overrides.pop(deps.get_student_profile_repository, None)
         app.dependency_overrides.pop(deps.get_trend_repository, None)
+        app.dependency_overrides.pop(deps.get_project_repository, None)
 
 
 def test_list_careers_without_student_id_returns_full_catalog_unordered_change(api_client):

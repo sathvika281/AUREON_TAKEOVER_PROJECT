@@ -300,6 +300,11 @@ export interface CareerDetail {
   /** Sprint 2 — real Company entities, additive alongside `companies`
    * above (left untouched as the display fallback). */
   hiring_companies: Company[];
+  /** Sprint 3 — real Project entities that list this career in their own
+   * related_career_ids (Project holds the edge, not Career). Named
+   * distinctly from the existing plain-text `projects` field above so
+   * the two never collide. */
+  related_projects: Project[];
 }
 
 // -- Sprint 1 — Skill Knowledge Base (docs/AUREON_DATA_ARCHITECTURE.md §3) --
@@ -344,6 +349,52 @@ export interface CompaniesResponse {
 export interface CompanyDetail {
   company: Company;
   careers_hiring_from_it: CareerSummary[];
+}
+
+// -- Sprint 3 — Project Knowledge Base (docs/AUREON_DATA_ARCHITECTURE.md §4) --
+
+export interface Project {
+  id: string;
+  title: string;
+  brief: string;
+  difficulty_level: string;
+  estimated_hours: number;
+  target_skill_ids: string[];
+  related_career_ids: string[];
+  related_company_ids: string[];
+  submission_type: string;
+}
+
+export interface ProjectsResponse {
+  projects: Project[];
+}
+
+export interface ProjectDetail {
+  project: Project;
+  target_skills: Skill[];
+  related_careers: CareerSummary[];
+  related_companies: Company[];
+}
+
+/** Structured self-report, not a score — see backend's
+ * ProjectAttemptEvidence. Structurally distinct from experiment
+ * completion: a demonstrated artifact and/or a written account, not
+ * emotional-state flags. */
+export interface ProjectAttemptEvidenceRequest {
+  artifact_url?: string | null;
+  reflection?: string;
+}
+
+export interface ProjectAttempt {
+  id: string;
+  project_id: string;
+  project_title: string;
+  target_skill_ids: string[];
+  attempted_at: string;
+  evidence: {
+    artifact_url: string | null;
+    reflection: string;
+  };
 }
 
 /** No raw confidence number — only the qualitative Evidence Strength

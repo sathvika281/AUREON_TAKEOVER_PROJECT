@@ -1,5 +1,6 @@
 from aureon.domain.models.career import Career, CareerReality, CareerStory, FutureLens
 from aureon.domain.models.company import Company
+from aureon.domain.models.project import Project
 from aureon.domain.models.skill import Skill
 from aureon.domain.services.career_view import build_career_detail_dto, build_career_summary_dto
 
@@ -89,3 +90,21 @@ def test_hiring_companies_are_resolved_into_real_dtos():
     assert len(dto.hiring_companies) == 1
     assert dto.hiring_companies[0].id == "google"
     assert dto.hiring_companies[0].name == "Google"
+
+
+def test_related_projects_default_to_empty_when_none_resolved():
+    # A career no project points back at yet must never show a
+    # fabricated project list.
+    dto = build_career_detail_dto(_career(), [])
+    assert dto.related_projects == []
+
+
+def test_related_projects_are_resolved_into_real_dtos():
+    project = Project(
+        id="genomics_dataset_explorer", title="Genomics Dataset Explorer", brief="x",
+        difficulty_level="intermediate", estimated_hours=8,
+    )
+    dto = build_career_detail_dto(_career(), [], related_projects=[project])
+    assert len(dto.related_projects) == 1
+    assert dto.related_projects[0].id == "genomics_dataset_explorer"
+    assert dto.related_projects[0].title == "Genomics Dataset Explorer"

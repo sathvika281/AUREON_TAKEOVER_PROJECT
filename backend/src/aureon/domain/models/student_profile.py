@@ -22,6 +22,7 @@ from aureon.domain.models.exposure import ExposureHistoryEntry
 from aureon.domain.models.mentor_handoff import MentorHandoff
 from aureon.domain.models.mentor_match import CollegeMatch, MentorMatch
 from aureon.domain.models.notebook import NotebookEntry
+from aureon.domain.models.project import ProjectAttempt
 from aureon.domain.models.reflection import ReflectionEntry
 
 
@@ -175,6 +176,12 @@ class StudentProfile(BaseModel):
     #: (circle_id, resource_type, resource_label) since composed
     #: resources are plain strings with no stable id of their own.
     circle_resource_progress: list[CircleResourceProgress] = Field(default_factory=list)
+
+    #: Sprint 3 — Project Attempt History. Append-only, same never-
+    #: overwritten reasoning as career_experiments. Additive field only —
+    #: not the deferred Student core/ledger refactor (see
+    #: docs/SPRINT_3.md's Student Model note).
+    project_attempts: list[ProjectAttempt] = Field(default_factory=list)
 
     created_at: datetime = Field(default_factory=_utcnow)
     updated_at: datetime = Field(default_factory=_utcnow)

@@ -21,15 +21,25 @@ class EvidenceRecord(BaseModel):
     #: "url" added in V6 (URL Intelligence); "document" added in V8
     #: (Document Intelligence); "github" added in V9 (GitHub Intelligence);
     #: "search" added in V10 (Multi-Source Search Intelligence); "experiment"
-    #: added in Discover Batch 2 (Career Experiments) — real evidence
-    #: extracted from an investigated webpage, uploaded document, GitHub
-    #: repository, cross-verified search investigation, or a completed
-    #: Career Experiment, additive alongside the existing sources.
-    source: Literal["conversation", "reflection", "url", "document", "github", "search", "experiment"]
+    #: added in Discover Batch 2 (Career Experiments); "project" added in
+    #: Sprint 3 (Project entity) — real evidence extracted from an
+    #: investigated webpage, uploaded document, GitHub repository,
+    #: cross-verified search investigation, a completed Career Experiment,
+    #: or a completed Project attempt, additive alongside the existing
+    #: sources.
+    source: Literal[
+        "conversation", "reflection", "url", "document", "github", "search", "experiment", "project"
+    ]
     related_trait: str | None = None
     related_hypothesis: str | None = None
     related_career: str | None = None
     related_mentor: str | None = None
     related_institution: str | None = None
+    #: Added in Sprint 3 — Project completions cite *which skill* the
+    #: evidence supports. Existing sources leave this None; only "project"
+    #: sets it, per the Experiment/Project evidence distinction in
+    #: docs/SPRINT_3.md (Experiment reinforces traits/worlds, Project
+    #: reinforces skills).
+    related_skill: str | None = None
     relation: Literal["supports", "contradicts"]
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))

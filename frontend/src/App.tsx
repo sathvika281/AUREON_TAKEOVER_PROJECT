@@ -7,6 +7,8 @@ import { CareerDnaScreen } from "./features/career-dna/CareerDnaScreen";
 import { CareerDetailsScreen } from "./features/career-details/CareerDetailsScreen";
 import { CompanyDetailScreen } from "./features/companies/CompanyDetailScreen";
 import { CompaniesScreen } from "./features/companies/CompaniesScreen";
+import { ProjectDetailScreen } from "./features/projects/ProjectDetailScreen";
+import { ProjectsScreen } from "./features/projects/ProjectsScreen";
 import { SkillDetailScreen } from "./features/skills/SkillDetailScreen";
 import { SkillsScreen } from "./features/skills/SkillsScreen";
 import { CareerExperienceProvider } from "./features/career-experience/CareerExperienceContext";
@@ -99,6 +101,11 @@ function AppShell() {
                                  * scope as Skill; reached via real links from Career pages. */}
                                 <Route path="/companies" element={<CompaniesScreen />} />
                                 <Route path="/companies/:companyId" element={<CompanyDetailScreen />} />
+                                {/* Sprint 3 — Project Knowledge Base. Same no-new-nav-entry
+                                 * scope as Skill/Company; reached via real links from Career
+                                 * pages and the Projects browse page. */}
+                                <Route path="/projects" element={<ProjectsScreen />} />
+                                <Route path="/projects/:projectId" element={<ProjectDetailScreen />} />
                                 <Route path="/explore/global-trends" element={<GlobalTrendsScreen />} />
                                 <Route path="/explore/exposure-universe" element={<ExposureUniverseScreen />} />
                                 <Route path="/explore/opportunity-equality" element={<OpportunityEqualityScreen />} />
