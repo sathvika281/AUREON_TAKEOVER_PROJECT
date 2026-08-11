@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Compass, FileStack, GitCompare, ListChecks, MessageSquareQuote, Route, ShieldAlert, Sprout } from "lucide-react";
 
@@ -31,7 +31,7 @@ type Tab = "overview" | "compare" | "simulate";
  * composition of its own.
  */
 function OverviewTab({ onCompare, onSimulate }: { onCompare: (careerId: string) => void; onSimulate: (careerId: string) => void }) {
-  const { workspace, workspaceGaps } = useDecisionContext();
+  const { workspace, workspaceGaps, isWorkspaceLoading } = useDecisionContext();
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const selected = workspace.find((c) => c.career_id === selectedId) ?? null;
@@ -58,7 +58,9 @@ function OverviewTab({ onCompare, onSimulate }: { onCompare: (careerId: string) 
         </Surface>
       )}
 
-      {workspace.length === 0 ? (
+      {isWorkspaceLoading ? (
+        <p className="text-sm text-ink-faint">Loading…</p>
+      ) : workspace.length === 0 ? (
         <EmptyStatePanel
           icon={Compass}
           title="No Career Candidates Yet"
@@ -157,7 +159,7 @@ function ComparisonPlaceholderPanels() {
 }
 
 function CompareTab({ initialCareerId }: { initialCareerId?: string | null }) {
-  const { candidates } = useCareerIntelligenceContext();
+  const { candidates, isLoadingInitialData: isCandidatesLoading } = useCareerIntelligenceContext();
   const { comparisons, isBusy, error, runComparison, recommendedColleges, recommendedExperts } = useDecisionContext();
   const [selected, setSelected] = useState<string[]>(() => (initialCareerId ? [initialCareerId] : []));
 
@@ -172,6 +174,15 @@ function CompareTab({ initialCareerId }: { initialCareerId?: string | null }) {
   const orderedComparisons = [...comparisons].sort(
     (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
   );
+
+  if (isCandidatesLoading) {
+    return (
+      <div className="space-y-6">
+        <ProcessSteps title="How Comparison Works" steps={HOW_COMPARISON_WORKS_STEPS} />
+        <p className="text-sm text-ink-faint">Loading…</p>
+      </div>
+    );
+  }
 
   if (candidates.length < MIN_SELECTION) {
     return (
@@ -401,10 +412,10 @@ export function simulationReport(simulation: CareerSimulation) {
 }
 
 function FutureSimulationTab({ initialCareerId }: { initialCareerId?: string | null }) {
-  const { candidates } = useCareerIntelligenceContext();
+  const { candidates, isLoadingInitialData: isCandidatesLoading } = useCareerIntelligenceContext();
   const {
     simulations, isBusy, error, runSimulation, simulationInsufficientReason,
-    lastSimulationMission, lastSimulationArtifactsUpdated,
+    lastSimulationMission, lastSimulationArtifactsUpdated, isSimulationsLoading,
   } = useDecisionContext();
   const [selected, setSelected] = useState<string[]>(() => (initialCareerId ? [initialCareerId] : []));
 
@@ -426,7 +437,9 @@ function FutureSimulationTab({ initialCareerId }: { initialCareerId?: string | n
         <ProcessSteps title="How Future Simulation Works" steps={HOW_SIMULATION_WORKS_STEPS} />
       </div>
 
-      {candidates.length < MIN_SELECTION ? (
+      {isCandidatesLoading ? (
+        <p className="text-sm text-ink-faint">Loading…</p>
+      ) : candidates.length < MIN_SELECTION ? (
         <div className="flex items-start gap-3 border-l border-border-strong pl-4">
           <Sprout size={16} className="mt-0.5 shrink-0 text-accent-soft" />
           <p className="text-sm leading-relaxed text-ink-muted">
@@ -465,7 +478,11 @@ function FutureSimulationTab({ initialCareerId }: { initialCareerId?: string | n
         </>
       )}
 
-      {!latestSimulation && !simulationInsufficientReason && (
+      {isSimulationsLoading && (
+        <p className="mt-8 text-sm text-ink-faint">Loading…</p>
+      )}
+
+      {!isSimulationsLoading && !latestSimulation && !simulationInsufficientReason && (
         <div className="mt-8">
           <EmptyStatePanel
             icon={Route}
@@ -532,7 +549,22 @@ function deriveNextBestAction(
 export function DecisionLabScreen() {
   const [tab, setTab] = useState<Tab>("overview");
   const [pendingCareerId, setPendingCareerId] = useState<string | null>(null);
-  const { simulations, comparisons, stageProgress, overallReadinessPercent } = useDecisionContext();
+  const {
+    simulations, comparisons, stageProgress, overallReadinessPercent,
+    ensureWorkspaceLoaded, ensureComparisonsLoaded, ensureSimulationsLoaded, ensureTimelineLoaded,
+  } = useDecisionContext();
+  const { ensureLoaded: ensureCandidatesLoaded } = useCareerIntelligenceContext();
+
+  useEffect(() => {
+    ensureWorkspaceLoaded();
+    ensureComparisonsLoaded();
+    ensureSimulationsLoaded();
+    ensureTimelineLoaded();
+    ensureCandidatesLoaded();
+  }, [
+    ensureWorkspaceLoaded, ensureComparisonsLoaded, ensureSimulationsLoaded, ensureTimelineLoaded,
+    ensureCandidatesLoaded,
+  ]);
 
   const goToCompare = (careerId: string) => {
     setPendingCareerId(careerId);

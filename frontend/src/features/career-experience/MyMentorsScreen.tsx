@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Handshake } from "lucide-react";
 
 import { Badge } from "../../design-system/components/Badge";
@@ -108,7 +108,11 @@ function MentorshipSection({
  * enrichment) instead of a raw expert_id.
  */
 export function MyMentorsScreen() {
-  const { mentorships } = useCareerExperienceContext();
+  const { mentorships, isLoadingInitialData, ensureLoaded } = useCareerExperienceContext();
+
+  useEffect(() => {
+    ensureLoaded();
+  }, [ensureLoaded]);
 
   const pending = mentorships.filter((m) => m.status === "requested");
   const accepted = mentorships.filter((m) => m.status === "accepted");
@@ -125,7 +129,9 @@ export function MyMentorsScreen() {
         since there's no expert login in this system.
       </p>
 
-      {mentorships.length === 0 ? (
+      {isLoadingInitialData ? (
+        <p className="mt-8 text-sm text-ink-faint">Loading…</p>
+      ) : mentorships.length === 0 ? (
         <div className="mt-8">
           <EmptyStatePanel
             icon={Handshake}

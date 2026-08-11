@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { MessageSquarePlus } from "lucide-react";
 
 import { Badge } from "../../design-system/components/Badge";
@@ -60,7 +61,11 @@ function SuggestionCard({ suggestion }: { suggestion: SuggestionRecord }) {
  * of `journeyConfig.ts`'s stage tree (same tier as `/profile`/`/history`).
  */
 export function MySuggestionsScreen() {
-  const { suggestions } = useSuggestionsContext();
+  const { suggestions, isLoadingInitialData, ensureLoaded } = useSuggestionsContext();
+
+  useEffect(() => {
+    ensureLoaded();
+  }, [ensureLoaded]);
 
   return (
     <div className="mx-auto max-w-2xl px-6 py-10">
@@ -70,7 +75,9 @@ export function MySuggestionsScreen() {
         human before it becomes part of the platform.
       </p>
 
-      {suggestions.length === 0 ? (
+      {isLoadingInitialData ? (
+        <p className="mt-8 text-sm text-ink-faint">Loading…</p>
+      ) : suggestions.length === 0 ? (
         <div className="mt-8">
           <EmptyStatePanel
             icon={MessageSquarePlus}

@@ -28,7 +28,13 @@ export function CareerDetailsScreen() {
   const [career, setCareer] = useState<CareerDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { recordEvent, isBookmarked } = useCareerExplorationContext();
-  const { candidates, isAnalyzing, analyzeCareers, shortlistCandidate, removeCandidate } = useCareerIntelligenceContext();
+  const {
+    candidates, isAnalyzing, analyzeCareers, shortlistCandidate, removeCandidate, ensureLoaded: ensureCandidatesLoaded,
+  } = useCareerIntelligenceContext();
+
+  useEffect(() => {
+    ensureCandidatesLoaded();
+  }, [ensureCandidatesLoaded]);
   const { openModal } = useSuggestionsContext();
 
   useEffect(() => {

@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
+import { createContext, useCallback, useContext, useRef, useState } from "react";
 import type { ReactNode } from "react";
 
 import { apiClient } from "../../shared/api/client";
@@ -17,6 +17,13 @@ interface CareerIntelligenceContextValue {
   analyzeCareers: () => Promise<void>;
   shortlistCandidate: (careerId: string) => Promise<void>;
   removeCandidate: (careerId: string) => Promise<void>;
+  /** Sprint 5 — Productization performance work. Persisted candidates
+   * used to fetch unconditionally at app mount; now lazy, once, on
+   * first access via `ensureLoaded()` — call from Career Explorer,
+   * Career Detail, and Decision Lab's own mount effects (all real
+   * consumers). Idempotent across callers. */
+  isLoadingInitialData: boolean;
+  ensureLoaded: () => void;
 }
 
 const CareerIntelligenceContext = createContext<CareerIntelligenceContextValue | null>(null);
@@ -39,8 +46,13 @@ export function CareerIntelligenceProvider({ children }: { children: ReactNode }
   const [hasAnalyzedOnce, setHasAnalyzedOnce] = useState(false);
   const [recommendedColleges, setRecommendedColleges] = useState<string[]>([]);
   const [recommendedExperts, setRecommendedExperts] = useState<string[]>([]);
+  const [isLoadingInitialData, setIsLoadingInitialData] = useState(false);
+  const hasLoadedRef = useRef(false);
 
-  useEffect(() => {
+  const ensureLoaded = useCallback(() => {
+    if (hasLoadedRef.current) return;
+    hasLoadedRef.current = true;
+    setIsLoadingInitialData(true);
     apiClient
       .get<CareerCandidatesResponse>(`/v1/students/${studentId}/career-candidates`)
       .then((response) => {
@@ -53,10 +65,12 @@ export function CareerIntelligenceProvider({ children }: { children: ReactNode }
       })
       .catch(() => {
         // A brand-new student simply has no candidates yet — not an error.
-      });
+      })
+      .finally(() => setIsLoadingInitialData(false));
   }, [studentId]);
 
   const analyzeCareers = useCallback(async () => {
+    hasLoadedRef.current = true;
     setIsAnalyzing(true);
     setError(null);
     try {
@@ -119,6 +133,8 @@ export function CareerIntelligenceProvider({ children }: { children: ReactNode }
     analyzeCareers,
     shortlistCandidate,
     removeCandidate,
+    isLoadingInitialData,
+    ensureLoaded,
   };
 
   return (

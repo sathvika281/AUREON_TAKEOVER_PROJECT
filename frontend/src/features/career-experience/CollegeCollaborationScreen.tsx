@@ -46,13 +46,22 @@ function deriveNextBestAction(matches: CollegeMatch[]): NextBestActionSuggestion
  * reasoning happens for the catalog browse itself.
  */
 export function CollegeCollaborationScreen() {
-  const { institutions, events, registrations, registerForEvent, isBusy } = useCareerExperienceContext();
+  const { institutions, events, registrations, registerForEvent, isBusy, isLoadingInitialData, ensureLoaded } =
+    useCareerExperienceContext();
   const { careerDna } = useDiscoveryContext();
-  const { collegeMatches, isBusy: isMatching, error, analyzeColleges, lastCollegeMission } = useDecisionContext();
+  const {
+    collegeMatches, isBusy: isMatching, error, analyzeColleges, lastCollegeMission,
+    ensureCollegeMatchesLoaded, isCollegeMatchesLoading,
+  } = useDecisionContext();
   const [selected, setSelected] = useState<InstitutionSummary | null>(null);
   const [detail, setDetail] = useState<InstitutionDetail | null>(null);
   const [isLoadingDetail, setIsLoadingDetail] = useState(false);
   const [query, setQuery] = useState("");
+
+  useEffect(() => {
+    ensureLoaded();
+    ensureCollegeMatchesLoaded();
+  }, [ensureLoaded, ensureCollegeMatchesLoaded]);
 
   useEffect(() => {
     if (!selected) {
@@ -334,7 +343,9 @@ export function CollegeCollaborationScreen() {
           </Button>
         </div>
         {error && <p className="mt-2 text-xs text-danger">{error}</p>}
-        {collegeMatches.length === 0 ? (
+        {isCollegeMatchesLoading ? (
+          <p className="mt-3 text-sm text-ink-faint">Loading…</p>
+        ) : collegeMatches.length === 0 ? (
           <div className="mt-3">
             <EmptyStatePanel
               icon={Compass}
@@ -366,7 +377,9 @@ export function CollegeCollaborationScreen() {
           placeholder="Search by name, city, or country…"
         />
 
-        {filteredInstitutions.length === 0 ? (
+        {isLoadingInitialData ? (
+          <p className="mt-4 text-sm text-ink-faint">Loading…</p>
+        ) : filteredInstitutions.length === 0 ? (
           <div className="mt-4">
             <EmptyStatePanel
               icon={Building2}

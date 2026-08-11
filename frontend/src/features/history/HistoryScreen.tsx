@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Clock, GitCompareArrows, ShieldAlert } from "lucide-react";
 
 import { Badge } from "../../design-system/components/Badge";
@@ -43,9 +43,31 @@ function gapForDelta(deltaMs: number): number {
 }
 
 export function HistoryScreen() {
-  const { items, githubInvestigations, documentInvestigations, searchInvestigations, isLoading } = useHistoryContext();
-  const { comparisons, simulations, mentorMatches, collegeMatches } = useDecisionContext();
+  const {
+    items, githubInvestigations, documentInvestigations, searchInvestigations, isLoading,
+    isInvestigationsLoading, ensureInvestigationsLoaded,
+  } = useHistoryContext();
+  const {
+    comparisons, simulations, mentorMatches, collegeMatches,
+    ensureComparisonsLoaded, ensureSimulationsLoaded, ensureMentorMatchesLoaded, ensureCollegeMatchesLoaded,
+    isComparisonsLoading, isSimulationsLoading, isMentorMatchesLoading, isCollegeMatchesLoading,
+  } = useDecisionContext();
   const [selected, setSelected] = useState<HistoryItem | null>(null);
+
+  useEffect(() => {
+    ensureInvestigationsLoaded();
+    ensureComparisonsLoaded();
+    ensureSimulationsLoaded();
+    ensureMentorMatchesLoaded();
+    ensureCollegeMatchesLoaded();
+  }, [
+    ensureInvestigationsLoaded, ensureComparisonsLoaded, ensureSimulationsLoaded,
+    ensureMentorMatchesLoaded, ensureCollegeMatchesLoaded,
+  ]);
+
+  const isReportDataLoading =
+    isInvestigationsLoading || isComparisonsLoading || isSimulationsLoading ||
+    isMentorMatchesLoading || isCollegeMatchesLoading;
 
   function renderReport(item: HistoryItem) {
     switch (item.mission_type) {
@@ -196,12 +218,16 @@ export function HistoryScreen() {
                 <Badge tone="warm">{MISSION_TYPE_LABELS[selected.mission_type] ?? selected.mission_type}</Badge>
                 <span className="text-xs text-ink-faint">{selected.owning_specialist}</span>
               </div>
-              {renderReport(selected) ?? (
-                <EmptyStatePanel
-                  icon={ShieldAlert}
-                  title="Couldn't Load This Report"
-                  description="The underlying record couldn't be found — try refreshing."
-                />
+              {isReportDataLoading ? (
+                <p className="text-sm text-ink-faint">Loading…</p>
+              ) : (
+                renderReport(selected) ?? (
+                  <EmptyStatePanel
+                    icon={ShieldAlert}
+                    title="Couldn't Load This Report"
+                    description="The underlying record couldn't be found — try refreshing."
+                  />
+                )
               )}
             </>
           )}

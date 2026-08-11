@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
+import { createContext, useCallback, useContext, useRef, useState } from "react";
 import type { ReactNode } from "react";
 
 import { apiClient } from "../../shared/api/client";
@@ -37,6 +37,18 @@ interface CareerExperienceContextValue {
   mentorships: Mentorship[];
   isBusy: boolean;
   error: string | null;
+  /** Sprint 5 — Productization performance work. This feature area's own
+   * 9 GET requests used to fire unconditionally at app mount (login),
+   * regardless of whether the student ever visited Expert Connect/
+   * College Explorer/My Mentors/Shared Sessions this session. Now
+   * deferred: call `ensureLoaded()` once from each consuming screen's
+   * own mount effect — idempotent (a ref guard means only the first
+   * caller across all four screens actually fires the requests; later
+   * callers/re-visits are no-ops). `isLoadingInitialData` is real
+   * "these requests are in flight" state, distinct from an honestly
+   * empty result — never conflate the two. */
+  isLoadingInitialData: boolean;
+  ensureLoaded: () => void;
   bookSession: (mentorId: string, slotStart: string, topic: string) => Promise<void>;
   requestGuidance: (mentorId: string, message: string) => Promise<void>;
   toggleSaveExpert: (mentorId: string) => Promise<void>;
@@ -78,44 +90,51 @@ export function CareerExperienceProvider({ children }: { children: ReactNode }) 
   const [mentorships, setMentorships] = useState<Mentorship[]>([]);
   const [isBusy, setIsBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isLoadingInitialData, setIsLoadingInitialData] = useState(false);
+  const hasLoadedRef = useRef(false);
 
-  useEffect(() => {
-    apiClient
-      .get<InstitutionSummary[]>("/v1/institutions")
-      .then(setInstitutions)
-      .catch(() => {});
-    apiClient
-      .get<MentorSummary[]>("/v1/mentors")
-      .then(setExperts)
-      .catch(() => {});
-    apiClient
-      .get<CareerEventsResponse>("/v1/career-events")
-      .then((r) => setEvents(r.events))
-      .catch(() => {});
-    apiClient
-      .get<ExpertSessionBookingsResponse>(`/v1/students/${studentId}/expert-sessions`)
-      .then((r) => setBookings(r.bookings))
-      .catch(() => {});
-    apiClient
-      .get<GuidanceRequestsResponse>(`/v1/students/${studentId}/expert-guidance-requests`)
-      .then((r) => setGuidanceRequests(r.requests))
-      .catch(() => {});
-    apiClient
-      .get<EventRegistrationsResponse>(`/v1/students/${studentId}/events/registrations`)
-      .then((r) => setRegistrations(r.registrations))
-      .catch(() => {});
-    apiClient
-      .get<SavedExpertsResponse>(`/v1/students/${studentId}/saved-experts`)
-      .then((r) => setSavedExpertIds(r.mentor_ids))
-      .catch(() => {});
-    apiClient
-      .get<SharedSessionsResponse>(`/v1/students/${studentId}/shared-sessions`)
-      .then((r) => setSharedSessions(r.sessions))
-      .catch(() => {});
-    apiClient
-      .get<MentorshipsResponse>(`/v1/students/${studentId}/mentorships`)
-      .then((r) => setMentorships(r.mentorships))
-      .catch(() => {});
+  const ensureLoaded = useCallback(() => {
+    if (hasLoadedRef.current) return;
+    hasLoadedRef.current = true;
+    setIsLoadingInitialData(true);
+    Promise.all([
+      apiClient
+        .get<InstitutionSummary[]>("/v1/institutions")
+        .then(setInstitutions)
+        .catch(() => {}),
+      apiClient
+        .get<MentorSummary[]>("/v1/mentors")
+        .then(setExperts)
+        .catch(() => {}),
+      apiClient
+        .get<CareerEventsResponse>("/v1/career-events")
+        .then((r) => setEvents(r.events))
+        .catch(() => {}),
+      apiClient
+        .get<ExpertSessionBookingsResponse>(`/v1/students/${studentId}/expert-sessions`)
+        .then((r) => setBookings(r.bookings))
+        .catch(() => {}),
+      apiClient
+        .get<GuidanceRequestsResponse>(`/v1/students/${studentId}/expert-guidance-requests`)
+        .then((r) => setGuidanceRequests(r.requests))
+        .catch(() => {}),
+      apiClient
+        .get<EventRegistrationsResponse>(`/v1/students/${studentId}/events/registrations`)
+        .then((r) => setRegistrations(r.registrations))
+        .catch(() => {}),
+      apiClient
+        .get<SavedExpertsResponse>(`/v1/students/${studentId}/saved-experts`)
+        .then((r) => setSavedExpertIds(r.mentor_ids))
+        .catch(() => {}),
+      apiClient
+        .get<SharedSessionsResponse>(`/v1/students/${studentId}/shared-sessions`)
+        .then((r) => setSharedSessions(r.sessions))
+        .catch(() => {}),
+      apiClient
+        .get<MentorshipsResponse>(`/v1/students/${studentId}/mentorships`)
+        .then((r) => setMentorships(r.mentorships))
+        .catch(() => {}),
+    ]).finally(() => setIsLoadingInitialData(false));
   }, [studentId]);
 
   const bookSession = useCallback(
@@ -280,6 +299,8 @@ export function CareerExperienceProvider({ children }: { children: ReactNode }) 
     mentorships,
     isBusy,
     error,
+    isLoadingInitialData,
+    ensureLoaded,
     bookSession,
     requestGuidance,
     toggleSaveExpert,

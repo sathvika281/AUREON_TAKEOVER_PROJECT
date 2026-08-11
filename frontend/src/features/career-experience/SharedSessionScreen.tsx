@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link2, Users2 } from "lucide-react";
 
 import { Badge } from "../../design-system/components/Badge";
@@ -27,10 +27,15 @@ const STATUS_LABEL: Record<string, string> = {
  * the token-accessed screen this link opens.
  */
 export function SharedSessionScreen() {
-  const { experts, sharedSessions, isBusy, error, createSharedSessionInvite } = useCareerExperienceContext();
+  const { experts, sharedSessions, isBusy, error, createSharedSessionInvite, isLoadingInitialData, ensureLoaded } =
+    useCareerExperienceContext();
   const [selectedExpertId, setSelectedExpertId] = useState("");
   const [topic, setTopic] = useState("");
   const [lastCreatedToken, setLastCreatedToken] = useState<string | null>(null);
+
+  useEffect(() => {
+    ensureLoaded();
+  }, [ensureLoaded]);
 
   return (
     <div className="mx-auto max-w-2xl px-6 py-10">
@@ -49,7 +54,7 @@ export function SharedSessionScreen() {
           onChange={(e) => setSelectedExpertId(e.target.value)}
           className="mt-1 w-full rounded-lg border border-border bg-surface/70 px-4 py-2.5 text-sm text-ink"
         >
-          <option value="">Choose an expert…</option>
+          <option value="">{isLoadingInitialData ? "Loading experts…" : "Choose an expert…"}</option>
           {experts.map((e) => (
             <option key={e.id} value={e.id}>{e.name}</option>
           ))}
@@ -92,7 +97,9 @@ export function SharedSessionScreen() {
       </Surface>
 
       <p className="mb-2 mt-10 px-1 font-mono text-[0.6rem] uppercase tracking-[0.14em] text-ink-faint">Your Joint Sessions</p>
-      {sharedSessions.length === 0 ? (
+      {isLoadingInitialData ? (
+        <p className="text-sm text-ink-faint">Loading…</p>
+      ) : sharedSessions.length === 0 ? (
         <EmptyStatePanel
           icon={Users2}
           title="No Joint Sessions Yet"

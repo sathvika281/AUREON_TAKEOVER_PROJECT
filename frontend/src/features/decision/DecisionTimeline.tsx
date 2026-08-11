@@ -20,16 +20,18 @@ const KIND_LABELS: Record<string, string> = {
  * honest empty state, not invented milestones.
  */
 export function DecisionTimeline() {
-  const { timelineMilestones, currentDirectionSummary } = useDecisionContext();
+  const { timelineMilestones, currentDirectionSummary, isTimelineLoading } = useDecisionContext();
 
   return (
     <div>
       <Surface tone="raised" padding="md">
         <p className="text-xs uppercase tracking-widest text-ink-faint">Current direction</p>
-        <p className="mt-1 text-sm text-ink">{currentDirectionSummary}</p>
+        <p className="mt-1 text-sm text-ink">{isTimelineLoading ? "Loading…" : currentDirectionSummary}</p>
       </Surface>
 
-      {timelineMilestones.length === 0 ? (
+      {isTimelineLoading ? (
+        <p className="mt-6 text-sm text-ink-faint">Loading…</p>
+      ) : timelineMilestones.length === 0 ? (
         <div className="mt-6">
           <EmptyStatePanel
             icon={History}

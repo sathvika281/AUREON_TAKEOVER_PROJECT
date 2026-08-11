@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
+import { createContext, useCallback, useContext, useRef, useState } from "react";
 import type { ReactNode } from "react";
 
 import { apiClient } from "../../shared/api/client";
@@ -29,6 +29,14 @@ interface SuggestionsContextValue {
   isBusy: boolean;
   error: string | null;
   submitSuggestion: (request: CreateSuggestionRequest) => Promise<SuggestionRecord | null>;
+  /** Sprint 5 — Productization performance work. The nav only ever
+   * needs `openModal` — it used to sit behind this provider's own
+   * unconditional mount-time fetch of the full suggestion list, which
+   * every navigation click paid for even though it never reads
+   * `suggestions`. Now lazy: `MySuggestionsScreen` (the only real
+   * consumer of the list) calls `ensureLoaded()` on its own mount. */
+  isLoadingInitialData: boolean;
+  ensureLoaded: () => void;
 }
 
 const SuggestionsContext = createContext<SuggestionsContextValue | null>(null);
@@ -49,12 +57,18 @@ export function SuggestionsProvider({ children }: { children: ReactNode }) {
   const [modalPrefill, setModalPrefill] = useState<SuggestionModalPrefill | null>(null);
   const [isBusy, setIsBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isLoadingInitialData, setIsLoadingInitialData] = useState(false);
+  const hasLoadedRef = useRef(false);
 
-  useEffect(() => {
+  const ensureLoaded = useCallback(() => {
+    if (hasLoadedRef.current) return;
+    hasLoadedRef.current = true;
+    setIsLoadingInitialData(true);
     apiClient
       .get<SuggestionsResponse>(`/v1/students/${studentId}/suggestions`)
       .then((r) => setSuggestions(r.suggestions))
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => setIsLoadingInitialData(false));
   }, [studentId]);
 
   const openModal = useCallback((prefill?: SuggestionModalPrefill) => {
@@ -98,6 +112,8 @@ export function SuggestionsProvider({ children }: { children: ReactNode }) {
     isBusy,
     error,
     submitSuggestion,
+    isLoadingInitialData,
+    ensureLoaded,
   };
 
   return <SuggestionsContext.Provider value={value}>{children}</SuggestionsContext.Provider>;

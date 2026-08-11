@@ -52,6 +52,27 @@ interface DecisionContextValue {
   runSimulation: (careerIds: string[]) => Promise<void>;
   refreshTimelineAndMemory: () => Promise<void>;
   refreshWorkspace: () => Promise<void>;
+  /** Sprint 5 — Productization performance work. Only `decisionMemory`
+   * loads automatically at app mount (Mission Control needs it). Every
+   * other field here — comparisons, mentor/college matches,
+   * simulations, timeline, workspace — used to fire unconditionally
+   * alongside it, even for a student who never opens Decision Lab this
+   * session. Each is now fetched lazily, once, on first access via
+   * these guarded callbacks — call the relevant one from a consuming
+   * screen's own mount effect. Idempotent: safe to call from more than
+   * one screen (e.g. Decision Lab and History both need comparisons). */
+  ensureComparisonsLoaded: () => void;
+  ensureMentorMatchesLoaded: () => void;
+  ensureCollegeMatchesLoaded: () => void;
+  ensureSimulationsLoaded: () => void;
+  ensureTimelineLoaded: () => void;
+  ensureWorkspaceLoaded: () => void;
+  isComparisonsLoading: boolean;
+  isMentorMatchesLoading: boolean;
+  isCollegeMatchesLoading: boolean;
+  isSimulationsLoading: boolean;
+  isTimelineLoading: boolean;
+  isWorkspaceLoading: boolean;
 }
 
 const DecisionContext = createContext<DecisionContextValue | null>(null);
@@ -85,8 +106,22 @@ export function DecisionProvider({ children }: { children: ReactNode }) {
   const [workspaceGaps, setWorkspaceGaps] = useState<string[]>([]);
   const [overallReadinessPercent, setOverallReadinessPercent] = useState(0);
   const [stageProgress, setStageProgress] = useState<StageProgress>({ discover: false, explore: false, connect: false });
+  const [isComparisonsLoading, setIsComparisonsLoading] = useState(false);
+  const [isMentorMatchesLoading, setIsMentorMatchesLoading] = useState(false);
+  const [isCollegeMatchesLoading, setIsCollegeMatchesLoading] = useState(false);
+  const [isSimulationsLoading, setIsSimulationsLoading] = useState(false);
+  const [isTimelineLoading, setIsTimelineLoading] = useState(false);
+  const [isWorkspaceLoading, setIsWorkspaceLoading] = useState(false);
+
+  const comparisonsLoadedRef = useRef(false);
+  const mentorMatchesLoadedRef = useRef(false);
+  const collegeMatchesLoadedRef = useRef(false);
+  const simulationsLoadedRef = useRef(false);
+  const timelineLoadedRef = useRef(false);
+  const workspaceLoadedRef = useRef(false);
 
   const refreshWorkspace = useCallback(async () => {
+    workspaceLoadedRef.current = true;
     try {
       const response = await apiClient.get<DecisionWorkspaceResponse>(`/v1/students/${studentId}/decision-workspace`);
       setWorkspace(response.cards);
@@ -98,7 +133,14 @@ export function DecisionProvider({ children }: { children: ReactNode }) {
     }
   }, [studentId]);
 
+  const ensureWorkspaceLoaded = useCallback(() => {
+    if (workspaceLoadedRef.current) return;
+    setIsWorkspaceLoading(true);
+    void refreshWorkspace().finally(() => setIsWorkspaceLoading(false));
+  }, [refreshWorkspace]);
+
   const refreshTimelineAndMemory = useCallback(async () => {
+    timelineLoadedRef.current = true;
     try {
       const [timeline, memory] = await Promise.all([
         apiClient.get<DecisionTimelineResponse>(`/v1/students/${studentId}/decision-timeline`),
@@ -112,7 +154,24 @@ export function DecisionProvider({ children }: { children: ReactNode }) {
     }
   }, [studentId]);
 
-  useEffect(() => {
+  const ensureTimelineLoaded = useCallback(() => {
+    if (timelineLoadedRef.current) return;
+    timelineLoadedRef.current = true;
+    setIsTimelineLoading(true);
+    apiClient
+      .get<DecisionTimelineResponse>(`/v1/students/${studentId}/decision-timeline`)
+      .then((timeline) => {
+        setTimelineMilestones(timeline.milestones);
+        setCurrentDirectionSummary(timeline.current_direction_summary);
+      })
+      .catch(() => {})
+      .finally(() => setIsTimelineLoading(false));
+  }, [studentId]);
+
+  const ensureComparisonsLoaded = useCallback(() => {
+    if (comparisonsLoadedRef.current) return;
+    comparisonsLoadedRef.current = true;
+    setIsComparisonsLoading(true);
     apiClient
       .get<CareerComparisonsResponse>(`/v1/students/${studentId}/career-comparisons`)
       .then((r) => {
@@ -120,28 +179,56 @@ export function DecisionProvider({ children }: { children: ReactNode }) {
         setRecommendedColleges(r.recommended_colleges);
         setRecommendedExperts(r.recommended_experts);
       })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => setIsComparisonsLoading(false));
+  }, [studentId]);
+
+  const ensureMentorMatchesLoaded = useCallback(() => {
+    if (mentorMatchesLoadedRef.current) return;
+    mentorMatchesLoadedRef.current = true;
+    setIsMentorMatchesLoading(true);
     apiClient
       .get<MentorMatchesResponse>(`/v1/students/${studentId}/mentor-matches`)
       .then((r) => setMentorMatches(r.matches))
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => setIsMentorMatchesLoading(false));
+  }, [studentId]);
+
+  const ensureCollegeMatchesLoaded = useCallback(() => {
+    if (collegeMatchesLoadedRef.current) return;
+    collegeMatchesLoadedRef.current = true;
+    setIsCollegeMatchesLoading(true);
     apiClient
       .get<CollegeMatchesResponse>(`/v1/students/${studentId}/college-matches`)
       .then((r) => setCollegeMatches(r.matches))
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => setIsCollegeMatchesLoading(false));
+  }, [studentId]);
+
+  const ensureSimulationsLoaded = useCallback(() => {
+    if (simulationsLoadedRef.current) return;
+    simulationsLoadedRef.current = true;
+    setIsSimulationsLoading(true);
     apiClient
       .get<CareerSimulationsResponse>(`/v1/students/${studentId}/career-simulations`)
       .then((r) => setSimulations(r.simulations))
+      .catch(() => {})
+      .finally(() => setIsSimulationsLoading(false));
+  }, [studentId]);
+
+  useEffect(() => {
+    apiClient
+      .get<DecisionMemoryResponse>(`/v1/students/${studentId}/decision-memory`)
+      .then((r) => setDecisionMemory(r.entries))
       .catch(() => {});
-    void refreshTimelineAndMemory();
-    void refreshWorkspace();
-  }, [studentId, refreshTimelineAndMemory, refreshWorkspace]);
+  }, [studentId]);
 
   const runComparison = useCallback(
     async (careerIds: string[]) => {
       setIsBusy(true);
       setError(null);
       try {
+        comparisonsLoadedRef.current = true;
         const response = await apiClient.post<CareerComparisonsResponse>(
           `/v1/students/${studentId}/career-comparisons`,
           { career_ids: careerIds },
@@ -164,6 +251,7 @@ export function DecisionProvider({ children }: { children: ReactNode }) {
     setIsBusy(true);
     setError(null);
     try {
+      mentorMatchesLoadedRef.current = true;
       const response = await apiClient.post<MentorMatchesResponse>(
         `/v1/students/${studentId}/mentor-matches/analyze`,
         {},
@@ -182,6 +270,7 @@ export function DecisionProvider({ children }: { children: ReactNode }) {
     setIsBusy(true);
     setError(null);
     try {
+      collegeMatchesLoadedRef.current = true;
       const response = await apiClient.post<CollegeMatchesResponse>(
         `/v1/students/${studentId}/college-matches/analyze`,
         {},
@@ -201,6 +290,7 @@ export function DecisionProvider({ children }: { children: ReactNode }) {
       setIsBusy(true);
       setError(null);
       try {
+        simulationsLoadedRef.current = true;
         const response = await apiClient.post<CareerSimulationsResponse>(
           `/v1/students/${studentId}/career-simulations/analyze`,
           { career_ids: careerIds },
@@ -249,6 +339,18 @@ export function DecisionProvider({ children }: { children: ReactNode }) {
     runSimulation,
     refreshTimelineAndMemory,
     refreshWorkspace,
+    ensureComparisonsLoaded,
+    ensureMentorMatchesLoaded,
+    ensureCollegeMatchesLoaded,
+    ensureSimulationsLoaded,
+    ensureTimelineLoaded,
+    ensureWorkspaceLoaded,
+    isComparisonsLoading,
+    isMentorMatchesLoading,
+    isCollegeMatchesLoading,
+    isSimulationsLoading,
+    isTimelineLoading,
+    isWorkspaceLoading,
   };
 
   return <DecisionContext.Provider value={value}>{children}</DecisionContext.Provider>;

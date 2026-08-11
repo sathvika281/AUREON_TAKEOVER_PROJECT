@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useRef, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 
 import { apiClient } from "../../shared/api/client";
@@ -20,6 +20,13 @@ interface HistoryContextValue {
   documentInvestigations: DocumentInvestigationRecord[];
   searchInvestigations: CareerInvestigationRecord[];
   isLoading: boolean;
+  /** Sprint 5 — Productization performance work. Only `/history` (used
+   * by Mission Control) loads automatically at app mount. The 3
+   * per-investigation-type collections below are only real content on
+   * the Journey Timeline screen itself, so they're fetched lazily,
+   * once, on first access to that screen via `ensureInvestigationsLoaded`. */
+  isInvestigationsLoading: boolean;
+  ensureInvestigationsLoaded: () => void;
 }
 
 const HistoryContext = createContext<HistoryContextValue | null>(null);
@@ -35,10 +42,22 @@ export function HistoryProvider({ children }: { children: ReactNode }) {
   const [documentInvestigations, setDocumentInvestigations] = useState<DocumentInvestigationRecord[]>([]);
   const [searchInvestigations, setSearchInvestigations] = useState<CareerInvestigationRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isInvestigationsLoading, setIsInvestigationsLoading] = useState(false);
+  const investigationsLoadedRef = useRef(false);
 
   useEffect(() => {
+    apiClient
+      .get<HistoryResponse>(`/v1/students/${studentId}/history`)
+      .then((r) => setItems(r.items))
+      .catch(() => {})
+      .finally(() => setIsLoading(false));
+  }, [studentId]);
+
+  const ensureInvestigationsLoaded = useCallback(() => {
+    if (investigationsLoadedRef.current) return;
+    investigationsLoadedRef.current = true;
+    setIsInvestigationsLoading(true);
     Promise.all([
-      apiClient.get<HistoryResponse>(`/v1/students/${studentId}/history`).then((r) => setItems(r.items)).catch(() => {}),
       apiClient
         .get<GitHubInvestigationsResponse>(`/v1/students/${studentId}/github-investigations`)
         .then((r) => setGithubInvestigations(r.investigations))
@@ -51,11 +70,12 @@ export function HistoryProvider({ children }: { children: ReactNode }) {
         .get<CareerInvestigationsResponse>(`/v1/students/${studentId}/search-investigations`)
         .then((r) => setSearchInvestigations(r.investigations))
         .catch(() => {}),
-    ]).finally(() => setIsLoading(false));
+    ]).finally(() => setIsInvestigationsLoading(false));
   }, [studentId]);
 
   const value: HistoryContextValue = {
     items, githubInvestigations, documentInvestigations, searchInvestigations, isLoading,
+    isInvestigationsLoading, ensureInvestigationsLoaded,
   };
 
   return <HistoryContext.Provider value={value}>{children}</HistoryContext.Provider>;

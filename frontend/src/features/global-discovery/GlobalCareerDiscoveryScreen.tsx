@@ -42,7 +42,12 @@ export function GlobalCareerDiscoveryScreen() {
   const {
     candidates, insufficientEvidence, insufficientEvidenceReason, isAnalyzing, error,
     hasAnalyzedOnce, analyzeCareers, shortlistCandidate, removeCandidate,
+    isLoadingInitialData: isCandidatesLoading, ensureLoaded: ensureCandidatesLoaded,
   } = useCareerIntelligenceContext();
+
+  useEffect(() => {
+    ensureCandidatesLoaded();
+  }, [ensureCandidatesLoaded]);
 
   const [careers, setCareers] = useState<CareerSummary[]>([]);
   const [category, setCategory] = useState<string | null>(null);
@@ -115,6 +120,8 @@ export function GlobalCareerDiscoveryScreen() {
               }
             />
           </div>
+        ) : isCandidatesLoading ? (
+          <p className="mt-3 text-sm text-ink-faint">Loading…</p>
         ) : candidates.length === 0 ? (
           <div className="mt-3">
             <EmptyStatePanel

@@ -104,10 +104,12 @@ export function ExpertConnectScreen() {
   const {
     events, registrations, savedExpertIds, mentorships, isBusy,
     bookSession, requestGuidance, toggleSaveExpert, registerForEvent, requestMentorship,
+    ensureLoaded,
   } = useCareerExperienceContext();
   const { confidenceScore } = useDiscoveryContext();
   const {
     mentorMatches, isBusy: isMatching, error: matchError, analyzeMentors, lastMentorMission,
+    ensureMentorMatchesLoaded, isMentorMatchesLoading,
   } = useDecisionContext();
 
   const [expertSummaries, setExpertSummaries] = useState<ExpertSummary[]>([]);
@@ -127,6 +129,8 @@ export function ExpertConnectScreen() {
   const [actionFeedback, setActionFeedback] = useState<string | null>(null);
 
   useEffect(() => {
+    ensureLoaded();
+    ensureMentorMatchesLoaded();
     apiClient
       .get<ExpertSearchResponse>("/v1/experts?limit=200")
       .then((r) => setExpertSummaries(r.experts))
@@ -135,7 +139,7 @@ export function ExpertConnectScreen() {
       .get<ExpertFiltersResponse>("/v1/experts/filters")
       .then(setFilters)
       .catch(() => {});
-  }, []);
+  }, [ensureLoaded, ensureMentorMatchesLoaded]);
 
   useEffect(() => {
     if (!selectedId) {
@@ -502,7 +506,9 @@ export function ExpertConnectScreen() {
           </Button>
         </div>
         {matchError && <p className="mt-2 text-xs text-danger">{matchError}</p>}
-        {mentorMatches.length === 0 ? (
+        {isMentorMatchesLoading ? (
+          <p className="mt-3 text-sm text-ink-faint">Loading…</p>
+        ) : mentorMatches.length === 0 ? (
           <div className="mt-3">
             <EmptyStatePanel
               icon={Users}
