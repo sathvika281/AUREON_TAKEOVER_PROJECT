@@ -1,8 +1,10 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 
 import { AuthScreen } from "./features/auth/AuthScreen";
+import { ForgotPasswordScreen } from "./features/auth/ForgotPasswordScreen";
 import { OnboardingGate } from "./features/auth/OnboardingGate";
 import { ProtectedRoute } from "./features/auth/ProtectedRoute";
+import { ResetPasswordScreen } from "./features/auth/ResetPasswordScreen";
 import { CareerDnaScreen } from "./features/career-dna/CareerDnaScreen";
 import { CareerDetailsScreen } from "./features/career-details/CareerDetailsScreen";
 import { CompanyDetailScreen } from "./features/companies/CompanyDetailScreen";
@@ -151,6 +153,13 @@ export function App() {
       <AuthProvider>
         <Routes>
           <Route path="/login" element={<AuthScreen />} />
+          <Route path="/forgot-password" element={<ForgotPasswordScreen />} />
+          {/* Sprint 6 — where a password-reset email link lands. Outside
+              ProtectedRoute deliberately: a student clicking this link
+              may have no normal session at all, and the screen itself
+              verifies the recovery token via a dedicated Supabase auth
+              event rather than the general login gate. */}
+          <Route path="/reset-password" element={<ResetPasswordScreen />} />
           {/* Connect Batch 1 — a parent/guardian's only way into a Joint
               Session is this opaque token, so it must stay entirely
               outside ProtectedRoute/OnboardingGate — no login required. */}

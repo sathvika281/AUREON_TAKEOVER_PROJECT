@@ -14,6 +14,18 @@ interface AuthContextValue {
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
   completeOnboarding: (data: Record<string, unknown>) => Promise<{ error: string | null }>;
+  /** Always resolves without revealing whether the email belongs to a
+   * real account — Supabase's own `resetPasswordForEmail` already
+   * returns the same success response either way, so the caller should
+   * show one honest generic confirmation regardless of the outcome and
+   * only surface `error` for a genuinely different failure class
+   * (malformed email, rate limiting, network). */
+  requestPasswordReset: (email: string) => Promise<{ error: string | null }>;
+  /** Only succeeds against a real Supabase session — during the
+   * password-recovery flow that's the temporary session Supabase
+   * establishes when a valid recovery link is opened (see
+   * ResetPasswordScreen's own PASSWORD_RECOVERY detection). */
+  updatePassword: (newPassword: string) => Promise<{ error: string | null }>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -81,6 +93,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { error: error?.message ?? null };
   }
 
+  /** `BASE_URL` already carries the GitHub Pages sub-path in production
+   * ("/AUREON_TAKEOVER_PROJECT/") and is just "/" locally, so this
+   * resolves correctly in both environments without hardcoding either. */
+  async function requestPasswordReset(email: string) {
+    const redirectTo = `${window.location.origin}${import.meta.env.BASE_URL}reset-password`;
+    const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
+    return { error: error?.message ?? null };
+  }
+
+  async function updatePassword(newPassword: string) {
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    return { error: error?.message ?? null };
+  }
+
   const value: AuthContextValue = {
     user: session?.user ?? null,
     session,
@@ -89,6 +115,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     signIn,
     signOut,
     completeOnboarding,
+    requestPasswordReset,
+    updatePassword,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

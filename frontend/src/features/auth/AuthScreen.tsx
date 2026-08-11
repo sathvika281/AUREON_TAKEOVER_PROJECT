@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import { Button } from "../../design-system/components/Button";
 import { cn } from "../../design-system/cn";
@@ -124,6 +124,15 @@ export function AuthScreen() {
                 {isBusy ? "Please wait…" : isSignUp ? "Create Account" : "Sign In"}
               </Button>
             </div>
+
+            {!isSignUp && (
+              <Link
+                to="/forgot-password"
+                className="mt-3 block text-center text-xs text-ink-faint transition-colors hover:text-ink-muted"
+              >
+                Forgot password?
+              </Link>
+            )}
           </Surface>
         </div>
       </div>
