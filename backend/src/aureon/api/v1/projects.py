@@ -12,7 +12,11 @@ from aureon.api.deps import (
 )
 from aureon.domain.models.project import ProjectAttemptEvidence
 from aureon.domain.services.project_result import complete_project_attempt
-from aureon.domain.services.project_view import build_project_detail_view, build_project_dto
+from aureon.domain.services.project_view import (
+    build_project_attempt_dto,
+    build_project_detail_view,
+    build_project_dto,
+)
 from aureon.services.supabase.repositories.career_repository import CareerRepository
 from aureon.services.supabase.repositories.company_repository import CompanyRepository
 from aureon.services.supabase.repositories.project_repository import ProjectRepository
@@ -22,7 +26,6 @@ from aureon.services.supabase.repositories.student_profile_repository import (
 )
 from aureon.shared.schemas import (
     ProjectAttemptDTO,
-    ProjectAttemptEvidenceDTO,
     ProjectAttemptEvidenceRequest,
     ProjectDetailResponse,
     ProjectsResponse,
@@ -52,11 +55,19 @@ async def list_projects(
 @router.get("/{project_id}", response_model=ProjectDetailResponse)
 async def get_project(
     project_id: str,
+    student_id: str | None = None,
     projects: ProjectRepository = Depends(get_project_repository),
     skills: SkillRepository = Depends(get_skill_repository),
     careers: CareerRepository = Depends(get_career_repository),
     companies: CompanyRepository = Depends(get_company_repository),
+    profiles: StudentProfileRepository = Depends(get_student_profile_repository),
 ) -> ProjectDetailResponse:
+    """Same open-catalog-with-optional-student-enrichment shape as
+    GET /careers/{career_id} — browsing a Project needs no personal
+    evidence, but when ``student_id`` is given, the response also
+    includes that student's own real attempt history for this project
+    (Sprint 7), never fabricated and never inferred from anything but a
+    successful read of their persisted profile."""
     project = await projects.get_project(project_id)
     if project is None:
         raise HTTPException(status_code=404, detail="Project not found")
@@ -65,25 +76,17 @@ async def get_project(
     related_careers = await careers.list_by_ids(project.related_career_ids)
     related_companies = await companies.list_by_ids(project.related_company_ids)
 
+    attempts = []
+    if student_id:
+        profile = await profiles.get_or_create(student_id)
+        attempts = [a for a in profile.project_attempts if a.project_id == project_id]
+
     return build_project_detail_view(
         project,
         target_skills=target_skills,
         related_careers=related_careers,
         related_companies=related_companies,
-    )
-
-
-def _attempt_dto(attempt) -> ProjectAttemptDTO:
-    return ProjectAttemptDTO(
-        id=attempt.id,
-        project_id=attempt.project_id,
-        project_title=attempt.project_title,
-        target_skill_ids=attempt.target_skill_ids,
-        attempted_at=attempt.attempted_at,
-        evidence=ProjectAttemptEvidenceDTO(
-            artifact_url=attempt.evidence.artifact_url,
-            reflection=attempt.evidence.reflection,
-        ),
+        attempts=attempts,
     )
 
 
@@ -109,4 +112,4 @@ async def complete_project_attempt_route(
     attempt = complete_project_attempt(profile, project, evidence=evidence, now=datetime.now(timezone.utc))
     await profiles.save(profile)
 
-    return _attempt_dto(attempt)
+    return build_project_attempt_dto(attempt)

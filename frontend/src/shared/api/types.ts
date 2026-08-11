@@ -374,6 +374,11 @@ export interface ProjectDetail {
   target_skills: Skill[];
   related_careers: CareerSummary[];
   related_companies: Company[];
+  /** Sprint 7 — the requesting student's own real, persisted attempts
+   * for this project, most recent first. Only populated when the
+   * request includes student_id; empty otherwise or genuinely never
+   * attempted. */
+  attempts: ProjectAttempt[];
 }
 
 /** Structured self-report, not a score — see backend's

@@ -1566,16 +1566,6 @@ class ProjectsResponse(BaseModel):
     projects: list[ProjectDTO]
 
 
-class ProjectDetailResponse(BaseModel):
-    project: ProjectDTO
-    #: Real Skill/Career/Company entities resolved live from the
-    #: project's own target_skill_ids/related_career_ids/
-    #: related_company_ids — never stored/duplicated on Project itself.
-    target_skills: list[SkillDTO] = []
-    related_careers: list[CareerSummaryDTO] = []
-    related_companies: list[CompanyDTO] = []
-
-
 class ProjectAttemptEvidenceRequest(BaseModel):
     """Structured self-report, not a score — see
     domain/models/project.py::ProjectAttemptEvidence. Structurally
@@ -1598,6 +1588,23 @@ class ProjectAttemptDTO(BaseModel):
     target_skill_ids: list[str]
     attempted_at: datetime
     evidence: ProjectAttemptEvidenceDTO
+
+
+class ProjectDetailResponse(BaseModel):
+    project: ProjectDTO
+    #: Real Skill/Career/Company entities resolved live from the
+    #: project's own target_skill_ids/related_career_ids/
+    #: related_company_ids — never stored/duplicated on Project itself.
+    target_skills: list[SkillDTO] = []
+    related_careers: list[CareerSummaryDTO] = []
+    related_companies: list[CompanyDTO] = []
+    #: Sprint 7 — the requesting student's own real, persisted attempts
+    #: for this project (only populated when the request supplies
+    #: student_id — same open-catalog-with-optional-enrichment pattern
+    #: already used by CareerDetailDTO), most recent first. Empty means
+    #: "never attempted" only when this list came from a successful
+    #: request — never inferred from a failed one.
+    attempts: list[ProjectAttemptDTO] = []
 
 
 class FutureSkillsResponse(BaseModel):

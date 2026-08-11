@@ -41,6 +41,7 @@ import { HistoryScreen } from "./features/history/HistoryScreen";
 import { HomeScreen } from "./features/home/HomeScreen";
 import { LearningStyleDiscoveryScreen } from "./features/learning-style-discovery/LearningStyleDiscoveryScreen";
 import { LockedModule } from "./features/locked/LockedModule";
+import { NotFoundScreen } from "./features/locked/NotFoundScreen";
 import { ALL_MODULES } from "./features/navigation/journeyConfig";
 import { JourneyNav } from "./features/navigation/JourneyNav";
 import { OnboardingScreen } from "./features/onboarding/OnboardingScreen";
@@ -128,6 +129,13 @@ function AppShell() {
                                     element={<LockedModule module={module} />}
                                   />
                                 ))}
+                                {/* Sprint 7 — global catch-all. Must stay last: React
+                                    Router matches routes in order, and every entity
+                                    route above (e.g. /projects/:projectId) already
+                                    matches its own pattern regardless of whether the
+                                    id resolves, so this only ever catches paths with
+                                    no matching pattern at all. */}
+                                <Route path="*" element={<NotFoundScreen />} />
                               </Routes>
                             </main>
                           </div>

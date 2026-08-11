@@ -1,9 +1,11 @@
+from datetime import datetime, timedelta, timezone
+
 import pytest
 
 from aureon.api import deps
 from aureon.domain.models.career import Career, CareerReality, FutureLens
 from aureon.domain.models.company import Company
-from aureon.domain.models.project import Project
+from aureon.domain.models.project import Project, ProjectAttempt, ProjectAttemptEvidence
 from aureon.domain.models.skill import Skill
 from aureon.domain.models.student_profile import StudentProfile
 from aureon.main import app
@@ -146,6 +148,86 @@ def test_get_project_returns_real_resolved_entities(client_with_projects):
 def test_get_unknown_project_returns_404(client_with_projects):
     response = client_with_projects.get("/v1/projects/does-not-exist")
     assert response.status_code == 404
+
+
+def test_get_project_without_student_id_returns_no_attempts(client_with_projects):
+    """Backward-compatible default — omitting student_id behaves exactly
+    as it did before Sprint 7."""
+    response = client_with_projects.get("/v1/projects/genomics_dataset_explorer")
+    assert response.status_code == 200
+    assert response.json()["attempts"] == []
+
+
+@pytest.fixture
+def client_with_projects_and_profiles():
+    from fastapi.testclient import TestClient
+
+    fake_projects = _FakeProjectRepository(
+        [_project(id="genomics_dataset_explorer"), _project(id="bridge_load_simulation", difficulty_level="advanced")]
+    )
+    fake_skills = _FakeSkillRepository([_skill()])
+    fake_careers = _FakeCareerRepository([_career()])
+    fake_companies = _FakeCompanyRepository([_company()])
+    fake_profiles = FakeStudentProfileRepository({STUDENT_ID: StudentProfile(student_id=STUDENT_ID)})
+    app.dependency_overrides[deps.get_project_repository] = lambda: fake_projects
+    app.dependency_overrides[deps.get_skill_repository] = lambda: fake_skills
+    app.dependency_overrides[deps.get_career_repository] = lambda: fake_careers
+    app.dependency_overrides[deps.get_company_repository] = lambda: fake_companies
+    app.dependency_overrides[deps.get_student_profile_repository] = lambda: fake_profiles
+    try:
+        yield TestClient(app), fake_profiles
+    finally:
+        app.dependency_overrides.pop(deps.get_project_repository, None)
+        app.dependency_overrides.pop(deps.get_skill_repository, None)
+        app.dependency_overrides.pop(deps.get_career_repository, None)
+        app.dependency_overrides.pop(deps.get_company_repository, None)
+        app.dependency_overrides.pop(deps.get_student_profile_repository, None)
+
+
+def _attempt(**overrides) -> ProjectAttempt:
+    defaults: dict = dict(
+        id="attempt-1", project_id="genomics_dataset_explorer", project_title="Genomics Dataset Explorer",
+        target_skill_ids=["programming"], attempted_at=datetime.now(timezone.utc),
+        evidence=ProjectAttemptEvidence(),
+    )
+    defaults.update(overrides)
+    return ProjectAttempt(**defaults)
+
+
+def test_get_project_with_student_id_and_no_attempts_returns_empty_list(client_with_projects_and_profiles):
+    client, _ = client_with_projects_and_profiles
+    response = client.get("/v1/projects/genomics_dataset_explorer", params={"student_id": STUDENT_ID})
+    assert response.status_code == 200
+    assert response.json()["attempts"] == []
+
+
+def test_get_project_with_student_id_returns_own_attempts_most_recent_first(client_with_projects_and_profiles):
+    client, fake_profiles = client_with_projects_and_profiles
+    now = datetime.now(timezone.utc)
+    older = _attempt(id="older", attempted_at=now - timedelta(days=2))
+    newer = _attempt(
+        id="newer", attempted_at=now,
+        evidence=ProjectAttemptEvidence(artifact_url="https://github.com/example/repo", reflection="Real work."),
+    )
+    profile = fake_profiles._profiles[STUDENT_ID]
+    profile.project_attempts.extend([older, newer])
+
+    response = client.get("/v1/projects/genomics_dataset_explorer", params={"student_id": STUDENT_ID})
+    assert response.status_code == 200
+    attempts = response.json()["attempts"]
+    assert [a["id"] for a in attempts] == ["newer", "older"]
+    assert attempts[0]["evidence"]["artifact_url"] == "https://github.com/example/repo"
+    assert attempts[1]["evidence"]["artifact_url"] is None
+
+
+def test_get_project_with_student_id_excludes_other_projects_attempts(client_with_projects_and_profiles):
+    client, fake_profiles = client_with_projects_and_profiles
+    profile = fake_profiles._profiles[STUDENT_ID]
+    profile.project_attempts.append(_attempt(id="other", project_id="bridge_load_simulation"))
+
+    response = client.get("/v1/projects/genomics_dataset_explorer", params={"student_id": STUDENT_ID})
+    assert response.status_code == 200
+    assert response.json()["attempts"] == []
 
 
 @pytest.fixture

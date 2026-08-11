@@ -1,6 +1,8 @@
+from datetime import datetime, timedelta, timezone
+
 from aureon.domain.models.career import Career, CareerReality, FutureLens
 from aureon.domain.models.company import Company
-from aureon.domain.models.project import Project
+from aureon.domain.models.project import Project, ProjectAttempt, ProjectAttemptEvidence
 from aureon.domain.models.skill import Skill
 from aureon.domain.services.project_view import build_project_detail_view, build_project_dto
 
@@ -84,3 +86,32 @@ def test_project_detail_view_never_fabricates_unresolved_entities():
     assert view.target_skills == []
     assert view.related_careers == []
     assert view.related_companies == []
+
+
+def _attempt(**overrides) -> ProjectAttempt:
+    defaults: dict = dict(
+        id="a1", project_id="genomics_dataset_explorer", project_title="Genomics Dataset Explorer",
+        target_skill_ids=["programming"], attempted_at=datetime.now(timezone.utc),
+        evidence=ProjectAttemptEvidence(),
+    )
+    defaults.update(overrides)
+    return ProjectAttempt(**defaults)
+
+
+def test_project_detail_view_defaults_to_no_attempts():
+    # Omitting attempts entirely (the pre-Sprint-7 call shape) stays honest.
+    view = build_project_detail_view(
+        _project(), target_skills=[], related_careers=[], related_companies=[],
+    )
+    assert view.attempts == []
+
+
+def test_project_detail_view_orders_attempts_most_recent_first():
+    now = datetime.now(timezone.utc)
+    older = _attempt(id="older", attempted_at=now - timedelta(days=1))
+    newer = _attempt(id="newer", attempted_at=now)
+    view = build_project_detail_view(
+        _project(), target_skills=[], related_careers=[], related_companies=[],
+        attempts=[older, newer],
+    )
+    assert [a.id for a in view.attempts] == ["newer", "older"]

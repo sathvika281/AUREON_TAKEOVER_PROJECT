@@ -7,11 +7,17 @@ proven twice already, reused here rather than reinvented. Consumed by:
 
 from aureon.domain.models.career import Career
 from aureon.domain.models.company import Company
-from aureon.domain.models.project import Project
+from aureon.domain.models.project import Project, ProjectAttempt
 from aureon.domain.models.skill import Skill
 from aureon.domain.services.company_view import build_company_dto
 from aureon.domain.services.skill_view import build_skill_dto
-from aureon.shared.schemas import CareerSummaryDTO, ProjectDetailResponse, ProjectDTO
+from aureon.shared.schemas import (
+    CareerSummaryDTO,
+    ProjectAttemptDTO,
+    ProjectAttemptEvidenceDTO,
+    ProjectDetailResponse,
+    ProjectDTO,
+)
 
 
 def build_project_dto(project: Project) -> ProjectDTO:
@@ -28,17 +34,36 @@ def build_project_dto(project: Project) -> ProjectDTO:
     )
 
 
+def build_project_attempt_dto(attempt: ProjectAttempt) -> ProjectAttemptDTO:
+    return ProjectAttemptDTO(
+        id=attempt.id,
+        project_id=attempt.project_id,
+        project_title=attempt.project_title,
+        target_skill_ids=attempt.target_skill_ids,
+        attempted_at=attempt.attempted_at,
+        evidence=ProjectAttemptEvidenceDTO(
+            artifact_url=attempt.evidence.artifact_url,
+            reflection=attempt.evidence.reflection,
+        ),
+    )
+
+
 def build_project_detail_view(
     project: Project,
     *,
     target_skills: list[Skill],
     related_careers: list[Career],
     related_companies: list[Company],
+    attempts: list[ProjectAttempt] | None = None,
 ) -> ProjectDetailResponse:
     """Composes a Project with the real Skills/Careers/Companies it
     points at — never stored/duplicated lists, always resolved live from
     the project's own id fields (see ProjectRepository/CareerRepository/
-    SkillRepository/CompanyRepository .list_by_ids)."""
+    SkillRepository/CompanyRepository .list_by_ids). ``attempts`` is the
+    requesting student's own real attempt history for this project
+    specifically (Sprint 7) — ordered most-recent-first for display,
+    never collapsed to a single attempt."""
+    ordered_attempts = sorted(attempts or [], key=lambda a: a.attempted_at, reverse=True)
     return ProjectDetailResponse(
         project=build_project_dto(project),
         target_skills=[build_skill_dto(s) for s in target_skills],
@@ -50,4 +75,5 @@ def build_project_detail_view(
             for c in related_careers
         ],
         related_companies=[build_company_dto(co) for co in related_companies],
+        attempts=[build_project_attempt_dto(a) for a in ordered_attempts],
     )
