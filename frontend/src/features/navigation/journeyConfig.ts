@@ -1,12 +1,15 @@
 import {
   BookOpen,
   Brain,
+  Briefcase,
   Building2,
   Compass,
   Eye,
   FlaskConical,
   Globe,
+  Hammer,
   Handshake,
+  Layers,
   LineChart,
   Scale,
   Sprout,
@@ -15,7 +18,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
-export type StageId = "discover" | "explore" | "connect" | "decide";
+export type StageId = "discover" | "explore" | "connect" | "decide" | "knowledge";
 
 export interface ModuleExplainerStep {
   icon: LucideIcon;
@@ -199,6 +202,59 @@ export const STAGES: StageConfig[] = [
         title: "Opportunity Equality",
         icon: Handshake,
         stage: "explore",
+        locked: false,
+      },
+    ],
+  },
+  {
+    // Sprint 8 — Discoverability & Navigation. Skills/Companies/Projects
+    // were previously reachable only through Career detail cross-links
+    // or a direct URL — fine while Sprints 1-3 built them incrementally,
+    // no longer right now that they're real, connected capabilities.
+    // Deliberately its OWN stage rather than folded into "Explore":
+    // Discover/Explore/Connect/Decide are the guided, evidence-gated
+    // journey (each answers a personalized "what fits me" question),
+    // while these three are an always-open reference layer with no
+    // gating at all — merging them into Explore would misrepresent them
+    // as part of that progression. "Knowledge Base" reuses the exact
+    // term already used internally for these three (see e.g.
+    // domain/models/project.py's "Project Knowledge Base"), not an
+    // invented label. Careers is deliberately NOT duplicated here —
+    // Career Explorer under Explore already is that entry point, and
+    // the frozen IA doc calls overlap a defect. This adds no new
+    // routes; /skills, /companies, /projects already exist (Sprints
+    // 1-3) and NavLink's default (non-`end`) matching already keeps
+    // this section highlighted on nested detail pages like /skills/:id.
+    id: "knowledge",
+    title: "Knowledge Base",
+    modules: [
+      {
+        id: "skills",
+        path: "/skills",
+        title: "Skills",
+        icon: Layers,
+        stage: "knowledge",
+        locked: false,
+      },
+      {
+        id: "companies",
+        path: "/companies",
+        title: "Companies",
+        icon: Briefcase,
+        stage: "knowledge",
+        locked: false,
+      },
+      {
+        // Sprint 7 made this a real evidence surface (persisted attempt
+        // history, evidence/no-evidence distinction, repeat attempts),
+        // not just a passive catalog — reflected in also being the one
+        // Knowledge Base entry additionally surfaced on Mission
+        // Control's existing Quick Actions row (see HomeScreen.tsx).
+        id: "projects",
+        path: "/projects",
+        title: "Projects",
+        icon: Hammer,
+        stage: "knowledge",
         locked: false,
       },
     ],

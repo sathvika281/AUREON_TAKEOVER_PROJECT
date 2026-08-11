@@ -25,6 +25,11 @@ const QUICK_ACTIONS = [
   { label: "Career Explorer", to: "/explore/career-reality" },
   { label: "Decision Lab", to: "/decide/decision-lab" },
   { label: "College Explorer", to: "/experience/college-collaboration" },
+  // Sprint 8 — Projects is the one Knowledge Base entry given slightly
+  // stronger discoverability (Sprint 7 made it a real evidence surface,
+  // not just a catalog), via this existing pill-row pattern rather than
+  // a new promotional section.
+  { label: "Projects", to: "/projects" },
   { label: "Journey", to: "/history" },
 ];
 
