@@ -89,7 +89,14 @@ export function OnboardingScreen() {
       `/v1/students/${getCurrentStudentId()}/onboarding`,
       request,
     );
-    await completeOnboarding({ onboarding_completed: true });
+    // Sprint 11 — name continuity fix: the onboarding form pre-fills from
+    // (and lets a student correct) whatever name signup collected, but
+    // previously only the backend's own onboarding record heard the
+    // update. user_metadata.name is the one representation Mission
+    // Control and Profile actually display, so it has to hear it too —
+    // same completeOnboarding()/updateUser() merge Sprint 10's Profile
+    // name edit already uses, not a second name store.
+    await completeOnboarding({ onboarding_completed: true, name });
 
     setIsSaving(false);
     navigate("/dashboard");
