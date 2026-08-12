@@ -1,0 +1,118 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1320 760" font-family="-apple-system, 'Segoe UI', Arial, sans-serif">
+  <defs>
+    <marker id="arrow2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#8B8FD9"/>
+    </marker>
+  </defs>
+  <rect width="1320" height="760" fill="#070B18"/>
+
+  <text x="60" y="50" fill="#F2EDE0" font-size="24" font-weight="600">Agent Orchestration</text>
+  <text x="60" y="76" fill="#F2EDE0" fill-opacity="0.6" font-size="14">The real LangGraph StateGraph (agents/orchestrator/graph.py) — a live agent registry, not a hardcoded pipeline.</text>
+
+  <!-- Student -->
+  <rect x="60" y="120" width="180" height="70" rx="12" fill="#0A0817" stroke="#3A3560" stroke-width="1.5"/>
+  <text x="150" y="150" fill="#F2EDE0" font-size="14" font-weight="600" text-anchor="middle">Student message</text>
+  <text x="150" y="170" fill="#F2EDE0" fill-opacity="0.5" font-size="11" text-anchor="middle">+ persisted StudentProfile</text>
+
+  <line x1="240" y1="155" x2="288" y2="155" stroke="#8B8FD9" stroke-width="2" marker-end="url(#arrow2)"/>
+
+  <!-- turn_start -->
+  <rect x="290" y="120" width="150" height="70" rx="12" fill="#0A0817" stroke="#2A2650" stroke-width="1.5"/>
+  <text x="365" y="150" fill="#F2EDE0" font-size="13" font-weight="600" text-anchor="middle">turn_start_node</text>
+  <text x="365" y="170" fill="#F2EDE0" fill-opacity="0.5" font-size="11" text-anchor="middle">per-turn reset</text>
+
+  <line x1="440" y1="155" x2="488" y2="155" stroke="#8B8FD9" stroke-width="2" marker-end="url(#arrow2)"/>
+
+  <!-- planner -->
+  <rect x="490" y="105" width="220" height="100" rx="12" fill="#0A0817" stroke="#8B8FD9" stroke-width="2"/>
+  <text x="600" y="135" fill="#AEB2E8" font-size="13" font-weight="600" text-anchor="middle">planner_node</text>
+  <text x="600" y="155" fill="#F2EDE0" fill-opacity="0.6" font-size="11" text-anchor="middle">Groq tool-call, tool_choice="required"</text>
+  <text x="600" y="172" fill="#F2EDE0" fill-opacity="0.6" font-size="11" text-anchor="middle">picks next agent from the live</text>
+  <text x="600" y="189" fill="#F2EDE0" fill-opacity="0.6" font-size="11" text-anchor="middle">AgentRegistry — or routes to END</text>
+
+  <line x1="710" y1="155" x2="758" y2="155" stroke="#8B8FD9" stroke-width="2" marker-end="url(#arrow2)"/>
+
+  <!-- confidence gate -->
+  <rect x="760" y="105" width="220" height="100" rx="12" fill="#0A0817" stroke="#D9B87A" stroke-width="1.5"/>
+  <text x="870" y="135" fill="#E9C98F" font-size="13" font-weight="600" text-anchor="middle">confidence_gate</text>
+  <text x="870" y="155" fill="#F2EDE0" fill-opacity="0.6" font-size="11" text-anchor="middle">deterministic override — blocks</text>
+  <text x="870" y="172" fill="#F2EDE0" fill-opacity="0.6" font-size="11" text-anchor="middle">recommendation-stage agents below</text>
+  <text x="870" y="189" fill="#F2EDE0" fill-opacity="0.6" font-size="11" text-anchor="middle">MIN_RECOMMENDATION_CONFIDENCE (0.6)</text>
+
+  <line x1="870" y1="205" x2="870" y2="248" stroke="#8B8FD9" stroke-width="2" marker-end="url(#arrow2)"/>
+
+  <!-- Registry box -->
+  <rect x="290" y="250" width="800" height="330" rx="14" fill="#0A0817" stroke="#3A3560" stroke-width="1.5"/>
+  <text x="315" y="282" fill="#F2EDE0" font-size="14" font-weight="600">AgentRegistry — 12 specialized agents (agents/specialized/)</text>
+  <text x="315" y="302" fill="#F2EDE0" fill-opacity="0.5" font-size="11">Every agent self-registers via BaseAgent.__init_subclass__ — the graph is built entirely from this registry, never a hardcoded routing table.</text>
+
+  <!-- 7 LLM-live -->
+  <text x="315" y="332" fill="#3D6B54" font-size="12" font-weight="600">● LLM-reasoning-live (real Groq calls)</text>
+  <g font-size="12" fill="#F2EDE0" fill-opacity="0.85">
+    <rect x="315" y="344" width="150" height="34" rx="8" fill="#0A0817" stroke="#3D6B54" stroke-width="1"/>
+    <text x="390" y="365" text-anchor="middle">Discovery</text>
+    <rect x="475" y="344" width="150" height="34" rx="8" fill="#0A0817" stroke="#3D6B54" stroke-width="1"/>
+    <text x="550" y="365" text-anchor="middle">Career Intelligence</text>
+    <rect x="635" y="344" width="150" height="34" rx="8" fill="#0A0817" stroke="#3D6B54" stroke-width="1"/>
+    <text x="710" y="365" text-anchor="middle">Decision</text>
+    <rect x="795" y="344" width="150" height="34" rx="8" fill="#0A0817" stroke="#3D6B54" stroke-width="1"/>
+    <text x="870" y="365" text-anchor="middle">Growth</text>
+
+    <rect x="315" y="388" width="150" height="34" rx="8" fill="#0A0817" stroke="#3D6B54" stroke-width="1"/>
+    <text x="390" y="409" text-anchor="middle">Mentor</text>
+    <rect x="475" y="388" width="150" height="34" rx="8" fill="#0A0817" stroke="#3D6B54" stroke-width="1"/>
+    <text x="550" y="409" text-anchor="middle">Institution</text>
+    <rect x="635" y="388" width="150" height="34" rx="8" fill="#0A0817" stroke="#3D6B54" stroke-width="1"/>
+    <text x="710" y="409" text-anchor="middle">Opportunity</text>
+  </g>
+
+  <!-- scaffolds -->
+  <text x="315" y="450" fill="#AEB2E8" font-size="12" font-weight="600">◐ Working scaffolds (registered, tools wired, reasoning not yet live)</text>
+  <g font-size="12" fill="#F2EDE0" fill-opacity="0.6">
+    <rect x="315" y="462" width="150" height="34" rx="8" fill="#0A0817" stroke="#3A3560" stroke-width="1" stroke-dasharray="4 3"/>
+    <text x="390" y="483" text-anchor="middle">Skill Gap</text>
+    <rect x="475" y="462" width="150" height="34" rx="8" fill="#0A0817" stroke="#3A3560" stroke-width="1" stroke-dasharray="4 3"/>
+    <text x="550" y="483" text-anchor="middle">Roadmap</text>
+  </g>
+
+  <!-- deterministic -->
+  <text x="315" y="524" fill="#F2EDE0" fill-opacity="0.7" font-size="12" font-weight="600">◆ Deterministic coordinator (no LLM call in run())</text>
+  <rect x="315" y="536" width="200" height="34" rx="8" fill="#0A0817" stroke="#3A3560" stroke-width="1"/>
+  <text x="415" y="557" fill="#F2EDE0" fill-opacity="0.8" font-size="12" text-anchor="middle">Career Orchestrator</text>
+
+  <!-- placeholders -->
+  <text x="635" y="524" fill="#F2EDE0" fill-opacity="0.4" font-size="12" font-weight="600">○ Registered placeholders (no workflow yet)</text>
+  <g font-size="12" fill="#F2EDE0" fill-opacity="0.4">
+    <rect x="635" y="536" width="150" height="34" rx="8" fill="#0A0817" stroke="#2A2650" stroke-width="1" stroke-dasharray="2 3"/>
+    <text x="710" y="557" text-anchor="middle">Network</text>
+    <rect x="795" y="536" width="150" height="34" rx="8" fill="#0A0817" stroke="#2A2650" stroke-width="1" stroke-dasharray="2 3"/>
+    <text x="870" y="557" text-anchor="middle">Portfolio</text>
+  </g>
+
+  <!-- Tools + data -->
+  <rect x="1100" y="105" width="180" height="475" rx="14" fill="#0A0817" stroke="#2A2650" stroke-width="1.5"/>
+  <text x="1190" y="135" fill="#F2EDE0" font-size="13" font-weight="600" text-anchor="middle">Tools + real data</text>
+  <text x="1190" y="160" fill="#F2EDE0" fill-opacity="0.6" font-size="11" text-anchor="middle">services/llm (Groq)</text>
+  <text x="1190" y="180" fill="#F2EDE0" fill-opacity="0.6" font-size="11" text-anchor="middle">services/supabase</text>
+  <text x="1190" y="200" fill="#F2EDE0" fill-opacity="0.6" font-size="11" text-anchor="middle">(repositories)</text>
+  <text x="1190" y="230" fill="#F2EDE0" fill-opacity="0.6" font-size="11" text-anchor="middle">Career/Skill/Company/</text>
+  <text x="1190" y="248" fill="#F2EDE0" fill-opacity="0.6" font-size="11" text-anchor="middle">Project/Trend catalogs</text>
+  <text x="1190" y="278" fill="#F2EDE0" fill-opacity="0.6" font-size="11" text-anchor="middle">StudentProfile</text>
+  <text x="1190" y="296" fill="#F2EDE0" fill-opacity="0.6" font-size="11" text-anchor="middle">(evidence, career_dna,</text>
+  <text x="1190" y="314" fill="#F2EDE0" fill-opacity="0.6" font-size="11" text-anchor="middle">hypotheses, candidates)</text>
+
+  <line x1="1090" y1="380" x2="1098" y2="380" stroke="#3A3560" stroke-width="1.5"/>
+
+  <!-- back to planner loop -->
+  <path d="M 690 250 C 690 220, 600 220, 600 207" fill="none" stroke="#3A3560" stroke-width="1.5" stroke-dasharray="4 4" marker-end="url(#arrow2)"/>
+  <text x="700" y="235" fill="#F2EDE0" fill-opacity="0.4" font-size="11">loops back to planner (hop_count capped at 3)</text>
+
+  <!-- output -->
+  <rect x="290" y="630" width="800" height="70" rx="12" fill="#0A0817" stroke="#8B8FD9" stroke-width="1.5"/>
+  <text x="690" y="660" fill="#F2EDE0" font-size="13" font-weight="600" text-anchor="middle">Student-facing response</text>
+  <text x="690" y="682" fill="#F2EDE0" fill-opacity="0.6" font-size="11" text-anchor="middle">reply + Career DNA + hypotheses + notebook entries + hidden potential — every field server-computed, never client-derived</text>
+
+  <line x1="690" y1="580" x2="690" y2="628" stroke="#8B8FD9" stroke-width="2" marker-end="url(#arrow2)"/>
+
+  <text x="60" y="738" fill="#F2EDE0" fill-opacity="0.32" font-size="11">Source: agents/orchestrator/graph.py, agents/registry.py, every file under agents/specialized/ (grep-confirmed llm.complete usage per agent).</text>
+</svg>

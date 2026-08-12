@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900" font-family="-apple-system, 'Segoe UI', Arial, sans-serif">
+  <defs>
+    <marker id="arrow4" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#8B8FD9"/>
+    </marker>
+  </defs>
+  <rect width="1200" height="900" fill="#070B18"/>
+  <text x="60" y="50" fill="#F2EDE0" font-size="24" font-weight="600">System Architecture</text>
+  <text x="60" y="76" fill="#F2EDE0" fill-opacity="0.6" font-size="14">Every layer below is confirmed against package.json / pyproject.toml / render.yaml — nothing aspirational.</text>
+
+  <!-- Frontend -->
+  <rect x="150" y="110" width="900" height="90" rx="14" fill="#0A0817" stroke="#3A3560" stroke-width="1.5"/>
+  <text x="175" y="140" fill="#8B8FD9" font-size="11" letter-spacing="1.5">FRONTEND</text>
+  <text x="175" y="168" fill="#F2EDE0" font-size="15" font-weight="600">React 18 · TypeScript · Vite · Tailwind CSS · React Router 7 · Framer Motion</text>
+  <text x="175" y="188" fill="#F2EDE0" fill-opacity="0.5" font-size="12">Deployed as a static build to GitHub Pages</text>
+
+  <line x1="600" y1="200" x2="600" y2="238" stroke="#8B8FD9" stroke-width="2" marker-end="url(#arrow4)"/>
+  <text x="620" y="224" fill="#F2EDE0" fill-opacity="0.5" font-size="11">HTTPS / REST (fetch)</text>
+
+  <!-- API layer -->
+  <rect x="150" y="240" width="900" height="90" rx="14" fill="#0A0817" stroke="#3A3560" stroke-width="1.5"/>
+  <text x="175" y="270" fill="#8B8FD9" font-size="11" letter-spacing="1.5">API — PRESENTATION LAYER</text>
+  <text x="175" y="298" fill="#F2EDE0" font-size="15" font-weight="600">FastAPI · Pydantic v2 · api/v1/*.py (36 thin routers, no business logic)</text>
+  <text x="175" y="318" fill="#F2EDE0" fill-opacity="0.5" font-size="12">Deployed to Render (uvicorn) — every route calls domain/services/* only</text>
+
+  <line x1="600" y1="330" x2="600" y2="368" stroke="#8B8FD9" stroke-width="2" marker-end="url(#arrow4)"/>
+
+  <!-- Domain layer -->
+  <rect x="150" y="370" width="900" height="90" rx="14" fill="#0A0817" stroke="#3A3560" stroke-width="1.5"/>
+  <text x="175" y="400" fill="#8B8FD9" font-size="11" letter-spacing="1.5">DOMAIN — BUSINESS LOGIC</text>
+  <text x="175" y="428" fill="#F2EDE0" font-size="15" font-weight="600">domain/models (Pydantic) · domain/services (composition, evidence recording,</text>
+  <text x="175" y="446" fill="#F2EDE0" font-size="15" font-weight="600">confidence ceilings) — framework-agnostic, never imports FastAPI</text>
+
+  <line x1="600" y1="460" x2="600" y2="498" stroke="#8B8FD9" stroke-width="2" marker-end="url(#arrow4)"/>
+
+  <!-- Agent layer -->
+  <rect x="150" y="500" width="900" height="110" rx="14" fill="#0A0817" stroke="#8B8FD9" stroke-width="1.5"/>
+  <text x="175" y="530" fill="#AEB2E8" font-size="11" letter-spacing="1.5">AGENT ORCHESTRATION</text>
+  <text x="175" y="558" fill="#F2EDE0" font-size="15" font-weight="600">LangGraph StateGraph (agents/orchestrator/graph.py) — planner_node routes</text>
+  <text x="175" y="578" fill="#F2EDE0" font-size="15" font-weight="600">to 1 of 12 registered specialized agents (agents/specialized/*)</text>
+  <text x="175" y="598" fill="#F2EDE0" fill-opacity="0.5" font-size="12">Reasoning: Groq (llama-3.3-70b-versatile) via services/llm — the sole LLM provider</text>
+
+  <line x1="600" y1="610" x2="600" y2="648" stroke="#8B8FD9" stroke-width="2" marker-end="url(#arrow4)"/>
+
+  <!-- Data layer -->
+  <rect x="150" y="650" width="900" height="90" rx="14" fill="#0A0817" stroke="#3A3560" stroke-width="1.5"/>
+  <text x="175" y="680" fill="#8B8FD9" font-size="11" letter-spacing="1.5">DATA + AUTH</text>
+  <text x="175" y="708" fill="#F2EDE0" font-size="15" font-weight="600">Supabase — PostgreSQL (31 migrations) + Supabase Auth (email/password)</text>
+  <text x="175" y="728" fill="#F2EDE0" fill-opacity="0.5" font-size="12">services/supabase/repositories/* — repository pattern, no ORM</text>
+
+  <!-- Deployment box -->
+  <rect x="150" y="780" width="430" height="90" rx="14" fill="#0A0817" stroke="#2A2650" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <text x="175" y="808" fill="#F2EDE0" fill-opacity="0.7" font-size="12" font-weight="600">Frontend deploy</text>
+  <text x="175" y="830" fill="#F2EDE0" fill-opacity="0.55" font-size="12">GitHub Pages (npm run build:gh-pages)</text>
+  <text x="175" y="850" fill="#F2EDE0" fill-opacity="0.4" font-size="11">Sprints 1-5 live; Sprints 6-11 built &amp; verified locally</text>
+
+  <rect x="620" y="780" width="430" height="90" rx="14" fill="#0A0817" stroke="#2A2650" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <text x="645" y="808" fill="#F2EDE0" fill-opacity="0.7" font-size="12" font-weight="600">Backend deploy</text>
+  <text x="645" y="830" fill="#F2EDE0" fill-opacity="0.55" font-size="12">Render (render.yaml — uvicorn aureon.main:app)</text>
+  <text x="645" y="850" fill="#F2EDE0" fill-opacity="0.4" font-size="11">Secrets injected via Render dashboard, never committed</text>
+
+  <text x="60" y="895" fill="#F2EDE0" fill-opacity="0.32" font-size="11">Not present: SQLAlchemy/ORM, vector database, Supabase Storage, OpenAI/Anthropic SDKs — verified by grep, not by absence of mention.</text>
+</svg>

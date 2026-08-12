@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1320 620" font-family="-apple-system, 'Segoe UI', Arial, sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#8B8FD9"/>
+    </marker>
+    <marker id="arrowDim" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#3A3560"/>
+    </marker>
+  </defs>
+
+  <rect width="1320" height="620" fill="#070B18"/>
+
+  <text x="60" y="52" fill="#F2EDE0" font-size="24" font-weight="600">The Student Journey</text>
+  <text x="60" y="78" fill="#F2EDE0" fill-opacity="0.6" font-size="14">Discover → Explore → Connect → Decide — a loop, not a funnel. Knowledge Base is a separate, always-open reference layer, not a gated stage.</text>
+
+  <!-- Stage nodes -->
+  <!-- Discover -->
+  <g>
+    <rect x="60" y="130" width="270" height="230" rx="14" fill="#0A0817" stroke="#3A3560" stroke-width="1.5"/>
+    <text x="80" y="164" fill="#8B8FD9" font-size="11" letter-spacing="2">01 · DISCOVER</text>
+    <text x="80" y="192" fill="#F2EDE0" font-size="18" font-weight="600">Who am I?</text>
+    <text x="80" y="222" fill="#F2EDE0" fill-opacity="0.6" font-size="13">Your Universe (conversational</text>
+    <text x="80" y="240" fill="#F2EDE0" fill-opacity="0.6" font-size="13">identity discovery)</text>
+    <text x="80" y="266" fill="#F2EDE0" fill-opacity="0.6" font-size="13">Experience Lab (hands-on</text>
+    <text x="80" y="284" fill="#F2EDE0" fill-opacity="0.6" font-size="13">micro-experiments)</text>
+    <text x="80" y="310" fill="#F2EDE0" fill-opacity="0.6" font-size="13">Learning Style Discovery</text>
+    <text x="80" y="336" fill="#F2EDE0" fill-opacity="0.32" font-size="12">+ Reality Check (locked)</text>
+  </g>
+
+  <!-- Explore -->
+  <g>
+    <rect x="380" y="130" width="270" height="230" rx="14" fill="#0A0817" stroke="#3A3560" stroke-width="1.5"/>
+    <text x="400" y="164" fill="#8B8FD9" font-size="11" letter-spacing="2">02 · EXPLORE</text>
+    <text x="400" y="192" fill="#F2EDE0" font-size="18" font-weight="600">What's possible?</text>
+    <text x="400" y="222" fill="#F2EDE0" fill-opacity="0.6" font-size="13">Career Explorer · College Explorer</text>
+    <text x="400" y="248" fill="#F2EDE0" fill-opacity="0.6" font-size="13">Exposure Universe (missing-</text>
+    <text x="400" y="266" fill="#F2EDE0" fill-opacity="0.6" font-size="13">worlds detection)</text>
+    <text x="400" y="292" fill="#F2EDE0" fill-opacity="0.6" font-size="13">Global Trends</text>
+    <text x="400" y="318" fill="#F2EDE0" fill-opacity="0.6" font-size="13">Opportunity Equality</text>
+  </g>
+
+  <!-- Connect -->
+  <g>
+    <rect x="700" y="130" width="270" height="230" rx="14" fill="#0A0817" stroke="#3A3560" stroke-width="1.5"/>
+    <text x="720" y="164" fill="#8B8FD9" font-size="11" letter-spacing="2">03 · CONNECT</text>
+    <text x="720" y="192" fill="#F2EDE0" font-size="18" font-weight="600">Who can guide me?</text>
+    <text x="720" y="222" fill="#F2EDE0" fill-opacity="0.6" font-size="13">Expert Connect (find experts,</text>
+    <text x="720" y="240" fill="#F2EDE0" fill-opacity="0.6" font-size="13">request mentor, parent connect)</text>
+    <text x="720" y="266" fill="#F2EDE0" fill-opacity="0.6" font-size="13">Student Stories (peer discovery</text>
+    <text x="720" y="284" fill="#F2EDE0" fill-opacity="0.6" font-size="13">narratives)</text>
+    <text x="720" y="310" fill="#F2EDE0" fill-opacity="0.6" font-size="13">Knowledge Circles</text>
+  </g>
+
+  <!-- Decide -->
+  <g>
+    <rect x="1020" y="130" width="240" height="230" rx="14" fill="#0A0817" stroke="#8B8FD9" stroke-width="1.5"/>
+    <text x="1040" y="164" fill="#AEB2E8" font-size="11" letter-spacing="2">04 · DECIDE</text>
+    <text x="1040" y="192" fill="#F2EDE0" font-size="18" font-weight="600">What does the</text>
+    <text x="1040" y="212" fill="#F2EDE0" font-size="18" font-weight="600">evidence say?</text>
+    <text x="1040" y="244" fill="#F2EDE0" fill-opacity="0.6" font-size="13">Decision Lab — Decision</text>
+    <text x="1040" y="262" fill="#F2EDE0" fill-opacity="0.6" font-size="13">Workspace, Career Comparison,</text>
+    <text x="1040" y="280" fill="#F2EDE0" fill-opacity="0.6" font-size="13">Future Simulation</text>
+    <text x="1040" y="310" fill="#F2EDE0" fill-opacity="0.32" font-size="12">Composes earlier stages —</text>
+    <text x="1040" y="326" fill="#F2EDE0" fill-opacity="0.32" font-size="12">introduces no new evidence</text>
+  </g>
+
+  <!-- Arrows between stages -->
+  <line x1="330" y1="245" x2="378" y2="245" stroke="#8B8FD9" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="650" y1="245" x2="698" y2="245" stroke="#8B8FD9" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="970" y1="245" x2="1018" y2="245" stroke="#8B8FD9" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Loop-back arrow: Decide -> Explore/Connect (evidence gaps route back) -->
+  <path d="M 1140 362 C 1140 430, 400 430, 400 362" fill="none" stroke="#3A3560" stroke-width="1.5" stroke-dasharray="4 4" marker-end="url(#arrowDim)"/>
+  <text x="700" y="452" fill="#F2EDE0" fill-opacity="0.4" font-size="12" text-anchor="middle">Not enough evidence yet? Routed back to Explore/Connect — this is a loop, not a funnel.</text>
+
+  <!-- Knowledge Base - ungated side layer -->
+  <g>
+    <rect x="380" y="490" width="590" height="90" rx="12" fill="#0A0817" stroke="#2A2650" stroke-width="1.5" stroke-dasharray="5 3"/>
+    <text x="400" y="518" fill="#F2EDE0" fill-opacity="0.7" font-size="13" font-weight="600">Knowledge Base — always open, never gated</text>
+    <text x="400" y="542" fill="#F2EDE0" fill-opacity="0.5" font-size="12">Skills · Companies · Projects — a reference layer cross-linked from Career pages,</text>
+    <text x="400" y="560" fill="#F2EDE0" fill-opacity="0.5" font-size="12">reachable any time, not part of the guided evidence-gated progression above.</text>
+  </g>
+  <line x1="515" y1="360" x2="515" y2="488" stroke="#2A2650" stroke-width="1.5" stroke-dasharray="3 3"/>
+
+  <text x="60" y="600" fill="#F2EDE0" fill-opacity="0.32" font-size="11">Source: frontend/src/features/navigation/journeyConfig.ts — every module named above is a live, routed screen.</text>
+</svg>
