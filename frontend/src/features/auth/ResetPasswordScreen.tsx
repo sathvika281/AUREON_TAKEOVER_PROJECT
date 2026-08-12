@@ -17,6 +17,27 @@ const MIN_PASSWORD_LENGTH = 6;
  * cover a real render/tick delay, not network latency. */
 const RECOVERY_DETECTION_TIMEOUT_MS = 4000;
 
+/** The `PASSWORD_RECOVERY` auth event only ever fires once, at the
+ * moment supabase-js first parses the recovery token out of the URL —
+ * a hard refresh on this page loses that event even though the
+ * recovery session it already persisted to localStorage is still
+ * genuinely valid, which without this check would show a false
+ * "invalid or expired" message on an otherwise-good link. This app's
+ * only sign-in path is email+password (no magic link/OTP sign-in
+ * anywhere), so an "otp" auth method on an already-persisted session
+ * can only mean a real recovery session — never an unrelated student's
+ * own logged-in session, which would carry "password" instead. */
+function isRecoverySessionToken(accessToken: string): boolean {
+  try {
+    const payload = accessToken.split(".")[1];
+    const decoded = JSON.parse(atob(payload.replace(/-/g, "+").replace(/_/g, "/")));
+    const amr = decoded.amr as { method: string }[] | undefined;
+    return amr?.some((entry) => entry.method === "otp") ?? false;
+  } catch {
+    return false;
+  }
+}
+
 /**
  * Sprint 6 — where a password-reset email link lands. Deliberately does
  * NOT gate on AuthContext's general `user`/session state: a student who
@@ -41,11 +62,23 @@ export function ResetPasswordScreen() {
   const [isDone, setIsDone] = useState(false);
 
   useEffect(() => {
+    let cancelled = false;
+
+    // Covers the hard-refresh case: re-check whatever session is
+    // already persisted, in addition to listening for a fresh
+    // PASSWORD_RECOVERY event below.
+    supabase.auth.getSession().then(({ data }) => {
+      if (!cancelled && data.session && isRecoverySessionToken(data.session.access_token)) {
+        setRecoveryConfirmed(true);
+      }
+    });
+
     const { data: subscription } = supabase.auth.onAuthStateChange((event) => {
       if (event === "PASSWORD_RECOVERY") setRecoveryConfirmed(true);
     });
     const timeout = setTimeout(() => setHasWaitedForRecovery(true), RECOVERY_DETECTION_TIMEOUT_MS);
     return () => {
+      cancelled = true;
       subscription.subscription.unsubscribe();
       clearTimeout(timeout);
     };
