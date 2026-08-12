@@ -44,6 +44,13 @@ interface DiscoveryContextValue {
   understandingNarrative: string;
   mode: string;
   isSending: boolean;
+  /** Sprint 9 — settles once the initial discovery-profile +
+   * progressive-discovery mount fetch has resolved (success or not —
+   * both already treat "no profile yet" as honest, not an error). Lets
+   * Mission Control and Your Universe avoid flashing their default-empty
+   * copy ("Not yet visible" etc.) for a returning student whose real
+   * data just hasn't arrived yet. */
+  isLoading: boolean;
   error: string | null;
   insightMomentLine: string | null;
   dismissInsightMoment: () => void;
@@ -95,6 +102,7 @@ export function DiscoveryProvider({ children }: { children: ReactNode }) {
   );
   const [mode, setMode] = useState("exploration");
   const [isSending, setIsSending] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [insightMomentLine, setInsightMomentLine] = useState<string | null>(null);
   const [orbitStatus, setOrbitStatus] = useState<OrbitStatus | null>(null);
@@ -165,8 +173,8 @@ export function DiscoveryProvider({ children }: { children: ReactNode }) {
   );
 
   useEffect(() => {
-    void refreshProfile();
-    void refreshProgressiveDiscovery();
+    setIsLoading(true);
+    Promise.allSettled([refreshProfile(), refreshProgressiveDiscovery()]).finally(() => setIsLoading(false));
     // Only ever re-run this for a genuinely different student — refreshProfile/
     // refreshProgressiveDiscovery are stable per studentId and callable on
     // demand after that.
@@ -297,6 +305,7 @@ export function DiscoveryProvider({ children }: { children: ReactNode }) {
     understandingNarrative,
     mode,
     isSending,
+    isLoading,
     error,
     insightMomentLine,
     dismissInsightMoment,

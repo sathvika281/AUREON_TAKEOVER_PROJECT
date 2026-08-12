@@ -1,9 +1,12 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import { ShieldAlert } from "lucide-react";
 
 import { Badge } from "../../design-system/components/Badge";
+import { Button } from "../../design-system/components/Button";
+import { EmptyStatePanel } from "../../design-system/components/EmptyStatePanel";
 import { Surface } from "../../design-system/components/Surface";
-import { apiClient } from "../../shared/api/client";
+import { ApiError, apiClient } from "../../shared/api/client";
 import type { SkillDetail } from "../../shared/api/types";
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -25,29 +28,51 @@ const CATEGORY_LABELS: Record<string, string> = {
 export function SkillDetailScreen() {
   const { skillId } = useParams<{ skillId: string }>();
   const [detail, setDetail] = useState<SkillDetail | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  // A skill genuinely not existing and a request that failed to reach
+  // Aureon's servers are different states — the former is a dead link,
+  // the latter is worth retrying.
+  const [status, setStatus] = useState<"loading" | "success" | "not-found" | "error">("loading");
 
-  useEffect(() => {
+  const loadDetail = useCallback(() => {
     if (!skillId) return;
-    setIsLoading(true);
+    setStatus("loading");
     apiClient
       .get<SkillDetail>(`/v1/skills/${skillId}`)
-      .then(setDetail)
-      .catch(() => setDetail(null))
-      .finally(() => setIsLoading(false));
+      .then((r) => {
+        setDetail(r);
+        setStatus("success");
+      })
+      .catch((err) => setStatus(err instanceof ApiError && err.status === 404 ? "not-found" : "error"));
   }, [skillId]);
 
-  if (isLoading) {
+  useEffect(() => {
+    loadDetail();
+  }, [loadDetail]);
+
+  if (status === "loading") {
     return <div className="mx-auto max-w-2xl px-6 py-10 text-sm text-ink-faint">Loading…</div>;
   }
 
-  if (!detail) {
+  if (status === "not-found") {
     return (
       <div className="mx-auto max-w-2xl px-6 py-10">
         <p className="text-sm text-ink-faint">Skill not found.</p>
         <Link to="/skills" className="mt-2 inline-block text-sm text-accent-soft">
           Back to Skills
         </Link>
+      </div>
+    );
+  }
+
+  if (status === "error" || !detail) {
+    return (
+      <div className="mx-auto max-w-2xl px-6 py-10">
+        <EmptyStatePanel
+          icon={ShieldAlert}
+          title="Couldn't Load This Skill"
+          description="Something went wrong reaching Aureon's servers — this isn't the same as the skill not existing. Try again."
+          action={<Button variant="secondary" onClick={loadDetail}>Retry</Button>}
+        />
       </div>
     );
   }

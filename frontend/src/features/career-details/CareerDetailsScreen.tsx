@@ -1,9 +1,11 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { Sparkles } from "lucide-react";
+import { ShieldAlert, Sparkles } from "lucide-react";
 
 import { Button } from "../../design-system/components/Button";
-import { apiClient } from "../../shared/api/client";
+import { EmptyStatePanel } from "../../design-system/components/EmptyStatePanel";
+import { PageHeader } from "../../design-system/components/PageHeader";
+import { ApiError, apiClient } from "../../shared/api/client";
 import type { CareerDetail } from "../../shared/api/types";
 import { getCurrentStudentId } from "../../shared/config/studentId";
 import { CandidateCard } from "../career-intelligence/CandidateCard";
@@ -26,7 +28,10 @@ export function CareerDetailsScreen() {
   const { careerId } = useParams<{ careerId: string }>();
   const studentId = useRef(getCurrentStudentId()).current;
   const [career, setCareer] = useState<CareerDetail | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  // A career genuinely not existing and a request that failed to reach
+  // Aureon's servers are different states — this is the core detail page
+  // students land on most, so conflating them is especially costly.
+  const [status, setStatus] = useState<"loading" | "success" | "not-found" | "error">("loading");
   const { recordEvent, isBookmarked } = useCareerExplorationContext();
   const {
     candidates, isAnalyzing, analyzeCareers, shortlistCandidate, removeCandidate, ensureLoaded: ensureCandidatesLoaded,
@@ -37,15 +42,21 @@ export function CareerDetailsScreen() {
   }, [ensureCandidatesLoaded]);
   const { openModal } = useSuggestionsContext();
 
-  useEffect(() => {
+  const loadCareer = useCallback(() => {
     if (!careerId) return;
-    setIsLoading(true);
+    setStatus("loading");
     apiClient
       .get<CareerDetail>(`/v1/careers/${careerId}?student_id=${studentId}`)
-      .then(setCareer)
-      .catch(() => setCareer(null))
-      .finally(() => setIsLoading(false));
+      .then((r) => {
+        setCareer(r);
+        setStatus("success");
+      })
+      .catch((err) => setStatus(err instanceof ApiError && err.status === 404 ? "not-found" : "error"));
   }, [careerId, studentId]);
+
+  useEffect(() => {
+    loadCareer();
+  }, [loadCareer]);
 
   useEffect(() => {
     if (!career) return;
@@ -57,17 +68,30 @@ export function CareerDetailsScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [career?.id]);
 
-  if (isLoading) {
+  if (status === "loading") {
     return <div className="mx-auto max-w-2xl px-6 py-10 text-sm text-ink-faint">Loading…</div>;
   }
 
-  if (!career) {
+  if (status === "not-found") {
     return (
       <div className="mx-auto max-w-2xl px-6 py-10">
         <p className="text-sm text-ink-faint">Career not found.</p>
         <Link to="/explore/career-reality" className="mt-2 inline-block text-sm text-accent-soft">
           Back to Career Explorer
         </Link>
+      </div>
+    );
+  }
+
+  if (status === "error" || !career) {
+    return (
+      <div className="mx-auto max-w-2xl px-6 py-10">
+        <EmptyStatePanel
+          icon={ShieldAlert}
+          title="Couldn't Load This Career"
+          description="Something went wrong reaching Aureon's servers — this isn't the same as the career not existing. Try again."
+          action={<Button variant="secondary" onClick={loadCareer}>Retry</Button>}
+        />
       </div>
     );
   }
@@ -80,36 +104,37 @@ export function CareerDetailsScreen() {
       <Link to="/explore/career-reality" className="text-xs text-ink-faint hover:text-ink-muted">
         ← Career Explorer
       </Link>
-      <div className="mt-2 flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-light text-ink">{career.name}</h1>
-          <p className="mt-2 text-sm leading-relaxed text-ink-muted">{career.one_liner}</p>
-        </div>
-        <div className="flex shrink-0 flex-col items-end gap-2">
-          <Button
-            variant="ghost"
-            size="md"
-            onClick={() =>
-              recordEvent(career.id, bookmarked ? "removed" : "bookmarked", { career_name: career.name })
-            }
-          >
-            {bookmarked ? "Bookmarked" : "Bookmark"}
-          </Button>
-          <button
-            onClick={() =>
-              openModal({
-                category: "correction",
-                context_type: "career",
-                context_id: career.id,
-                context_metadata: { page_or_feature: "Career Explorer", career_name: career.name },
-              })
-            }
-            className="text-xs text-ink-faint transition-colors hover:text-ink-muted"
-          >
-            Suggest a correction
-          </button>
-        </div>
-      </div>
+      <PageHeader
+        className="mt-2"
+        title={career.name}
+        description={career.one_liner}
+        action={
+          <div className="flex flex-col items-end gap-2">
+            <Button
+              variant="ghost"
+              size="md"
+              onClick={() =>
+                recordEvent(career.id, bookmarked ? "removed" : "bookmarked", { career_name: career.name })
+              }
+            >
+              {bookmarked ? "Bookmarked" : "Bookmark"}
+            </Button>
+            <button
+              onClick={() =>
+                openModal({
+                  category: "correction",
+                  context_type: "career",
+                  context_id: career.id,
+                  context_metadata: { page_or_feature: "Career Explorer", career_name: career.name },
+                })
+              }
+              className="text-xs text-ink-faint transition-colors hover:text-ink-muted"
+            >
+              Suggest a correction
+            </button>
+          </div>
+        }
+      />
 
       <div className="mt-6">
         <Link to="/decide/decision-lab" className="text-xs text-accent-soft hover:text-accent">

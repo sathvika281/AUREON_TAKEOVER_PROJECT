@@ -12,6 +12,12 @@ const buttonStyles = cva(
         // A hairline appears on interaction rather than a filled hover
         // state — an instrument responding, not a generic UI-kit button.
         ghost: "border border-transparent bg-transparent text-ink-muted hover:border-border hover:text-ink",
+        // A visible hairline at rest, not just on hover — for a real,
+        // standalone secondary action (Retry, "Try This") that needs its
+        // own outline rather than blending into plain text until touched.
+        // Formalizes the border-border/text-ink-muted className already
+        // hand-copied across several screens.
+        secondary: "border border-border text-ink-muted hover:border-border-strong hover:text-ink",
       },
       size: {
         md: "px-4 py-2.5",

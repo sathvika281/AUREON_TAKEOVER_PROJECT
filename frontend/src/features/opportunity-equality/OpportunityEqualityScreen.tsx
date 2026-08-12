@@ -1,8 +1,10 @@
-import { useEffect, useRef, useState } from "react";
-import { Handshake } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Handshake, ShieldAlert } from "lucide-react";
 
 import { Badge } from "../../design-system/components/Badge";
+import { Button } from "../../design-system/components/Button";
 import { EmptyStatePanel } from "../../design-system/components/EmptyStatePanel";
+import { PageHeader } from "../../design-system/components/PageHeader";
 import { Surface } from "../../design-system/components/Surface";
 import { apiClient } from "../../shared/api/client";
 import type { OpportunityEqualityRecommendation, OpportunityEqualityResponse } from "../../shared/api/types";
@@ -50,17 +52,26 @@ const CATEGORY_LABELS: Record<string, string> = {
 export function OpportunityEqualityScreen() {
   const studentId = useRef(getCurrentStudentId()).current;
   const [recommendations, setRecommendations] = useState<OpportunityEqualityRecommendation[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  // Loading, a genuine fetch failure, and genuinely nothing surfaced yet
+  // are three different product states.
+  const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
   const { openModal } = useSuggestionsContext();
 
-  useEffect(() => {
+  const loadRecommendations = useCallback(() => {
+    setStatus("loading");
     apiClient
       .get<OpportunityEqualityResponse>(`/v1/students/${studentId}/opportunity-equality`)
-      .then((r) => setRecommendations(r.recommendations))
-      .catch(() => setRecommendations([]))
-      .finally(() => setIsLoading(false));
+      .then((r) => {
+        setRecommendations(r.recommendations);
+        setStatus("success");
+      })
+      .catch(() => setStatus("error"));
   }, [studentId]);
+
+  useEffect(() => {
+    loadRecommendations();
+  }, [loadRecommendations]);
 
   const save = (opportunityId: string) => {
     setSavedIds((prev) => new Set(prev).add(opportunityId));
@@ -72,13 +83,22 @@ export function OpportunityEqualityScreen() {
 
   return (
     <div className="mx-auto max-w-2xl px-6 py-10">
-      <h1 className="text-2xl font-light text-ink">Opportunity Equality</h1>
-      <p className="mt-2 text-sm text-ink-muted">
-        Opportunities you're least likely to discover on your own — never just today's listings.
-      </p>
+      <PageHeader
+        title="Opportunity Equality"
+        description="Opportunities you're least likely to discover on your own — never just today's listings."
+      />
 
-      {isLoading ? (
+      {status === "loading" ? (
         <p className="mt-8 text-sm text-ink-faint">Loading…</p>
+      ) : status === "error" ? (
+        <div className="mt-8">
+          <EmptyStatePanel
+            icon={ShieldAlert}
+            title="Couldn't Load Opportunities"
+            description="Something went wrong reaching Aureon's servers — this isn't the same as there being nothing here. Try again."
+            action={<Button variant="secondary" onClick={loadRecommendations}>Retry</Button>}
+          />
+        </div>
       ) : recommendations.length === 0 ? (
         <div className="mt-8">
           <EmptyStatePanel

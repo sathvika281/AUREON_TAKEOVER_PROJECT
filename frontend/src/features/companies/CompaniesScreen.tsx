@@ -1,8 +1,11 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Building2 } from "lucide-react";
+import { Building2, ShieldAlert } from "lucide-react";
 
+import { Button } from "../../design-system/components/Button";
 import { EmptyStatePanel } from "../../design-system/components/EmptyStatePanel";
+import { FilterPill } from "../../design-system/components/FilterPill";
+import { PageHeader } from "../../design-system/components/PageHeader";
 import { Surface } from "../../design-system/components/Surface";
 import { apiClient } from "../../shared/api/client";
 import type { Company, CompaniesResponse } from "../../shared/api/types";
@@ -24,58 +27,60 @@ const KIND_LABELS: Record<string, string> = {
 export function CompaniesScreen() {
   const [companies, setCompanies] = useState<Company[]>([]);
   const [kind, setKind] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  // Loading, a genuine fetch failure, and a genuinely empty catalog for
+  // this filter are three different product states.
+  const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
 
-  useEffect(() => {
-    setIsLoading(true);
+  const loadCompanies = useCallback(() => {
+    setStatus("loading");
     const params = new URLSearchParams();
     if (kind) params.set("organization_kind", kind);
     const qs = params.toString();
     apiClient
       .get<CompaniesResponse>(`/v1/companies${qs ? `?${qs}` : ""}`)
-      .then((r) => setCompanies(r.companies))
-      .catch(() => setCompanies([]))
-      .finally(() => setIsLoading(false));
+      .then((r) => {
+        setCompanies(r.companies);
+        setStatus("success");
+      })
+      .catch(() => setStatus("error"));
   }, [kind]);
+
+  useEffect(() => {
+    loadCompanies();
+  }, [loadCompanies]);
 
   const kinds = Object.keys(KIND_LABELS);
 
   return (
     <div className="mx-auto max-w-3xl px-6 py-10">
-      <h1 className="text-2xl font-light text-ink">Companies</h1>
-      <p className="mt-2 text-sm text-ink-muted">
-        Real organizations connected to real careers — who hires for what, and where.
-      </p>
+      <PageHeader
+        title="Companies"
+        description="Real organizations connected to real careers — who hires for what, and where."
+      />
 
       <div className="mt-8">
         <div className="flex flex-wrap gap-1.5">
-          <button
-            onClick={() => setKind(null)}
-            className={`rounded-full border px-3 py-1 text-xs transition-colors ${
-              kind === null
-                ? "border-accent-soft/40 bg-accent/10 text-accent-soft"
-                : "border-border text-ink-faint hover:border-border-strong hover:text-ink-muted"
-            }`}
-          >
+          <FilterPill active={kind === null} onClick={() => setKind(null)}>
             All
-          </button>
+          </FilterPill>
           {kinds.map((k) => (
-            <button
-              key={k}
-              onClick={() => setKind(k)}
-              className={`rounded-full border px-3 py-1 text-xs transition-colors ${
-                kind === k
-                  ? "border-accent-soft/40 bg-accent/10 text-accent-soft"
-                  : "border-border text-ink-faint hover:border-border-strong hover:text-ink-muted"
-              }`}
-            >
+            <FilterPill key={k} active={kind === k} onClick={() => setKind(k)}>
               {KIND_LABELS[k]}
-            </button>
+            </FilterPill>
           ))}
         </div>
 
-        {isLoading ? (
+        {status === "loading" ? (
           <p className="mt-6 text-sm text-ink-faint">Loading…</p>
+        ) : status === "error" ? (
+          <div className="mt-6">
+            <EmptyStatePanel
+              icon={ShieldAlert}
+              title="Couldn't Load Companies"
+              description="Something went wrong reaching Aureon's servers — this isn't the same as there being no companies. Try again."
+              action={<Button variant="secondary" onClick={loadCompanies}>Retry</Button>}
+            />
+          </div>
         ) : companies.length === 0 ? (
           <div className="mt-6">
             <EmptyStatePanel

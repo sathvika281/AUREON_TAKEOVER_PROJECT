@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Wrench } from "lucide-react";
 
 import { EmptyStatePanel } from "../../design-system/components/EmptyStatePanel";
+import { FilterPill } from "../../design-system/components/FilterPill";
 import { Surface } from "../../design-system/components/Surface";
 import { apiClient } from "../../shared/api/client";
 import type { Skill, SkillsResponse } from "../../shared/api/types";
@@ -48,28 +49,13 @@ export function SkillsScreen() {
 
       <div className="mt-8">
         <div className="flex flex-wrap gap-1.5">
-          <button
-            onClick={() => setCategory(null)}
-            className={`rounded-full border px-3 py-1 text-xs transition-colors ${
-              category === null
-                ? "border-accent-soft/40 bg-accent/10 text-accent-soft"
-                : "border-border text-ink-faint hover:border-border-strong hover:text-ink-muted"
-            }`}
-          >
+          <FilterPill active={category === null} onClick={() => setCategory(null)}>
             All
-          </button>
+          </FilterPill>
           {categories.map((c) => (
-            <button
-              key={c}
-              onClick={() => setCategory(c)}
-              className={`rounded-full border px-3 py-1 text-xs transition-colors ${
-                category === c
-                  ? "border-accent-soft/40 bg-accent/10 text-accent-soft"
-                  : "border-border text-ink-faint hover:border-border-strong hover:text-ink-muted"
-              }`}
-            >
+            <FilterPill key={c} active={category === c} onClick={() => setCategory(c)}>
               {CATEGORY_LABELS[c]}
-            </button>
+            </FilterPill>
           ))}
         </div>
 

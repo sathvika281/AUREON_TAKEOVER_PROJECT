@@ -21,6 +21,12 @@ export interface RecentlyExploredEntry {
 
 interface CareerExplorationContextValue {
   recentlyExplored: RecentlyExploredEntry[];
+  /** Sprint 9 — settles once the initial career-exploration-history mount
+   * fetch resolves (success or not, matching the existing "brand-new
+   * student has no history yet" honesty already baked into the catch
+   * below) — lets Mission Control avoid flashing an empty "Recently
+   * Explored" state for a returning student before real data arrives. */
+  isLoading: boolean;
   isBookmarked: (careerId: string) => boolean;
   recordEvent: (
     careerId: string,
@@ -41,6 +47,7 @@ const CareerExplorationContext = createContext<CareerExplorationContextValue | n
 export function CareerExplorationProvider({ children }: { children: ReactNode }) {
   const studentId = useRef(getCurrentStudentId()).current;
   const [events, setEvents] = useState<CareerExplorationEvent[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     apiClient
@@ -48,7 +55,8 @@ export function CareerExplorationProvider({ children }: { children: ReactNode })
       .then((response) => setEvents(response.events))
       .catch(() => {
         // A brand-new student simply has no history yet — not an error.
-      });
+      })
+      .finally(() => setIsLoading(false));
   }, [studentId]);
 
   const recordEvent = useCallback(
@@ -111,7 +119,7 @@ export function CareerExplorationProvider({ children }: { children: ReactNode })
       }));
   }, [events]);
 
-  const value: CareerExplorationContextValue = { recentlyExplored, isBookmarked, recordEvent };
+  const value: CareerExplorationContextValue = { recentlyExplored, isLoading, isBookmarked, recordEvent };
 
   return <CareerExplorationContext.Provider value={value}>{children}</CareerExplorationContext.Provider>;
 }

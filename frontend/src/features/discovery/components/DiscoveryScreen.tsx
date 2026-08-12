@@ -33,12 +33,28 @@ export function DiscoveryScreen() {
     understandingStage,
     understandingNarrative,
     isSending,
+    isLoading,
     error,
     insightMomentLine,
     dismissInsightMoment,
     sendMessage,
     orbitStatus,
   } = useDiscoveryContext();
+
+  // Sprint 9 — without this, a returning student with a real North Star
+  // and real Career DNA would briefly see the summary card's honest-but-
+  // wrong "Not yet visible" / "Just beginning to reveal itself" empty
+  // copy, and the observatory would render from empty arrays, before the
+  // initial discovery-profile fetch resolves. This is the flagship
+  // screen, so a quiet, identity-consistent pause here beats a false
+  // empty flash — never a giant spinner, never fabricated activity.
+  if (isLoading) {
+    return (
+      <div className="flex h-full w-full items-center justify-center">
+        <p className="text-sm text-ink-faint">Loading your universe…</p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-full w-full flex-col">

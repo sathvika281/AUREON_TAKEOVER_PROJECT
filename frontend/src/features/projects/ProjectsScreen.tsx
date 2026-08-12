@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Hammer } from "lucide-react";
 
 import { EmptyStatePanel } from "../../design-system/components/EmptyStatePanel";
+import { FilterPill } from "../../design-system/components/FilterPill";
 import { Surface } from "../../design-system/components/Surface";
 import { apiClient } from "../../shared/api/client";
 import type { Project, ProjectsResponse } from "../../shared/api/types";
@@ -46,28 +47,13 @@ export function ProjectsScreen() {
 
       <div className="mt-8">
         <div className="flex flex-wrap gap-1.5">
-          <button
-            onClick={() => setDifficulty(null)}
-            className={`rounded-full border px-3 py-1 text-xs transition-colors ${
-              difficulty === null
-                ? "border-accent-soft/40 bg-accent/10 text-accent-soft"
-                : "border-border text-ink-faint hover:border-border-strong hover:text-ink-muted"
-            }`}
-          >
+          <FilterPill active={difficulty === null} onClick={() => setDifficulty(null)}>
             All
-          </button>
+          </FilterPill>
           {difficulties.map((d) => (
-            <button
-              key={d}
-              onClick={() => setDifficulty(d)}
-              className={`rounded-full border px-3 py-1 text-xs transition-colors ${
-                difficulty === d
-                  ? "border-accent-soft/40 bg-accent/10 text-accent-soft"
-                  : "border-border text-ink-faint hover:border-border-strong hover:text-ink-muted"
-              }`}
-            >
+            <FilterPill key={d} active={difficulty === d} onClick={() => setDifficulty(d)}>
               {DIFFICULTY_LABELS[d]}
-            </button>
+            </FilterPill>
           ))}
         </div>
 

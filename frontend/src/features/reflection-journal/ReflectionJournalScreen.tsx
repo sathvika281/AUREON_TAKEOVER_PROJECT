@@ -40,8 +40,10 @@ const WHY_IT_MATTERS_STEPS = [
  * server-persisted, not a session transcript.
  */
 export function ReflectionJournalScreen() {
-  const { notebookEntries, reflectionJournal, reflectionPrompt, hypotheses, careerDna, confidenceScore, understandingStage } =
-    useDiscoveryContext();
+  const {
+    notebookEntries, reflectionJournal, reflectionPrompt, hypotheses, careerDna, confidenceScore, understandingStage,
+    isLoading,
+  } = useDiscoveryContext();
 
   const notebookItems: FeedItem[] = notebookEntries.map((entry) => ({
     kind: "notebook",
@@ -69,70 +71,78 @@ export function ReflectionJournalScreen() {
 
   return (
     <div className="mx-auto max-w-2xl px-6 py-10">
-      <div className="mb-8 space-y-4">
-        <UniverseSummaryCard
-          hypotheses={hypotheses}
-          careerDna={careerDna}
-          confidenceScore={confidenceScore}
-          understandingStage={understandingStage}
-        />
-        <UniverseWorkspaceTabs />
-      </div>
+      {!isLoading && (
+        <div className="mb-8 space-y-4">
+          <UniverseSummaryCard
+            hypotheses={hypotheses}
+            careerDna={careerDna}
+            confidenceScore={confidenceScore}
+            understandingStage={understandingStage}
+          />
+          <UniverseWorkspaceTabs />
+        </div>
+      )}
 
       <h1 className="text-2xl font-light text-ink">Journey Journal</h1>
       <p className="mt-2 text-sm text-ink-muted">
         Your evolving thoughts and everything Aureon has noticed — a running record, not a session log.
       </p>
 
-      {/* Why reflections matter */}
-      <div className="mt-8">
-        <ProcessSteps title="Why Reflection Matters" steps={WHY_IT_MATTERS_STEPS} />
-      </div>
-
-      {/* Current reflection prompt, if one is waiting */}
-      {reflectionPrompt && (
-        <div className="mt-6">
-          <p className="mb-3 px-1 font-mono text-[0.6rem] uppercase tracking-[0.14em] text-ink-faint">Waiting for Your Reflection</p>
-          <Surface tone="raised" padding="md">
-            <div className="flex items-start gap-3">
-              <MessageCircleQuestion size={16} className="mt-0.5 shrink-0 text-accent-soft" />
-              <p className="text-sm leading-relaxed text-ink">{reflectionPrompt}</p>
-            </div>
-            <Link
-              to="/discover/identity"
-              className="mt-3 inline-block text-xs text-accent-soft transition-colors hover:text-accent"
-            >
-              Answer this in Identity Discovery →
-            </Link>
-          </Surface>
-        </div>
-      )}
-
-      {/* Timeline */}
-      <div className="mt-8">
-        <p className="mb-3 px-1 font-mono text-[0.6rem] uppercase tracking-[0.14em] text-ink-faint">Your Journal</p>
-        {feed.length === 0 ? (
-          <EmptyStatePanel
-            icon={BookOpen}
-            title="Your journal is empty"
-            description="Reflections and notebook entries will appear here, newest first, once you've had a conversation with Aureon or answered a reflection prompt."
-            action={
-              <Link
-                to="/discover/identity"
-                className="rounded-lg bg-accent px-4 py-2.5 text-sm font-medium tracking-wide text-ink transition-colors hover:bg-accent-soft"
-              >
-                Start a conversation
-              </Link>
-            }
-          />
-        ) : (
-          <div className="space-y-4">
-            {feed.map((item) => (
-              <div key={item.key}>{item.render}</div>
-            ))}
+      {isLoading ? (
+        <p className="mt-8 text-sm text-ink-faint">Loading…</p>
+      ) : (
+        <>
+          {/* Why reflections matter */}
+          <div className="mt-8">
+            <ProcessSteps title="Why Reflection Matters" steps={WHY_IT_MATTERS_STEPS} />
           </div>
-        )}
-      </div>
+
+          {/* Current reflection prompt, if one is waiting */}
+          {reflectionPrompt && (
+            <div className="mt-6">
+              <p className="mb-3 px-1 font-mono text-[0.6rem] uppercase tracking-[0.14em] text-ink-faint">Waiting for Your Reflection</p>
+              <Surface tone="raised" padding="md">
+                <div className="flex items-start gap-3">
+                  <MessageCircleQuestion size={16} className="mt-0.5 shrink-0 text-accent-soft" />
+                  <p className="text-sm leading-relaxed text-ink">{reflectionPrompt}</p>
+                </div>
+                <Link
+                  to="/discover/identity"
+                  className="mt-3 inline-block text-xs text-accent-soft transition-colors hover:text-accent"
+                >
+                  Answer this in Identity Discovery →
+                </Link>
+              </Surface>
+            </div>
+          )}
+
+          {/* Timeline */}
+          <div className="mt-8">
+            <p className="mb-3 px-1 font-mono text-[0.6rem] uppercase tracking-[0.14em] text-ink-faint">Your Journal</p>
+            {feed.length === 0 ? (
+              <EmptyStatePanel
+                icon={BookOpen}
+                title="Your journal is empty"
+                description="Reflections and notebook entries will appear here, newest first, once you've had a conversation with Aureon or answered a reflection prompt."
+                action={
+                  <Link
+                    to="/discover/identity"
+                    className="rounded-lg bg-accent px-4 py-2.5 text-sm font-medium tracking-wide text-ink transition-colors hover:bg-accent-soft"
+                  >
+                    Start a conversation
+                  </Link>
+                }
+              />
+            ) : (
+              <div className="space-y-4">
+                {feed.map((item) => (
+                  <div key={item.key}>{item.render}</div>
+                ))}
+              </div>
+            )}
+          </div>
+        </>
+      )}
     </div>
   );
 }

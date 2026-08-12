@@ -73,6 +73,11 @@ interface DecisionContextValue {
   isSimulationsLoading: boolean;
   isTimelineLoading: boolean;
   isWorkspaceLoading: boolean;
+  /** Sprint 9 — settles once the initial decision-memory mount fetch
+   * resolves. `decisionMemory` is the one field Mission Control reads
+   * directly from this context; this flag lets it avoid flashing an
+   * empty state for a returning student before real data arrives. */
+  isMemoryLoading: boolean;
 }
 
 const DecisionContext = createContext<DecisionContextValue | null>(null);
@@ -91,6 +96,7 @@ export function DecisionProvider({ children }: { children: ReactNode }) {
   const [currentDirectionSummary, setCurrentDirectionSummary] = useState("No clear direction yet.");
   const [timelineMilestones, setTimelineMilestones] = useState<DecisionTimelineResponse["milestones"]>([]);
   const [isBusy, setIsBusy] = useState(false);
+  const [isMemoryLoading, setIsMemoryLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastMentorMission, setLastMentorMission] = useState<MissionSnapshot | null>(null);
   const [lastMentorArtifactsUpdated, setLastMentorArtifactsUpdated] = useState<string[]>([]);
@@ -217,10 +223,12 @@ export function DecisionProvider({ children }: { children: ReactNode }) {
   }, [studentId]);
 
   useEffect(() => {
+    setIsMemoryLoading(true);
     apiClient
       .get<DecisionMemoryResponse>(`/v1/students/${studentId}/decision-memory`)
       .then((r) => setDecisionMemory(r.entries))
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => setIsMemoryLoading(false));
   }, [studentId]);
 
   const runComparison = useCallback(
@@ -351,6 +359,7 @@ export function DecisionProvider({ children }: { children: ReactNode }) {
     isSimulationsLoading,
     isTimelineLoading,
     isWorkspaceLoading,
+    isMemoryLoading,
   };
 
   return <DecisionContext.Provider value={value}>{children}</DecisionContext.Provider>;

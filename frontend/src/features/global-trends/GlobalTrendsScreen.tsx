@@ -1,8 +1,11 @@
-import { useEffect, useState } from "react";
-import { LineChart } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { LineChart, ShieldAlert } from "lucide-react";
 
 import { Badge } from "../../design-system/components/Badge";
+import { Button } from "../../design-system/components/Button";
 import { EmptyStatePanel } from "../../design-system/components/EmptyStatePanel";
+import { FilterPill } from "../../design-system/components/FilterPill";
+import { PageHeader } from "../../design-system/components/PageHeader";
 import { Surface } from "../../design-system/components/Surface";
 import { apiClient } from "../../shared/api/client";
 import type { FutureSkillsResponse, Trend, TrendsResponse } from "../../shared/api/types";
@@ -33,33 +36,43 @@ export function GlobalTrendsScreen() {
   const [trends, setTrends] = useState<Trend[]>([]);
   const [futureSkills, setFutureSkills] = useState<FutureSkillsResponse["skills"]>([]);
   const [category, setCategory] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  // Loading, a genuine fetch failure, and a genuinely empty catalog for
+  // this category are three different product states.
+  const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
 
   useEffect(() => {
+    // Additive, non-primary section — degrades honestly on failure by
+    // simply not rendering (see its own `length > 0` guard below), same
+    // discipline as JourneyStoriesScreen's filters/relevant-stories.
     void apiClient.get<FutureSkillsResponse>("/v1/trends/future-skills").then((r) => setFutureSkills(r.skills));
   }, []);
 
-  useEffect(() => {
-    setIsLoading(true);
+  const loadTrends = useCallback(() => {
+    setStatus("loading");
     const params = new URLSearchParams();
     if (category) params.set("category", category);
     const qs = params.toString();
     apiClient
       .get<TrendsResponse>(`/v1/trends${qs ? `?${qs}` : ""}`)
-      .then((r) => setTrends(r.trends))
-      .catch(() => setTrends([]))
-      .finally(() => setIsLoading(false));
+      .then((r) => {
+        setTrends(r.trends);
+        setStatus("success");
+      })
+      .catch(() => setStatus("error"));
   }, [category]);
+
+  useEffect(() => {
+    loadTrends();
+  }, [loadTrends]);
 
   const categories = Object.keys(CATEGORY_LABELS);
 
   return (
     <div className="mx-auto max-w-3xl px-6 py-10">
-      <h1 className="text-2xl font-light text-ink">Global Trends</h1>
-      <p className="mt-2 text-sm text-ink-muted">
-        What possibilities exist in the world right now — real, honestly-labeled industry and market
-        shifts, never a career recommendation.
-      </p>
+      <PageHeader
+        title="Global Trends"
+        description="What possibilities exist in the world right now — real, honestly-labeled industry and market shifts, never a career recommendation."
+      />
 
       {futureSkills.length > 0 && (
         <div className="mt-6">
@@ -78,33 +91,27 @@ export function GlobalTrendsScreen() {
 
       <div className="mt-8">
         <div className="flex flex-wrap gap-1.5">
-          <button
-            onClick={() => setCategory(null)}
-            className={`rounded-full border px-3 py-1 text-xs transition-colors ${
-              category === null
-                ? "border-accent-soft/40 bg-accent/10 text-accent-soft"
-                : "border-border text-ink-faint hover:border-border-strong hover:text-ink-muted"
-            }`}
-          >
+          <FilterPill active={category === null} onClick={() => setCategory(null)}>
             All
-          </button>
+          </FilterPill>
           {categories.map((c) => (
-            <button
-              key={c}
-              onClick={() => setCategory(c)}
-              className={`rounded-full border px-3 py-1 text-xs transition-colors ${
-                category === c
-                  ? "border-accent-soft/40 bg-accent/10 text-accent-soft"
-                  : "border-border text-ink-faint hover:border-border-strong hover:text-ink-muted"
-              }`}
-            >
+            <FilterPill key={c} active={category === c} onClick={() => setCategory(c)}>
               {CATEGORY_LABELS[c]}
-            </button>
+            </FilterPill>
           ))}
         </div>
 
-        {isLoading ? (
+        {status === "loading" ? (
           <p className="mt-6 text-sm text-ink-faint">Loading…</p>
+        ) : status === "error" ? (
+          <div className="mt-6">
+            <EmptyStatePanel
+              icon={ShieldAlert}
+              title="Couldn't Load Global Trends"
+              description="Something went wrong reaching Aureon's servers — this isn't the same as there being no trends. Try again."
+              action={<Button variant="secondary" onClick={loadTrends}>Retry</Button>}
+            />
+          </div>
         ) : trends.length === 0 ? (
           <div className="mt-6">
             <EmptyStatePanel

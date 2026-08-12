@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { ChevronDown, ChevronUp, Compass, Telescope } from "lucide-react";
+import { ChevronDown, ChevronUp, Compass, ShieldAlert, Telescope } from "lucide-react";
 
 import { Badge } from "../../design-system/components/Badge";
+import { Button } from "../../design-system/components/Button";
 import { EmptyStatePanel } from "../../design-system/components/EmptyStatePanel";
+import { PageHeader } from "../../design-system/components/PageHeader";
 import { Surface } from "../../design-system/components/Surface";
 import { apiClient } from "../../shared/api/client";
 import type {
@@ -159,14 +161,16 @@ function MissingWorldCard({
   card,
   isExpanded,
   detail,
-  isDetailLoading,
+  detailStatus,
   onToggle,
+  onRetry,
 }: {
   card: MissingWorldCardType;
   isExpanded: boolean;
   detail: WorldExplorationDetail | null;
-  isDetailLoading: boolean;
+  detailStatus: "idle" | "loading" | "success" | "error";
   onToggle: () => void;
+  onRetry: () => void;
 }) {
   const previewItems = [...card.world.famous_careers, ...card.world.beginner_projects].slice(0, 4);
 
@@ -221,10 +225,19 @@ function MissingWorldCard({
       </button>
 
       {isExpanded && (
-        isDetailLoading || !detail ? (
-          <p className="mt-4 border-t border-border pt-4 text-xs text-ink-faint">Loading…</p>
-        ) : (
+        detailStatus === "error" ? (
+          <div className="mt-4 border-t border-border pt-4">
+            <EmptyStatePanel
+              icon={ShieldAlert}
+              title="Couldn't Load This World"
+              description="Something went wrong reaching Aureon's servers — this isn't the same as there being nothing here. Try again."
+              action={<Button variant="secondary" onClick={onRetry}>Retry</Button>}
+            />
+          </div>
+        ) : detail ? (
           <WorldDetailPanel detail={detail} />
+        ) : (
+          <p className="mt-4 border-t border-border pt-4 text-xs text-ink-faint">Loading…</p>
         )
       )}
     </Surface>
@@ -244,19 +257,45 @@ function MissingWorldCard({
 export function ExposureUniverseScreen() {
   const studentId = useRef(getCurrentStudentId()).current;
   const [data, setData] = useState<ExposureUniverseResponse | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  // Loading, a genuine fetch failure, and a successful-but-empty response
+  // are three different product states — see JourneyStoriesScreen's own
+  // "Sprint 4 fix" comment for the same principle. Previously this screen
+  // used `isLoading || !data`, which meant a failed request left `data`
+  // null forever and the guard stayed stuck on "Loading…" indefinitely.
+  const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
   const [dismissed, setDismissed] = useState<Set<string>>(new Set());
   const [expandedWorldId, setExpandedWorldId] = useState<string | null>(null);
   const [worldDetails, setWorldDetails] = useState<Record<string, WorldExplorationDetail>>({});
-  const [loadingWorldId, setLoadingWorldId] = useState<string | null>(null);
+  const [worldDetailStatus, setWorldDetailStatus] = useState<Record<string, "idle" | "loading" | "success" | "error">>({});
 
-  useEffect(() => {
+  const loadData = useCallback(() => {
+    setStatus("loading");
     apiClient
       .get<ExposureUniverseResponse>(`/v1/students/${studentId}/exposure-universe`)
-      .then(setData)
-      .catch(() => setData(null))
-      .finally(() => setIsLoading(false));
+      .then((r) => {
+        setData(r);
+        setStatus("success");
+      })
+      .catch(() => setStatus("error"));
   }, [studentId]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
+
+  const loadWorldDetail = useCallback(
+    (worldId: string) => {
+      setWorldDetailStatus((prev) => ({ ...prev, [worldId]: "loading" }));
+      apiClient
+        .get<WorldExplorationDetail>(`/v1/students/${studentId}/exposure-universe/worlds/${worldId}`)
+        .then((detail) => {
+          setWorldDetails((prev) => ({ ...prev, [worldId]: detail }));
+          setWorldDetailStatus((prev) => ({ ...prev, [worldId]: "success" }));
+        })
+        .catch(() => setWorldDetailStatus((prev) => ({ ...prev, [worldId]: "error" })));
+    },
+    [studentId],
+  );
 
   const toggleWorld = useCallback(
     (worldId: string) => {
@@ -266,15 +305,10 @@ export function ExposureUniverseScreen() {
       }
       setExpandedWorldId(worldId);
       if (!worldDetails[worldId]) {
-        setLoadingWorldId(worldId);
-        apiClient
-          .get<WorldExplorationDetail>(`/v1/students/${studentId}/exposure-universe/worlds/${worldId}`)
-          .then((detail) => setWorldDetails((prev) => ({ ...prev, [worldId]: detail })))
-          .catch(() => {})
-          .finally(() => setLoadingWorldId(null));
+        loadWorldDetail(worldId);
       }
     },
-    [studentId, expandedWorldId, worldDetails],
+    [expandedWorldId, worldDetails, loadWorldDetail],
   );
 
   const dismiss = useCallback(
@@ -302,15 +336,23 @@ export function ExposureUniverseScreen() {
 
   return (
     <div className="mx-auto max-w-3xl px-6 py-10">
-      <h1 className="text-2xl font-light text-ink">Exposure Universe</h1>
-      <p className="mt-2 text-sm text-ink-muted">
-        The parts of the career universe you know, the parts you may never have encountered, and specific
-        possibilities worth a look — never a recommendation, just an honest map of what's out there.
-      </p>
+      <PageHeader
+        title="Exposure Universe"
+        description="The parts of the career universe you know, the parts you may never have encountered, and specific possibilities worth a look — never a recommendation, just an honest map of what's out there."
+      />
 
-      {isLoading || !data ? (
+      {status === "loading" ? (
         <p className="mt-8 text-sm text-ink-faint">Loading…</p>
-      ) : (
+      ) : status === "error" ? (
+        <div className="mt-8">
+          <EmptyStatePanel
+            icon={ShieldAlert}
+            title="Couldn't Load Exposure Universe"
+            description="Something went wrong reaching Aureon's servers — this isn't the same as there being nothing here. Try again."
+            action={<Button variant="secondary" onClick={loadData}>Retry</Button>}
+          />
+        </div>
+      ) : data && (
         <>
           {/* 1. Your Exposure Map */}
           {(data.exposure_map.engaged.length > 0 || data.exposure_map.limited_or_none.length > 0) && (
@@ -361,8 +403,9 @@ export function ExposureUniverseScreen() {
                     card={card}
                     isExpanded={expandedWorldId === card.world.id}
                     detail={worldDetails[card.world.id] ?? null}
-                    isDetailLoading={loadingWorldId === card.world.id}
+                    detailStatus={worldDetailStatus[card.world.id] ?? "idle"}
                     onToggle={() => toggleWorld(card.world.id)}
+                    onRetry={() => loadWorldDetail(card.world.id)}
                   />
                 ))}
               </div>

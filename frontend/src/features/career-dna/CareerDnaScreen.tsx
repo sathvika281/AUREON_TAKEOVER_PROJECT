@@ -47,7 +47,7 @@ const FORMATION_STEPS = [
 /** Full Career DNA breakdown — never a percentage, every trait explains
  * why Aureon currently believes it, via the trait's own summary text. */
 export function CareerDnaScreen() {
-  const { careerDna, hypotheses, notebookEntries, confidenceScore, understandingStage } = useDiscoveryContext();
+  const { careerDna, hypotheses, notebookEntries, confidenceScore, understandingStage, isLoading } = useDiscoveryContext();
   const traits = Object.entries(careerDna);
 
   const evidenceTimeline = [...notebookEntries]
@@ -56,103 +56,111 @@ export function CareerDnaScreen() {
 
   return (
     <div className="mx-auto max-w-2xl px-6 py-10">
-      <div className="mb-8 space-y-4">
-        <UniverseSummaryCard
-          hypotheses={hypotheses}
-          careerDna={careerDna}
-          confidenceScore={confidenceScore}
-          understandingStage={understandingStage}
-        />
-        <UniverseWorkspaceTabs />
-      </div>
+      {!isLoading && (
+        <div className="mb-8 space-y-4">
+          <UniverseSummaryCard
+            hypotheses={hypotheses}
+            careerDna={careerDna}
+            confidenceScore={confidenceScore}
+            understandingStage={understandingStage}
+          />
+          <UniverseWorkspaceTabs />
+        </div>
+      )}
 
       <h1 className="text-2xl font-light text-ink">Career DNA</h1>
       <p className="mt-2 text-sm text-ink-muted">
         A living profile, built from evidence rather than a one-time quiz result.
       </p>
 
-      {/* Current Evidence Summary + Confidence Progress */}
-      <div className="mt-8">
-        <Surface tone="neutral" padding="md">
-          <div className="flex items-center justify-between">
-            <p className="font-mono text-[0.6rem] uppercase tracking-[0.14em] text-ink-faint">Confidence Progress</p>
-            <Badge tone="warm">{understandingStage}</Badge>
-          </div>
-          <div className="mt-3 h-1 w-full overflow-hidden rounded-full bg-white/5">
-            <div
-              className="h-full rounded-full bg-accent transition-[width] duration-700 ease-out"
-              style={{ width: `${Math.round(confidenceScore * 100)}%` }}
-            />
-          </div>
-          <div className="mt-4 flex gap-8 border-t border-border pt-4">
-            <div>
-              <p className="text-lg font-light text-ink">{traits.length}</p>
-              <p className="font-mono text-[0.6rem] uppercase tracking-[0.1em] text-ink-faint">Traits tracked</p>
-            </div>
-            <div>
-              <p className="text-lg font-light text-ink">{notebookEntries.length}</p>
-              <p className="font-mono text-[0.6rem] uppercase tracking-[0.1em] text-ink-faint">Evidence entries</p>
-            </div>
-          </div>
-        </Surface>
-      </div>
-
-      {/* Traits Being Built */}
-      <div className="mt-8">
-        <p className="mb-3 px-1 font-mono text-[0.6rem] uppercase tracking-[0.14em] text-ink-faint">Traits Being Built</p>
-        {traits.length === 0 ? (
-          <EmptyStatePanel
-            icon={Compass}
-            title="Waiting for your first signals"
-            description="Nothing has been evidenced yet. Traits appear here the moment a conversation gives Aureon something specific to work with."
-            action={
-              <Link
-                to="/discover/identity"
-                className="rounded-lg bg-accent px-4 py-2.5 text-sm font-medium tracking-wide text-ink transition-colors hover:bg-accent-soft"
-              >
-                Start a conversation
-              </Link>
-            }
-          />
-        ) : (
-          <Field divided>
-            {traits.map(([name, signal]) => (
-              <div key={name} className="py-4 first:pt-0 last:pb-0">
-                <div className="flex items-baseline justify-between">
-                  <h3 className="text-sm font-medium text-ink">{traitLabel(name)}</h3>
-                  <span className="font-mono text-xs text-accent-soft">{qualitativeLabel(signal.score)}</span>
-                </div>
-                <p className="mt-2 text-sm leading-relaxed text-ink-muted">{signal.summary}</p>
+      {isLoading ? (
+        <p className="mt-8 text-sm text-ink-faint">Loading…</p>
+      ) : (
+        <>
+          {/* Current Evidence Summary + Confidence Progress */}
+          <div className="mt-8">
+            <Surface tone="neutral" padding="md">
+              <div className="flex items-center justify-between">
+                <p className="font-mono text-[0.6rem] uppercase tracking-[0.14em] text-ink-faint">Confidence Progress</p>
+                <Badge tone="warm">{understandingStage}</Badge>
               </div>
-            ))}
-          </Field>
-        )}
-      </div>
+              <div className="mt-3 h-1 w-full overflow-hidden rounded-full bg-white/5">
+                <div
+                  className="h-full rounded-full bg-accent transition-[width] duration-700 ease-out"
+                  style={{ width: `${Math.round(confidenceScore * 100)}%` }}
+                />
+              </div>
+              <div className="mt-4 flex gap-8 border-t border-border pt-4">
+                <div>
+                  <p className="text-lg font-light text-ink">{traits.length}</p>
+                  <p className="font-mono text-[0.6rem] uppercase tracking-[0.1em] text-ink-faint">Traits tracked</p>
+                </div>
+                <div>
+                  <p className="text-lg font-light text-ink">{notebookEntries.length}</p>
+                  <p className="font-mono text-[0.6rem] uppercase tracking-[0.1em] text-ink-faint">Evidence entries</p>
+                </div>
+              </div>
+            </Surface>
+          </div>
 
-      {/* Evidence Timeline */}
-      <div className="mt-8">
-        <p className="mb-3 px-1 font-mono text-[0.6rem] uppercase tracking-[0.14em] text-ink-faint">Evidence Timeline</p>
-        {evidenceTimeline.length === 0 ? (
-          <p className="text-xs text-ink-faint">
-            The most recent entries that shaped your Career DNA will appear here once they exist.
-          </p>
-        ) : (
-          <Surface tone="neutral" padding="sm">
-            {evidenceTimeline.map((entry) =>
-              entry.kind === "observation" ? (
-                <ObservationEntry key={entry.id} entry={entry} />
-              ) : (
-                <BeliefRevisionEntry key={entry.id} entry={entry} />
-              ),
+          {/* Traits Being Built */}
+          <div className="mt-8">
+            <p className="mb-3 px-1 font-mono text-[0.6rem] uppercase tracking-[0.14em] text-ink-faint">Traits Being Built</p>
+            {traits.length === 0 ? (
+              <EmptyStatePanel
+                icon={Compass}
+                title="Waiting for your first signals"
+                description="Nothing has been evidenced yet. Traits appear here the moment a conversation gives Aureon something specific to work with."
+                action={
+                  <Link
+                    to="/discover/identity"
+                    className="rounded-lg bg-accent px-4 py-2.5 text-sm font-medium tracking-wide text-ink transition-colors hover:bg-accent-soft"
+                  >
+                    Start a conversation
+                  </Link>
+                }
+              />
+            ) : (
+              <Field divided>
+                {traits.map(([name, signal]) => (
+                  <div key={name} className="py-4 first:pt-0 last:pb-0">
+                    <div className="flex items-baseline justify-between">
+                      <h3 className="text-sm font-medium text-ink">{traitLabel(name)}</h3>
+                      <span className="font-mono text-xs text-accent-soft">{qualitativeLabel(signal.score)}</span>
+                    </div>
+                    <p className="mt-2 text-sm leading-relaxed text-ink-muted">{signal.summary}</p>
+                  </div>
+                ))}
+              </Field>
             )}
-          </Surface>
-        )}
-      </div>
+          </div>
 
-      {/* How Career DNA is formed */}
-      <div className="mt-8">
-        <ProcessSteps title="How Career DNA Is Formed" steps={FORMATION_STEPS} />
-      </div>
+          {/* Evidence Timeline */}
+          <div className="mt-8">
+            <p className="mb-3 px-1 font-mono text-[0.6rem] uppercase tracking-[0.14em] text-ink-faint">Evidence Timeline</p>
+            {evidenceTimeline.length === 0 ? (
+              <p className="text-xs text-ink-faint">
+                The most recent entries that shaped your Career DNA will appear here once they exist.
+              </p>
+            ) : (
+              <Surface tone="neutral" padding="sm">
+                {evidenceTimeline.map((entry) =>
+                  entry.kind === "observation" ? (
+                    <ObservationEntry key={entry.id} entry={entry} />
+                  ) : (
+                    <BeliefRevisionEntry key={entry.id} entry={entry} />
+                  ),
+                )}
+              </Surface>
+            )}
+          </div>
+
+          {/* How Career DNA is formed */}
+          <div className="mt-8">
+            <ProcessSteps title="How Career DNA Is Formed" steps={FORMATION_STEPS} />
+          </div>
+        </>
+      )}
     </div>
   );
 }

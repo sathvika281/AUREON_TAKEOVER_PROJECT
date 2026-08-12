@@ -1,16 +1,19 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ChevronDown,
   ChevronUp,
   FlaskConical,
   Minus,
+  ShieldAlert,
   Sparkles,
   TrendingDown,
   TrendingUp,
 } from "lucide-react";
 
 import { Badge } from "../../design-system/components/Badge";
+import { Button } from "../../design-system/components/Button";
 import { EmptyStatePanel } from "../../design-system/components/EmptyStatePanel";
+import { PageHeader } from "../../design-system/components/PageHeader";
 import { Surface } from "../../design-system/components/Surface";
 import { apiClient } from "../../shared/api/client";
 import type {
@@ -264,12 +267,9 @@ function ExperienceCard({
           </div>
         </div>
       ) : (
-        <button
-          onClick={() => onStart(experiment.id)}
-          className="mt-4 rounded-lg border border-border px-4 py-2 text-xs font-medium text-ink-muted transition-colors hover:border-border-strong hover:text-ink"
-        >
+        <Button variant="secondary" className="mt-4" onClick={() => onStart(experiment.id)}>
           Try This
-        </button>
+        </Button>
       )}
     </Surface>
   );
@@ -302,12 +302,9 @@ function RecommendedPreviewCard({
         <Badge tone="cool">{CATEGORY_LABELS[experiment.category] ?? experiment.category}</Badge>
       </div>
       <p className="mt-3 text-sm leading-relaxed text-ink-muted">{experiment.description}</p>
-      <button
-        onClick={() => onTry(experiment.id)}
-        className="mt-4 rounded-lg border border-border px-4 py-2 text-xs font-medium text-ink-muted transition-colors hover:border-border-strong hover:text-ink"
-      >
+      <Button variant="secondary" className="mt-4" onClick={() => onTry(experiment.id)}>
         Try This
-      </button>
+      </Button>
     </Surface>
   );
 }
@@ -334,22 +331,34 @@ export function ExperienceLabScreen() {
   const studentId = useRef(getCurrentStudentId()).current;
 
   const [view, setView] = useState<ExperienceLabViewResponse | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  // Loading, a genuine fetch failure, and a successful-but-empty response
+  // are three different product states — see JourneyStoriesScreen's own
+  // "Sprint 4 fix" comment for the same principle. Previously this screen
+  // used `!isLoading && view && ...` for its empty check, which meant a
+  // failed request (view stays null) matched neither the loading, empty,
+  // nor populated branch — the screen silently rendered nothing below
+  // the title.
+  const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
   const [activeId, setActiveId] = useState<string | null>(null);
   const [evidence, setEvidence] = useState<ExperimentEvidenceRequest>(EMPTY_EVIDENCE);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [completedIds, setCompletedIds] = useState<Set<string>>(new Set());
 
-  useEffect(() => {
+  const loadView = useCallback(() => {
+    setStatus("loading");
     apiClient
       .get<ExperienceLabViewResponse>(`/v1/students/${studentId}/experience-lab`)
       .then((r) => {
         setView(r);
         setCompletedIds(new Set(r.completed_experiment_ids));
+        setStatus("success");
       })
-      .catch(() => setView(null))
-      .finally(() => setIsLoading(false));
+      .catch(() => setStatus("error"));
   }, [studentId]);
+
+  useEffect(() => {
+    loadView();
+  }, [loadView]);
 
   const startExperiment = (id: string) => {
     setActiveId(id);
@@ -395,7 +404,7 @@ export function ExperienceLabScreen() {
   );
 
   const isEmpty =
-    !isLoading &&
+    status === "success" &&
     view &&
     view.recommended.length === 0 &&
     view.mission_experiences.length === 0 &&
@@ -403,15 +412,22 @@ export function ExperienceLabScreen() {
 
   return (
     <div className="mx-auto max-w-2xl px-6 py-10">
-      <h1 className="text-2xl font-light text-ink">Experience Lab</h1>
-      <p className="mt-2 text-sm text-ink-muted">
-        Don't just read about possibilities — try them. Small, real activities, some tied to careers,
-        some tied to the kind of impact you care about. What you notice about yourself while doing one
-        becomes real evidence Aureon can learn from.
-      </p>
+      <PageHeader
+        title="Experience Lab"
+        description="Don't just read about possibilities — try them. Small, real activities, some tied to careers, some tied to the kind of impact you care about. What you notice about yourself while doing one becomes real evidence Aureon can learn from."
+      />
 
-      {isLoading ? (
+      {status === "loading" ? (
         <p className="mt-8 text-sm text-ink-faint">Loading…</p>
+      ) : status === "error" ? (
+        <div className="mt-8">
+          <EmptyStatePanel
+            icon={ShieldAlert}
+            title="Couldn't Load Experience Lab"
+            description="Something went wrong reaching Aureon's servers — this isn't the same as there being nothing here. Try again."
+            action={<Button variant="secondary" onClick={loadView}>Retry</Button>}
+          />
+        </div>
       ) : isEmpty ? (
         <div className="mt-8">
           <EmptyStatePanel

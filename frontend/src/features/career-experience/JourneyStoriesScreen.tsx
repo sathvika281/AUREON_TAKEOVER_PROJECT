@@ -2,8 +2,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { BookOpen, Compass, ShieldAlert, Sparkles } from "lucide-react";
 
 import { Badge } from "../../design-system/components/Badge";
+import { Button } from "../../design-system/components/Button";
 import { EmptyStatePanel } from "../../design-system/components/EmptyStatePanel";
 import { Input } from "../../design-system/components/Input";
+import { PageHeader } from "../../design-system/components/PageHeader";
 import { Surface } from "../../design-system/components/Surface";
 import { cn } from "../../design-system/cn";
 import { apiClient } from "../../shared/api/client";
@@ -288,12 +290,10 @@ export function JourneyStoriesScreen() {
 
   return (
     <div className="mx-auto max-w-2xl px-6 py-10">
-      <h1 className="text-2xl font-light text-ink">Student Stories</h1>
-      <p className="mt-2 text-sm text-ink-muted">
-        How other students and young people went from confusion, limited exposure, or uncertainty to
-        discovering what they cared about — not professional success stories (those live on Expert
-        Connect), but honest accounts of figuring it out.
-      </p>
+      <PageHeader
+        title="Student Stories"
+        description="How other students and young people went from confusion, limited exposure, or uncertainty to discovering what they cared about — not professional success stories (those live on Expert Connect), but honest accounts of figuring it out."
+      />
 
       {relevantStories.length > 0 && (
         <section className="mt-8">
@@ -360,14 +360,7 @@ export function JourneyStoriesScreen() {
             icon={ShieldAlert}
             title="Couldn't Load Stories"
             description="Something went wrong reaching Aureon's servers — this isn't the same as there being no stories. Try again."
-            action={
-              <button
-                onClick={loadStories}
-                className="rounded-lg border border-border px-4 py-2 text-xs font-medium text-ink-muted transition-colors hover:border-border-strong hover:text-ink"
-              >
-                Retry
-              </button>
-            }
+            action={<Button variant="secondary" onClick={loadStories}>Retry</Button>}
           />
         </div>
       ) : filteredStories.length === 0 ? (

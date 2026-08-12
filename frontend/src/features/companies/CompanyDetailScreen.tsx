@@ -1,9 +1,12 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import { ShieldAlert } from "lucide-react";
 
 import { Badge } from "../../design-system/components/Badge";
+import { Button } from "../../design-system/components/Button";
+import { EmptyStatePanel } from "../../design-system/components/EmptyStatePanel";
 import { Surface } from "../../design-system/components/Surface";
-import { apiClient } from "../../shared/api/client";
+import { ApiError, apiClient } from "../../shared/api/client";
 import type { CompanyDetail } from "../../shared/api/types";
 import { CompanyLogo } from "./CompanyLogo";
 
@@ -28,29 +31,48 @@ const SIZE_LABELS: Record<string, string> = {
 export function CompanyDetailScreen() {
   const { companyId } = useParams<{ companyId: string }>();
   const [detail, setDetail] = useState<CompanyDetail | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [status, setStatus] = useState<"loading" | "success" | "not-found" | "error">("loading");
 
-  useEffect(() => {
+  const loadDetail = useCallback(() => {
     if (!companyId) return;
-    setIsLoading(true);
+    setStatus("loading");
     apiClient
       .get<CompanyDetail>(`/v1/companies/${companyId}`)
-      .then(setDetail)
-      .catch(() => setDetail(null))
-      .finally(() => setIsLoading(false));
+      .then((r) => {
+        setDetail(r);
+        setStatus("success");
+      })
+      .catch((err) => setStatus(err instanceof ApiError && err.status === 404 ? "not-found" : "error"));
   }, [companyId]);
 
-  if (isLoading) {
+  useEffect(() => {
+    loadDetail();
+  }, [loadDetail]);
+
+  if (status === "loading") {
     return <div className="mx-auto max-w-2xl px-6 py-10 text-sm text-ink-faint">Loading…</div>;
   }
 
-  if (!detail) {
+  if (status === "not-found") {
     return (
       <div className="mx-auto max-w-2xl px-6 py-10">
         <p className="text-sm text-ink-faint">Company not found.</p>
         <Link to="/companies" className="mt-2 inline-block text-sm text-accent-soft">
           Back to Companies
         </Link>
+      </div>
+    );
+  }
+
+  if (status === "error" || !detail) {
+    return (
+      <div className="mx-auto max-w-2xl px-6 py-10">
+        <EmptyStatePanel
+          icon={ShieldAlert}
+          title="Couldn't Load This Company"
+          description="Something went wrong reaching Aureon's servers — this isn't the same as the company not existing. Try again."
+          action={<Button variant="secondary" onClick={loadDetail}>Retry</Button>}
+        />
       </div>
     );
   }

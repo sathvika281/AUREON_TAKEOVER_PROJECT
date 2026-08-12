@@ -1,9 +1,11 @@
-import { useEffect, useMemo, useState } from "react";
-import { CheckCircle2, Compass, Heart } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { CheckCircle2, Compass, Heart, ShieldAlert } from "lucide-react";
 
 import { Badge } from "../../design-system/components/Badge";
+import { Button } from "../../design-system/components/Button";
 import { EmptyStatePanel } from "../../design-system/components/EmptyStatePanel";
 import { Input } from "../../design-system/components/Input";
+import { PageHeader } from "../../design-system/components/PageHeader";
 import { Surface } from "../../design-system/components/Surface";
 import { cn } from "../../design-system/cn";
 import { apiClient } from "../../shared/api/client";
@@ -65,35 +67,61 @@ export function KnowledgeCirclesScreen() {
   const studentId = getCurrentStudentId();
 
   const [circles, setCircles] = useState<KnowledgeCircleSummary[]>([]);
+  // Loading, a genuine fetch failure, and a genuinely empty catalog are
+  // three different product states — the original code had no loading
+  // state at all for the list, so a fresh page load could briefly show
+  // "No Circles Found" before real data arrived.
+  const [listStatus, setListStatus] = useState<"loading" | "success" | "error">("loading");
   const [query, setQuery] = useState("");
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [view, setView] = useState<KnowledgeCircleView | null>(null);
-  const [isLoadingView, setIsLoadingView] = useState(false);
+  // The detail fetch must never leave the page blank on failure — idle
+  // (nothing selected) is distinct from loading/success/error.
+  const [viewStatus, setViewStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [progress, setProgress] = useState<CircleResourceProgress[]>([]);
   const [busyKey, setBusyKey] = useState<string | null>(null);
 
-  useEffect(() => {
-    apiClient.get<KnowledgeCircleSummary[]>("/v1/knowledge-circles").then(setCircles).catch(() => {});
+  const loadCircles = useCallback(() => {
+    setListStatus("loading");
+    apiClient
+      .get<KnowledgeCircleSummary[]>("/v1/knowledge-circles")
+      .then((r) => {
+        setCircles(r);
+        setListStatus("success");
+      })
+      .catch(() => setListStatus("error"));
   }, []);
 
   useEffect(() => {
-    if (!selectedId) {
-      setView(null);
-      setProgress([]);
-      return;
-    }
-    setIsLoadingView(true);
+    loadCircles();
+  }, [loadCircles]);
+
+  const loadView = useCallback(() => {
+    if (!selectedId) return;
+    setViewStatus("loading");
     apiClient
       .get<KnowledgeCircleView>(`/v1/knowledge-circles/${selectedId}`)
-      .then(setView)
-      .catch(() => setView(null))
-      .finally(() => setIsLoadingView(false));
+      .then((r) => {
+        setView(r);
+        setViewStatus("success");
+      })
+      .catch(() => setViewStatus("error"));
     apiClient
       .get<CircleProgressResponse>(`/v1/students/${studentId}/knowledge-circles/${selectedId}/progress`)
       .then((r) => setProgress(r.progress))
       .catch(() => {});
   }, [selectedId, studentId]);
+
+  useEffect(() => {
+    if (!selectedId) {
+      setView(null);
+      setProgress([]);
+      setViewStatus("idle");
+      return;
+    }
+    loadView();
+  }, [selectedId, loadView]);
 
   const filteredCircles = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -141,9 +169,20 @@ export function KnowledgeCirclesScreen() {
           ← Knowledge Circles
         </button>
 
-        {isLoadingView && <p className="mt-6 text-sm text-ink-faint">Loading…</p>}
+        {viewStatus === "loading" && <p className="mt-6 text-sm text-ink-faint">Loading…</p>}
 
-        {view && (
+        {viewStatus === "error" && (
+          <div className="mt-6">
+            <EmptyStatePanel
+              icon={ShieldAlert}
+              title="Couldn't Load This Circle"
+              description="Something went wrong reaching Aureon's servers — this isn't the same as there being nothing here. Try again."
+              action={<Button variant="secondary" onClick={loadView}>Retry</Button>}
+            />
+          </div>
+        )}
+
+        {viewStatus === "success" && view && (
           <>
             <h1 className="mt-2 text-2xl font-light text-ink">{view.name}</h1>
             <p className="mt-2 text-sm leading-relaxed text-ink-muted">{view.overview}</p>
@@ -204,12 +243,10 @@ export function KnowledgeCirclesScreen() {
 
   return (
     <div className="mx-auto max-w-2xl px-6 py-10">
-      <h1 className="text-2xl font-light text-ink">Knowledge Circles</h1>
-      <p className="mt-2 text-sm text-ink-muted">
-        Curated, per-domain learning hubs — not a social feed. Books, projects, communities,
-        competitions, research, and more, composed from Aureon's own real catalogs. Bookmark what's
-        useful, mark what you've finished, and build a real learning checklist.
-      </p>
+      <PageHeader
+        title="Knowledge Circles"
+        description="Curated, per-domain learning hubs — not a social feed. Books, projects, communities, competitions, research, and more, composed from Aureon's own real catalogs. Bookmark what's useful, mark what you've finished, and build a real learning checklist."
+      />
 
       <Input
         value={query}
@@ -218,7 +255,18 @@ export function KnowledgeCirclesScreen() {
         className="mt-6"
       />
 
-      {filteredCircles.length === 0 ? (
+      {listStatus === "loading" ? (
+        <p className="mt-8 text-sm text-ink-faint">Loading…</p>
+      ) : listStatus === "error" ? (
+        <div className="mt-8">
+          <EmptyStatePanel
+            icon={ShieldAlert}
+            title="Couldn't Load Knowledge Circles"
+            description="Something went wrong reaching Aureon's servers — this isn't the same as there being nothing here. Try again."
+            action={<Button variant="secondary" onClick={loadCircles}>Retry</Button>}
+          />
+        </div>
+      ) : filteredCircles.length === 0 ? (
         <div className="mt-8">
           <EmptyStatePanel icon={Compass} title="No Circles Found" description="Try a different search term." />
         </div>

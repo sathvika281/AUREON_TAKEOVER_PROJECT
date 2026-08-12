@@ -1,8 +1,10 @@
-import { useEffect, useRef, useState } from "react";
-import { ChevronDown, ChevronUp, Brain, Sparkles } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { ChevronDown, ChevronUp, Brain, ShieldAlert, Sparkles } from "lucide-react";
 
 import { Badge } from "../../design-system/components/Badge";
+import { Button } from "../../design-system/components/Button";
 import { EmptyStatePanel } from "../../design-system/components/EmptyStatePanel";
+import { PageHeader } from "../../design-system/components/PageHeader";
 import { Surface } from "../../design-system/components/Surface";
 import { apiClient } from "../../shared/api/client";
 import type { LearningStylePattern, LearningStyleTier, LearningStylesResponse } from "../../shared/api/types";
@@ -131,26 +133,43 @@ function StyleCard({ pattern }: { pattern: LearningStylePattern }) {
 export function LearningStyleDiscoveryScreen() {
   const studentId = useRef(getCurrentStudentId()).current;
   const [data, setData] = useState<LearningStylesResponse | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  // Loading, a genuine fetch failure, and genuinely no styles yet are
+  // three different product states.
+  const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
 
-  useEffect(() => {
+  const loadData = useCallback(() => {
+    setStatus("loading");
     apiClient
       .get<LearningStylesResponse>(`/v1/students/${studentId}/learning-styles`)
-      .then(setData)
-      .catch(() => setData(null))
-      .finally(() => setIsLoading(false));
+      .then((r) => {
+        setData(r);
+        setStatus("success");
+      })
+      .catch(() => setStatus("error"));
   }, [studentId]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   return (
     <div className="mx-auto max-w-3xl px-6 py-10">
-      <h1 className="text-2xl font-light text-ink">Learning Style Discovery</h1>
-      <p className="mt-2 text-sm text-ink-muted">
-        How you naturally learn best — discovered from what you've actually done, never a
-        self-assessment quiz. You can show several styles at once; none of them lock you in.
-      </p>
+      <PageHeader
+        title="Learning Style Discovery"
+        description="How you naturally learn best — discovered from what you've actually done, never a self-assessment quiz. You can show several styles at once; none of them lock you in."
+      />
 
-      {isLoading ? (
+      {status === "loading" ? (
         <p className="mt-8 text-sm text-ink-faint">Loading…</p>
+      ) : status === "error" ? (
+        <div className="mt-8">
+          <EmptyStatePanel
+            icon={ShieldAlert}
+            title="Couldn't Load Learning Styles"
+            description="Something went wrong reaching Aureon's servers — this isn't the same as there being nothing here. Try again."
+            action={<Button variant="secondary" onClick={loadData}>Retry</Button>}
+          />
+        </div>
       ) : data && data.patterns.length > 0 ? (
         <div className="mt-8 space-y-8">
           {TIER_ORDER.map((tier) => {

@@ -1,9 +1,11 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { Layers, Leaf, Puzzle, ScanEye, Sparkles, TreeDeciduous, Sprout as SproutIcon } from "lucide-react";
+import { Layers, Leaf, Puzzle, ScanEye, ShieldAlert, Sparkles, TreeDeciduous, Sprout as SproutIcon } from "lucide-react";
 
 import { Badge } from "../../design-system/components/Badge";
+import { Button } from "../../design-system/components/Button";
 import { EmptyStatePanel } from "../../design-system/components/EmptyStatePanel";
+import { PageHeader } from "../../design-system/components/PageHeader";
 import { ProcessSteps } from "../../design-system/components/ProcessSteps";
 import { Surface } from "../../design-system/components/Surface";
 import { apiClient } from "../../shared/api/client";
@@ -75,18 +77,29 @@ function StrengthCard({ pattern }: { pattern: TalentPattern }) {
  */
 export function HiddenPotentialScreen() {
   const studentId = useRef(getCurrentStudentId()).current;
-  const { hypotheses, careerDna, confidenceScore, understandingStage } = useDiscoveryContext();
+  const {
+    hypotheses, careerDna, confidenceScore, understandingStage, isLoading: isDiscoveryLoading,
+  } = useDiscoveryContext();
 
   const [data, setData] = useState<HiddenPotentialResponse | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  // Loading, a genuine fetch failure, and genuinely no strengths yet are
+  // three different product states.
+  const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
 
-  useEffect(() => {
+  const loadData = useCallback(() => {
+    setStatus("loading");
     apiClient
       .get<HiddenPotentialResponse>(`/v1/students/${studentId}/hidden-potential`)
-      .then(setData)
-      .catch(() => setData(null))
-      .finally(() => setIsLoading(false));
+      .then((r) => {
+        setData(r);
+        setStatus("success");
+      })
+      .catch(() => setStatus("error"));
   }, [studentId]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const traits = Object.entries(careerDna);
   const strongTraitCount = data?.discovery_statistics.traits_with_strong_evidence ?? 0;
@@ -96,25 +109,34 @@ export function HiddenPotentialScreen() {
 
   return (
     <div className="mx-auto max-w-2xl px-6 py-10">
-      <div className="mb-8 space-y-4">
-        <UniverseSummaryCard
-          hypotheses={hypotheses}
-          careerDna={careerDna}
-          confidenceScore={confidenceScore}
-          understandingStage={understandingStage}
-        />
-        <UniverseWorkspaceTabs />
-      </div>
+      {!isDiscoveryLoading && (
+        <div className="mb-8 space-y-4">
+          <UniverseSummaryCard
+            hypotheses={hypotheses}
+            careerDna={careerDna}
+            confidenceScore={confidenceScore}
+            understandingStage={understandingStage}
+          />
+          <UniverseWorkspaceTabs />
+        </div>
+      )}
 
-      <h1 className="text-2xl font-light text-ink">Hidden Potential</h1>
-      <p className="mt-2 text-sm text-ink-muted">
-        Everything Aureon has noticed about your strengths — real strengths building over time, and
-        patterns from traits that combine in ways most people don't show. Never a score, always the
-        real evidence behind it.
-      </p>
+      <PageHeader
+        title="Hidden Potential"
+        description="Everything Aureon has noticed about your strengths — real strengths building over time, and patterns from traits that combine in ways most people don't show. Never a score, always the real evidence behind it."
+      />
 
-      {isLoading ? (
+      {status === "loading" ? (
         <p className="mt-8 text-sm text-ink-faint">Loading…</p>
+      ) : status === "error" ? (
+        <div className="mt-8">
+          <EmptyStatePanel
+            icon={ShieldAlert}
+            title="Couldn't Load Hidden Potential"
+            description="Something went wrong reaching Aureon's servers — this isn't the same as there being nothing here. Try again."
+            action={<Button variant="secondary" onClick={loadData}>Retry</Button>}
+          />
+        </div>
       ) : (
         <>
           {/* Discovery Status */}
